@@ -1,0 +1,21 @@
+{
+    "name" : "imbo",
+    "description" : "An Imbo client library for node",
+    "version" : "0.1.0",
+    "author" : "Espen Hovlandsdal <rexxars@gmail.com>",
+    "contributors" : [],
+    "repository" : {
+        "type" : "git",
+        "url" : "http://github.com/rexxars/imboclient-js"
+    },
+    "bugs" : {
+        "mail" : "rexxars@gmail.com",
+        "url" : "http://github.com/rexxars/imboclient-js/issues"
+    },
+    "dependencies" : {
+        "request": ">= 2.0.0"
+    },
+    "main" : "lib/imbo",
+    "engines" : { "node" : ">=0.4.0" },
+    "license" : "MIT"
+}
