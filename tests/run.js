@@ -26,9 +26,6 @@ var uploadImage = function() {
     client.addImage(config.imgPath, function(err, res, data) {
         console.log('Added image, response: ', data);
 
-        // Set imageidentifier so we can keep using it throughout our tests
-        imgId = res.headers['x-imbo-imageidentifier'];
-
         headImage();
     });
 };
@@ -37,8 +34,18 @@ var headImage = function() {
     client.headImage(imgId, function(err, res) {
         console.log('HEAD\'ed image, x-imbo-originalfilesize: ', res.headers['x-imbo-originalfilesize']);
 
-        editMeta();
+        getImageUrl();
     });
+};
+
+var getImageUrl = function() {
+    var url = client.getImageUrl(imgId);
+
+    console.log('Url, thumbnailed: ' + url.thumbnail(100, 100));
+    url.reset();
+    console.log('Url, filtered: ' + url.border('bf1942', 2, 2).compress(70).jpg().crop(100, 0, 220, 320).flipHorizontally().flipVertically().resize(200, 200).rotate(45, 'c0c0c0').getUrl());
+
+    editMeta();
 };
 
 var deleteImage = function() {
@@ -73,4 +80,7 @@ var deleteMeta = function() {
 };
 
 // Get image identifier and start chain
-imageExists();
+client.getImageIdentifier(config.imgPath, function(imageIdentifier) {
+    imgId = imageIdentifier;
+    imageExists();
+});
