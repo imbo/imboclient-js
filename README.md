@@ -3,13 +3,9 @@ A [node.js](http://nodejs.org/) client for [imbo](https://github.com/christeredv
 
 ## Basic usage
 ```javascript
-var Imbo = require('imbo') , config = {
-    'host': 'http://imbo.somehost.com',
-    'privateKey': 'abcdefghijklmnopqrstuvwxyz123456',
-    'publicKey' : '654321abcdefghijklmnopqrstuvwxyz'
-};
+var Imbo = require('imbo');
 
-var client = new Imbo.Client(config);
+var client = new Imbo.Client(['http://imbo.somehost.com'], 'privateKey', 'publicKey');
 
 // Path to local image
 var path = '/path/to/image.png';
@@ -19,7 +15,7 @@ client.addImage(path, function(err, req, data) {
         console.log('Something went wrong!', err);
     } else {
         console.log('Image uploaded! Identifier: ' + data.imageIdentifier);
-        console.log('Url: ' + client.getImageUrl(data.imageIdentifier).thumbnail(100, 100));
+        console.log('Url: ' + client.getImageUrl(data.imageIdentifier).thumbnail(100, 100).jpg());
     }
 });
 ```
