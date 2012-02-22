@@ -7,7 +7,7 @@ var Imbo   = require(__dirname + '/../lib/imbo')
   , config = require('./config')
   , imgId  = null;
 
-var client = new Imbo.Client(config.imbo);
+var client = new Imbo.Client(config.imbo.hosts, config.imbo.publicKey, config.imbo.privateKey);
 
 // Some simple image "tests"
 var imageExists = function() {
@@ -80,7 +80,5 @@ var deleteMeta = function() {
 };
 
 // Get image identifier and start chain
-client.getImageIdentifier(config.imgPath, function(imageIdentifier) {
-    imgId = imageIdentifier;
-    imageExists();
-});
+imgId = client.getImageIdentifier(config.imgPath);
+imageExists();
