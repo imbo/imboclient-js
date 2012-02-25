@@ -5,7 +5,7 @@ A [node.js](http://nodejs.org/) client for [imbo](https://github.com/christeredv
 ```javascript
 var Imbo = require('imbo');
 
-var client = new Imbo.Client(['http://imbo.somehost.com'], 'privateKey', 'publicKey');
+var client = new Imbo.Client(['http://imbo.somehost.com'], 'publicKey', 'privateKey');
 
 // Path to local image
 var path = '/path/to/image.png';
