@@ -1,5 +1,5 @@
 # Node.js client for imbo
-A [node.js](http://nodejs.org/) client for [imbo](https://github.com/christeredvartsen/imbo).
+A [node.js](http://nodejs.org/) client for [imbo](https://github.com/imbo/imbo).
 
 ## Basic usage
 ```javascript
