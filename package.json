@@ -1,6 +1,6 @@
 {
     "name" : "imbo",
-    "description" : "An Imbo client library for node",
+    "description" : "An Imbo client for node.js",
     "version" : "0.1.0",
     "author" : "Espen Hovlandsdal <rexxars@gmail.com>",
     "contributors" : [],
@@ -13,7 +13,14 @@
         "url" : "http://github.com/rexxars/imboclient-js/issues"
     },
     "dependencies" : {
-        "request": ">= 2.0.0"
+        "request" : ">= 2.0.0"
+    },
+    "devDependencies" : {
+        "mocha" : ">= 1.5.0",
+        "nock" : ">= 0.13.0"
+    },
+    "scripts" : {
+        "test" : "make test"
     },
     "main" : "lib/imbo",
     "engines" : { "node" : ">=0.4.0" },
