@@ -1,11 +1,12 @@
 var Imbo   = require('../lib/imbo')
   , assert = require('assert')
   , nock   = require('nock')
-  , sys    = require('sys');
+  , util    = require('util');
 
 describe('ImboClient', function() {
 
-    var client = new Imbo.Client('http://imbo', 'pub', 'priv');
+    var client = new Imbo.Client('http://imbo', 'pub', 'priv')
+      , mock   = nock('http://imbo').log(util.puts);
 
     describe('#parseUrls()', function() {
         it('should handle being passed a server-string', function() {
@@ -36,21 +37,63 @@ describe('ImboClient', function() {
     });
 
     describe('#headImage()', function() {
-        it('should return error on a non-200 response', function() {
-            nock('http://imbo')
-                .head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
-                .reply(404)
-                .head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
-                .reply(503);
+        it('should return error on a 404-response', function(done) {
+            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+                .reply(404);
 
             client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
                 assert.equal(404, err);
+                done();
             });
+        });
+
+        it('should return error on a 503-response', function(done) {
+            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+                .reply(503);
 
             client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
                 assert.equal(503, err);
+                done();
             });
         });
+
+        it('should not return an error on a 200-response', function(done) {
+            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+                .reply(200);
+
+            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+                var undef;
+                assert.equal(undef, err);
+                done();
+            });
+        });
+
+        it('should return an http-response', function(done) {
+            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+                .reply(200, '', { 'X-Imbo-Imageidentifier': '73c6643f30979b67a546d4629d19f2a3' });
+
+            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+                assert.equal(res.headers['x-imbo-imageidentifier'], '73c6643f30979b67a546d4629d19f2a3');
+                done();
+            });
+        });
+    });
+
+    describe('#deleteImage()', function() {
+        it('should blah', function(done) {
+            mock.intercept('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8', 'DELETE')
+                .reply(200);
+
+            client.deleteImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+                assert.equals(res, 'moo');
+            });
+
+            done();
+        });
+    });
+
+    after(function() {
+        mock.done();
     });
 
 });
