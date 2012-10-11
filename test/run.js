@@ -1,7 +1,8 @@
 var Imbo   = require('../')
   , assert = require('assert')
   , nock   = require('nock')
-  , util   = require('util');
+  , util   = require('util')
+  , undef;
 
 var signatureCleaner = function(path) {
     return path.replace(/timestamp=[^&]*&?/, '')
@@ -13,6 +14,24 @@ describe('ImboClient', function() {
 
     var client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
       , mock   = nock('http://imbo');
+
+    describe('#getImageIdentifier', function() {
+        it('should return an error if file does not exist', function(done) {
+            var filename = __dirname + '/does-not-exist.jpg';
+            client.getImageIdentifier(filename, function(err, identifier) {
+                assert.equal('File does not exist (' + filename + ')', err);
+                done();
+            });
+        });
+
+        it('should generate correct md5sum for a file that exists', function(done) {
+            client.getImageIdentifier(__dirname + '/cat.jpg', function(err, identifier) {
+                assert.equal('61da9892205a0d5077a353eb3487e8c8', identifier);
+                assert.equal(undef, err);
+                done();
+            });
+        });
+    });
 
     describe('#generateSignature', function() {
         it('should generate a valid signature', function() {
@@ -97,7 +116,6 @@ describe('ImboClient', function() {
                 .reply(200);
 
             client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
-                var undef;
                 assert.equal(undef, err);
                 done();
             });
