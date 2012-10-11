@@ -13,8 +13,9 @@ var signatureCleaner = function(path) {
 
 describe('ImboClient', function() {
 
-    var client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
-      , mock   = nock('http://imbo');
+    var client    = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
+      , errClient = new Imbo.Client('http://non-existant-endpoint', 'pub', 'priv')
+      , mock      = nock('http://imbo');
 
     describe('#getImageIdentifier', function() {
         it('should return an error if file does not exist', function(done) {
@@ -52,15 +53,15 @@ describe('ImboClient', function() {
             sig = client.generateSignature('GET', '/images', '2012-10-11T15:10:17Z');
             assert.equal(sig, 'fd16a910040350f12df83b2e077aa2afdcd0f4d262e69eb84d3ad3ee1e5a243c');
 
-            sig = client.generateSignature('PUT', '/images/61ca9892205a0d5077a353eb3487e8c8', '2012-10-03T12:43:37Z');
-            assert.equal(sig, 'be7180d7f04aa60bb19180d035c39e1b8cb4034f75b7dcf02bf9f214a53673bc');
+            sig = client.generateSignature('PUT', '/images/' + catMd5, '2012-10-03T12:43:37Z');
+            assert.equal(sig, '76ae720ada115f6425f2496c8cf38470f90d302fefd6269205efd53695135aac');
         });
     });
 
     describe('#getSignedResourceUrl', function() {
         it('should generate a valid, signed resource url', function() {
-            var url = client.getSignedResourceUrl('PUT', '/images/61ca9892205a0d5077a353eb3487e8c8', new Date(1349268217000));
-            assert.equal(url, '/images/61ca9892205a0d5077a353eb3487e8c8?signature=be7180d7f04aa60bb19180d035c39e1b8cb4034f75b7dcf02bf9f214a53673bc&timestamp=2012-10-03T12%3A43%3A37Z');
+            var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5, new Date(1349268217000));
+            assert.equal(url, '/images/' + catMd5 + '?signature=76ae720ada115f6425f2496c8cf38470f90d302fefd6269205efd53695135aac&timestamp=2012-10-03T12%3A43%3A37Z');
         });
     });
 
@@ -105,41 +106,48 @@ describe('ImboClient', function() {
 
     describe('#headImage()', function() {
         it('should return error on a 404-response', function(done) {
-            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+            mock.head('/users/pub/images/' + catMd5)
                 .reply(404);
 
-            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+            client.headImage(catMd5, function(err, res) {
                 assert.equal(404, err);
                 done();
             });
         });
 
         it('should return error on a 503-response', function(done) {
-            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+            mock.head('/users/pub/images/' + catMd5)
                 .reply(503);
 
-            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+            client.headImage(catMd5, function(err, res) {
                 assert.equal(503, err);
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
+            mock.head('/users/pub/images/' + catMd5)
                 .reply(200);
 
-            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
+            client.headImage(catMd5, function(err, res) {
                 assert.equal(undef, err);
                 done();
             });
         });
 
         it('should return an http-response on success', function(done) {
-            mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
-                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': '61ca9892205a0d5077a353eb3487e8c8' });
+            mock.head('/users/pub/images/' + catMd5)
+                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
-            client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
-                assert.equal(res.headers['x-imbo-imageidentifier'], '61ca9892205a0d5077a353eb3487e8c8');
+            client.headImage(catMd5, function(err, res) {
+                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
+                done();
+            });
+        });
+
+        it('should return error when host could not be reached', function(done) {
+            errClient.headImage(catMd5, function(err, res) {
+                assert.equal('ENOTFOUND', err.code);
                 done();
             });
         });
@@ -148,11 +156,11 @@ describe('ImboClient', function() {
     describe('#deleteImage()', function() {
         it('should return an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
-                .intercept('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8', 'DELETE')
-                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': '61ca9892205a0d5077a353eb3487e8c8' });
+                .intercept('/users/pub/images/' + catMd5, 'DELETE')
+                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
-            client.deleteImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
-                assert.equal(res.headers['x-imbo-imageidentifier'], '61ca9892205a0d5077a353eb3487e8c8');
+            client.deleteImage(catMd5, function(err, res) {
+                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                 done();
             });
         });
