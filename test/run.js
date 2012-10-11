@@ -166,12 +166,12 @@ describe('ImboClient', function() {
         });
     });
 
-    describe('#imageExists', function() {
+    describe('#imageIdentifierExists', function() {
         it('should return true if the identifier exists', function(done) {
             mock.head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK');
             
-            client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
+            client.imageIdentifierExists(catMd5, function(err, exists) {
                 assert.equal(err, undef);
                 assert.equal(true, exists);
                 done();
@@ -182,18 +182,85 @@ describe('ImboClient', function() {
             mock.head('/users/pub/images/' + catMd5)
                 .reply(404, 'Image not found');
             
-            client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
+            client.imageIdentifierExists(catMd5, function(err, exists) {
                 assert.equal(err, undef);
                 assert.equal(false, exists);
                 done();
             });
         });
 
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.imageIdentifierExists(catMd5, function(err, exists) {
+                assert.equal('ENOTFOUND', err.code);
+                done();
+            });
+        });
+    });
+
+    describe('#imageExists', function() {
         it('should return error if the local image does not exist', function(done) {
             var filename = __dirname + '/does-not-exist.jpg';
             client.imageExists(filename, function(err, exists) {
                 assert.equal('File does not exist (' + filename + ')', err);
                 assert.equal(undef, exists);
+                done();
+            });
+        });
+
+        it('should return true if the image exists on disk and on server', function(done) {
+            mock.head('/users/pub/images/' + catMd5)
+                .reply(200, 'OK');
+            
+            client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
+                assert.equal(err, undef);
+                assert.equal(true, exists);
+                done();
+            });
+        });
+    });
+
+    describe('#addImage', function() {
+        it('should return error if the local image does not exist', function(done) {
+            var filename = __dirname + '/does-not-exist.jpg';
+            client.addImage(filename, function(err, response) {
+                assert.equal('File does not exist (' + filename + ')', err);
+                assert.equal(undef, response);
+                done();
+            });
+        });
+
+        it('should return an error if the image could not be added', function(done) {
+            mock.filteringRequestBody(function(data) {
+                    return '*';
+                })
+                .put('/users/pub/images/' + catMd5, '*')
+                .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
+
+            client.addImage(__dirname + '/cat.jpg', function(err, imageIdentifier, response) {
+                assert.equal(400, err);
+                assert.equal(null, imageIdentifier);
+                done();
+            });
+        });
+
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.addImage(__dirname + '/cat.jpg', function(err, imageIdentifier, res) {
+                assert.equal('ENOTFOUND', err.code);
+                done();
+            });
+        });
+
+        it('should return an image identifier and an http-response on success', function(done) {
+            mock.filteringRequestBody(function(data) {
+                    return '*';
+                })
+                .put('/users/pub/images/' + catMd5, '*')
+                .reply(201, 'Created', { 'X-Imbo-Imageidentifier': catMd5 });
+
+            client.addImage(__dirname + '/cat.jpg', function(err, imageIdentifier, response) {
+                assert.equal(undef, err);
+                assert.equal(catMd5, imageIdentifier);
+                assert.equal(201, response.statusCode);
                 done();
             });
         });
