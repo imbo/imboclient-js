@@ -22,7 +22,7 @@
     "scripts" : {
         "test" : "make test"
     },
-    "main" : "lib/imbo",
+    "main" : "index",
     "engines" : { "node" : ">=0.4.0" },
     "license" : "MIT"
 }

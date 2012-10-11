@@ -1,4 +1,4 @@
-var Imbo   = require('../lib/imbo')
+var Imbo   = require('../')
   , assert = require('assert')
   , nock   = require('nock')
   , util   = require('util');
@@ -12,7 +12,7 @@ var signatureCleaner = function(path) {
 describe('ImboClient', function() {
 
     var client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
-      , mock   = nock('http://imbo').log(util.puts);
+      , mock   = nock('http://imbo');
 
     describe('#generateSignature', function() {
         it('should generate a valid signature', function() {
