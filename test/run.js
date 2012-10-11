@@ -1,12 +1,47 @@
 var Imbo   = require('../lib/imbo')
   , assert = require('assert')
   , nock   = require('nock')
-  , util    = require('util');
+  , util   = require('util');
+
+var signatureCleaner = function(path) {
+    return path.replace(/timestamp=[^&]*&?/, '')
+               .replace(/signature=[^&]*&?/, '')
+               .replace(/\?$/g, '');
+};
 
 describe('ImboClient', function() {
 
-    var client = new Imbo.Client('http://imbo', 'pub', 'priv')
+    var client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
       , mock   = nock('http://imbo').log(util.puts);
+
+    describe('#generateSignature', function() {
+        it('should generate a valid signature', function() {
+            var sig;
+            sig = client.generateSignature('GET', '/images', '2012-10-11T15:10:17Z');
+            assert.equal(sig, 'fd16a910040350f12df83b2e077aa2afdcd0f4d262e69eb84d3ad3ee1e5a243c');
+
+            sig = client.generateSignature('PUT', '/images/61ca9892205a0d5077a353eb3487e8c8', '2012-10-03T12:43:37Z');
+            assert.equal(sig, 'be7180d7f04aa60bb19180d035c39e1b8cb4034f75b7dcf02bf9f214a53673bc');
+        });
+    });
+
+    describe('#getSignedResourceUrl', function() {
+        it('should generate a valid, signed resource url', function() {
+            var url = client.getSignedResourceUrl('PUT', '/images/61ca9892205a0d5077a353eb3487e8c8', new Date(1349268217000));
+            assert.equal(url, '/images/61ca9892205a0d5077a353eb3487e8c8?signature=be7180d7f04aa60bb19180d035c39e1b8cb4034f75b7dcf02bf9f214a53673bc&timestamp=2012-10-03T12%3A43%3A37Z');
+        });
+    });
+
+    describe('#getHostForImageIdentifier', function() {
+        it('should return the same host for the same image identifiers every time', function() {
+            for (var i = 0; i < 10; i++) {
+                assert.equal('http://imbo1', client.getHostForImageIdentifier('61ca9892205a0d5077a353eb3487e8c8'));
+                assert.equal('http://imbo2', client.getHostForImageIdentifier('3b71c51547c3aa1ae81a5e9c57dfef67'));
+                assert.equal('http://imbo',  client.getHostForImageIdentifier('3faab4bb128b56bd7d7e977164b3cc7f'));
+                assert.equal('http://imbo1', client.getHostForImageIdentifier('61ca9892205a0d5077a353eb3487e8c8'));
+            }
+        });
+    });
 
     describe('#parseUrls()', function() {
         it('should handle being passed a server-string', function() {
@@ -68,27 +103,27 @@ describe('ImboClient', function() {
             });
         });
 
-        it('should return an http-response', function(done) {
+        it('should return an http-response on success', function(done) {
             mock.head('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8')
-                .reply(200, '', { 'X-Imbo-Imageidentifier': '73c6643f30979b67a546d4629d19f2a3' });
+                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': '61ca9892205a0d5077a353eb3487e8c8' });
 
             client.headImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
-                assert.equal(res.headers['x-imbo-imageidentifier'], '73c6643f30979b67a546d4629d19f2a3');
+                assert.equal(res.headers['x-imbo-imageidentifier'], '61ca9892205a0d5077a353eb3487e8c8');
                 done();
             });
         });
     });
 
     describe('#deleteImage()', function() {
-        it('should blah', function(done) {
-            mock.intercept('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8', 'DELETE')
-                .reply(200);
+        it('should return an http-response on success', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/61ca9892205a0d5077a353eb3487e8c8', 'DELETE')
+                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': '61ca9892205a0d5077a353eb3487e8c8' });
 
             client.deleteImage('61ca9892205a0d5077a353eb3487e8c8', function(err, res) {
-                assert.equals(res, 'moo');
+                assert.equal(res.headers['x-imbo-imageidentifier'], '61ca9892205a0d5077a353eb3487e8c8');
+                done();
             });
-
-            done();
         });
     });
 
