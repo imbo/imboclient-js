@@ -2,6 +2,7 @@ var Imbo   = require('../')
   , assert = require('assert')
   , nock   = require('nock')
   , util   = require('util')
+  , catMd5 = '61da9892205a0d5077a353eb3487e8c8'
   , undef;
 
 var signatureCleaner = function(path) {
@@ -26,10 +27,22 @@ describe('ImboClient', function() {
 
         it('should generate correct md5sum for a file that exists', function(done) {
             client.getImageIdentifier(__dirname + '/cat.jpg', function(err, identifier) {
-                assert.equal('61da9892205a0d5077a353eb3487e8c8', identifier);
+                assert.equal(catMd5, identifier);
                 assert.equal(undef, err);
                 done();
             });
+        });
+    });
+
+    describe('#getImageUrl', function() {
+        it('should return a ImboUrl-instance', function() {
+            var url = client.getImageUrl(catMd5);
+            assert.equal(true, url instanceof Imbo.Url, 'getImageUrl did not return instance of ImboUrl');
+        });
+
+        it('should return something containing the image identifier', function() {
+            var url = client.getImageUrl(catMd5).toString();
+            assert.equal(true, url.indexOf(catMd5) > 0, 'did not contain ' + catMd5);
         });
     });
 
