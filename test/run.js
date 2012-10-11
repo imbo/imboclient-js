@@ -166,6 +166,39 @@ describe('ImboClient', function() {
         });
     });
 
+    describe('#imageExists', function() {
+        it('should return true if the identifier exists', function(done) {
+            mock.head('/users/pub/images/' + catMd5)
+                .reply(200, 'OK');
+            
+            client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
+                assert.equal(err, undef);
+                assert.equal(true, exists);
+                done();
+            });
+        });
+
+        it('should return false if the identifier does not exist', function(done) {
+            mock.head('/users/pub/images/' + catMd5)
+                .reply(404, 'Image not found');
+            
+            client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
+                assert.equal(err, undef);
+                assert.equal(false, exists);
+                done();
+            });
+        });
+
+        it('should return error if the local image does not exist', function(done) {
+            var filename = __dirname + '/does-not-exist.jpg';
+            client.imageExists(filename, function(err, exists) {
+                assert.equal('File does not exist (' + filename + ')', err);
+                assert.equal(undef, exists);
+                done();
+            });
+        });
+    });
+
     after(function() {
         mock.done();
     });
