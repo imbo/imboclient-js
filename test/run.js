@@ -273,9 +273,10 @@ describe('ImboClient', function() {
             mock.get('/users/pub/images/' + catMd5 + '/meta')
                 .reply(200, JSON.stringify({ 'foo': 'bar' }));
 
-            client.getMetadata(catMd5, function(err, response) {
+            client.getMetadata(catMd5, function(err, meta, res) {
                 assert.equal(undef, err);
-                assert.equal('bar', response.foo);
+                assert.equal('bar', meta.foo);
+                assert.equal(200, res.statusCode);
                 done();
             });
         });
@@ -284,9 +285,10 @@ describe('ImboClient', function() {
             mock.get('/users/pub/images/non-existant/meta')
                 .reply(404, 'Image not found');
 
-            client.getMetadata('non-existant', function(err, response) {
+            client.getMetadata('non-existant', function(err, body, res) {
                 assert.equal(404, err);
-                assert.equal(404, response.statusCode);
+                assert.equal(null, body);
+                assert.equal(404, res.statusCode);
                 done();
             });
         });
@@ -311,6 +313,31 @@ describe('ImboClient', function() {
 
             client.deleteMetadata(catMd5, function(err) {
                 assert.equal(undef, err);
+                done();
+            });
+        });
+    });
+
+    describe('#editMetadata', function() {
+        it('should return an error if the identifier does not exist', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .post('/users/pub/images/non-existant/meta', { foo: 'bar' })
+                .reply(404, 'Image not found');
+
+            client.editMetadata('non-existant', { foo: 'bar' }, function(err) {
+                assert.equal(404, err);
+                done();
+            });
+        });
+
+        it('should not return any error on success', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .post('/users/pub/images/' + catMd5 + '/meta', { foo: 'bar' })
+                .reply(200, 'OK');
+
+            client.editMetadata(catMd5, { foo: 'bar' }, function(err, res) {
+                assert.equal(undef, err);
+                assert.equal(200, res.statusCode);
                 done();
             });
         });
