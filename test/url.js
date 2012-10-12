@@ -29,4 +29,19 @@ describe('Imbo.Url', function() {
         });
     });
 
+    describe('#compress', function() {
+        it('should return correct transformation', function() {
+            url.compress(90).toString().should.include('?t[]=compress:quality=90');
+        });
+
+        it('should handle non-integers correctly', function() {
+            url.compress('40').toString().should.include('?t[]=compress:quality=40');
+        });
+
+        it('should add default parameters if missing', function() {
+            url.compress().toString().should.include('?t[]=compress:quality=75');
+            url.reset();
+        });
+    });
+
 });
