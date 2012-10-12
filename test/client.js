@@ -11,7 +11,7 @@ var signatureCleaner = function(path) {
                .replace(/\?$/g, '');
 };
 
-describe('ImboClient', function() {
+describe('Imbo.Client', function() {
 
     var client    = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv')
       , errClient = new Imbo.Client('http://non-existant-endpoint', 'pub', 'priv')

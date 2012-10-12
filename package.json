@@ -16,8 +16,9 @@
         "request" : ">= 2.0.0"
     },
     "devDependencies" : {
-        "mocha" : ">= 1.5.0",
-        "nock" : ">= 0.13.0"
+        "mocha" : "*",
+        "nock" : "*",
+        "should": "*"
     },
     "scripts" : {
         "test" : "make test"
