@@ -12,6 +12,7 @@ test-unit:
 
 test-cov: lib-cov
 	@IMBO_COV=1 $(MAKE) -s test REPORTER=html-cov > coverage.html
+	@rm -rf lib-cov
 
 lib-cov:
 	@jscoverage lib lib-cov

@@ -170,7 +170,7 @@ describe('ImboClient', function() {
         it('should return true if the identifier exists', function(done) {
             mock.head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK');
-            
+
             client.imageIdentifierExists(catMd5, function(err, exists) {
                 assert.equal(err, undef);
                 assert.equal(true, exists);
@@ -181,7 +181,7 @@ describe('ImboClient', function() {
         it('should return false if the identifier does not exist', function(done) {
             mock.head('/users/pub/images/' + catMd5)
                 .reply(404, 'Image not found');
-            
+
             client.imageIdentifierExists(catMd5, function(err, exists) {
                 assert.equal(err, undef);
                 assert.equal(false, exists);
@@ -210,7 +210,7 @@ describe('ImboClient', function() {
         it('should return true if the image exists on disk and on server', function(done) {
             mock.head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK');
-            
+
             client.imageExists(__dirname + '/cat.jpg', function(err, exists) {
                 assert.equal(err, undef);
                 assert.equal(true, exists);
@@ -261,6 +261,56 @@ describe('ImboClient', function() {
                 assert.equal(undef, err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(201, response.statusCode);
+
+                mock = nock('http://imbo');
+                done();
+            });
+        });
+    });
+
+    describe('#getMetadata', function() {
+        it('should return an object of key => value data', function(done) {
+            mock.get('/users/pub/images/' + catMd5 + '/meta')
+                .reply(200, JSON.stringify({ 'foo': 'bar' }));
+
+            client.getMetadata(catMd5, function(err, response) {
+                assert.equal(undef, err);
+                assert.equal('bar', response.foo);
+                done();
+            });
+        });
+
+        it('should return an error if the identifier does not exist', function(done) {
+            mock.get('/users/pub/images/non-existant/meta')
+                .reply(404, 'Image not found');
+
+            client.getMetadata('non-existant', function(err, response) {
+                assert.equal(404, err);
+                assert.equal(404, response.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#deleteMetadata', function() {
+        it('should return an error if the identifier does not exist', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/non-existant/meta', 'DELETE')
+                .reply(404, 'Image not found');
+
+            client.deleteMetadata('non-existant', function(err) {
+                assert.equal(404, err);
+                done();
+            });
+        });
+
+        it('should not return any error on success', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/meta', 'DELETE')
+                .reply(200, 'OK');
+
+            client.deleteMetadata(catMd5, function(err) {
+                assert.equal(undef, err);
                 done();
             });
         });
