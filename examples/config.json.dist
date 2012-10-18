@@ -1,0 +1,5 @@
+{
+    "hosts"   : ["http://some.host/imbo"],
+    "pubKey"  : "somePubKey",
+    "privKey" : "privateKey"
+}

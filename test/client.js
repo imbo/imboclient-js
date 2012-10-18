@@ -8,6 +8,7 @@ var Imbo   = require('../')
 var signatureCleaner = function(path) {
     return path.replace(/timestamp=[^&]*&?/, '')
                .replace(/signature=[^&]*&?/, '')
+               .replace(/accessToken=[^&]*&?/, '')
                .replace(/\?$/g, '');
 };
 
@@ -106,7 +107,8 @@ describe('Imbo.Client', function() {
 
     describe('#headImage()', function() {
         it('should return error on a 404-response', function(done) {
-            mock.head('/users/pub/images/' + catMd5)
+            mock.filteringPath(signatureCleaner)
+                .head('/users/pub/images/' + catMd5)
                 .reply(404);
 
             client.headImage(catMd5, function(err, res) {
@@ -154,12 +156,23 @@ describe('Imbo.Client', function() {
     });
 
     describe('#deleteImage()', function() {
+        it('should return error if the local image does not exist', function(done) {
+            var filename = __dirname + '/does-not-exist.jpg';
+            client.imageExists(filename, function(err, exists) {
+                assert.equal('File does not exist (' + filename + ')', err);
+                assert.equal(undef, exists);
+                done();
+            });
+        });
+    });
+
+    describe('#deleteImageByIdentifier', function() {
         it('should return an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
                 .intercept('/users/pub/images/' + catMd5, 'DELETE')
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
-            client.deleteImage(catMd5, function(err, res) {
+            client.deleteImageByIdentifier(catMd5, function(err, res) {
                 assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                 done();
             });
@@ -270,7 +283,8 @@ describe('Imbo.Client', function() {
 
     describe('#getMetadata', function() {
         it('should return an object of key => value data', function(done) {
-            mock.get('/users/pub/images/' + catMd5 + '/meta')
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub/images/' + catMd5 + '/meta')
                 .reply(200, JSON.stringify({ 'foo': 'bar' }));
 
             client.getMetadata(catMd5, function(err, meta, res) {
@@ -282,7 +296,8 @@ describe('Imbo.Client', function() {
         });
 
         it('should return an error if the identifier does not exist', function(done) {
-            mock.get('/users/pub/images/non-existant/meta')
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub/images/non-existant/meta')
                 .reply(404, 'Image not found');
 
             client.getMetadata('non-existant', function(err, body, res) {
