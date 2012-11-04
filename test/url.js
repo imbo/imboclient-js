@@ -78,6 +78,12 @@ describe('Imbo.Url', function() {
         });
     });
 
+    describe('#desaturate', function() {
+        it('should return correct transformation', function() {
+            url.desaturate().toString().should.include('?t[]=desaturate');
+        });
+    });
+
     describe('#flipHorizontally', function() {
         it('should return correct transformation', function() {
             url.flipHorizontally().toString().should.include('?t[]=flipHorizontally');
@@ -134,6 +140,18 @@ describe('Imbo.Url', function() {
 
         it('should allow custom arguments', function() {
             url.thumbnail(150, 100, 'inset').toString().should.include('?t[]=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset&accessToken=930a15483521b195fb86659ddcaddb00b64e9c2de27c84bc4b93ae5a78f50573');
+        });
+    });
+
+    describe('#transpose', function() {
+        it('should return correct transformation', function() {
+            url.transpose().toString().should.include('?t[]=transpose');
+        });
+    });
+
+    describe('#transverse', function() {
+        it('should return correct transformation', function() {
+            url.transverse().toString().should.include('?t[]=transverse');
         });
     });
 
