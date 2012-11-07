@@ -10,12 +10,12 @@ var client = new Imbo.Client(['http://imbo.somehost.com'], 'publicKey', 'private
 // Path to local image
 var path = '/path/to/image.png';
 
-client.addImage(path, function(err, req, data) {
+client.addImage(path, function(err, imageIdentifier, data) {
     if (err) {
         console.log('Something went wrong!', err);
     } else {
-        console.log('Image uploaded! Identifier: ' + data.imageIdentifier);
-        console.log('Url: ' + client.getImageUrl(data.imageIdentifier).thumbnail(100, 100).jpg());
+        console.log('Image uploaded! Identifier: ' + imageIdentifier);
+        console.log('Url: ' + client.getImageUrl(imageIdentifier).thumbnail(100, 100).jpg());
     }
 });
 ```
