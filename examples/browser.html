@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <title>Imbo browser example</title>
+        <link href="demo-resources/bootstrap-combined.min.css" rel="stylesheet">
+    </head>
+    <body>
+
+        <div class="container">
+
+            <form id="imbo-setup" method="post">
+                <h2>Imbo browser example</h2>
+
+                <input type="text" class="input-block-level" placeholder="http://some.host/imbo" name="url">
+                <input type="text" class="input-block-level" placeholder="Public key" name="pubkey">
+                <input type="text" class="input-block-level" placeholder="Private key" name="privkey">
+
+                <label class="checkbox">
+                    <input type="checkbox" value="remember-me" name="remember" checked> Remember
+                </label>
+                <button class="btn btn-large btn-primary" type="submit">Set up</button>
+            </form>
+
+            <form id="imbo-demo" class="hiddena">
+                <h2>Imbo browser example</h2>
+
+                <p>Pick a file to upload:</p>
+                <input type="file" id="file-picker">
+
+                <div id="result"></div>
+                <div id="controls">
+
+                </div>
+            </form>
+        </div>
+
+        <script src="../dist/imbo.js"></script>
+        <script src="demo-resources/zepto.min.js"></script>
+        <script src="demo-resources/browser-demo.js"></script>
+    </body>
+</html>

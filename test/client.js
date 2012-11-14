@@ -285,7 +285,7 @@ describe('Imbo.Client', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images/' + catMd5 + '/meta')
-                .reply(200, JSON.stringify({ 'foo': 'bar' }));
+                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
 
             client.getMetadata(catMd5, function(err, meta, res) {
                 assert.equal(undef, err);
