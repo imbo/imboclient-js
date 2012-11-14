@@ -121,10 +121,11 @@ if (typeof module !== 'undefined') {
             method = method.toUpperCase();
             if (!callback && (data.complete || typeof data === 'function')) {
                 callback = data;
+                data = null;
             }
 
             var jsonRequest = (data && data.constructor && data.constructor.name == 'Object');
-            var reqHeaders  = (method == 'PUT') ? Imbo.Compat.getPutHeaders() : headers;
+            var reqHeaders  = (method == 'PUT') ? Imbo.Compat.getPutHeaders(data ? data.length : 0) : headers;
 
             if (jsonRequest) {
                 reqHeaders['Content-Type'] = 'application/json';
@@ -201,7 +202,10 @@ if (typeof module !== 'undefined') {
             for (var key in headers) {
                 putHeaders[key] = headers[key];
             }
-            putHeaders['Content-Length'] = length;
+
+            if (length) {
+                putHeaders['Content-Length'] = length;
+            }
             return putHeaders;
         }
     };
