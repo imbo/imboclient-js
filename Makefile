@@ -2,7 +2,7 @@ MOCHA_OPTS =
 REPORTER = spec
 BROWSER_FILES = lib/browser.js lib/compat.js lib/url.js lib/client.js
 
-full: test test-cov min
+full: test min
 
 check: test
 
