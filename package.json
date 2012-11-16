@@ -18,7 +18,8 @@
     "devDependencies" : {
         "mocha" : "*",
         "nock" : "*",
-        "should": "*"
+        "should": "*",
+        "uglify-js": "*"
     },
     "scripts" : {
         "test" : "make test"

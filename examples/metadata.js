@@ -1,6 +1,6 @@
 /**
  * This example will do the following:
- * 
+ *
  *  - Instantiates an instance of the Imbo client
  *  - Checks if the target image exists on the server
  *  - Adds some metadata to the image
