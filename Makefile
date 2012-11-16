@@ -1,7 +1,15 @@
-MOCHA_OPTS = 
+MOCHA_OPTS =
 REPORTER = spec
 
+full: test min
+
 check: test
+
+build:
+	node build-browser.js
+
+min: build
+	./node_modules/.bin/uglifyjs dist/imbo.browser.js > dist/imbo.browser.min.js
 
 test: test-unit
 

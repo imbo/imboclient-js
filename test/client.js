@@ -268,7 +268,7 @@ describe('Imbo.Client', function() {
                     return '*';
                 })
                 .put('/users/pub/images/' + catMd5, '*')
-                .reply(201, 'Created', { 'X-Imbo-Imageidentifier': catMd5 });
+                .reply(201, { imageIdentifier: catMd5 }, { 'X-Imbo-Imageidentifier': catMd5, 'Content-Type': 'application/json' });
 
             client.addImage(__dirname + '/cat.jpg', function(err, imageIdentifier, response) {
                 assert.equal(undef, err);
@@ -285,7 +285,7 @@ describe('Imbo.Client', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images/' + catMd5 + '/meta')
-                .reply(200, JSON.stringify({ 'foo': 'bar' }));
+                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
 
             client.getMetadata(catMd5, function(err, meta, res) {
                 assert.equal(undef, err);

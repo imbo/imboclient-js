@@ -1,6 +1,6 @@
 /**
  * This very simple example does the following:
- * 
+ *
  *  - Instantiates an instance of the Imbo client
  *  - Checks if the image already exists on the server
  *  - Deletes the image if it exist
@@ -36,7 +36,7 @@ client.imageExists(img, function(err, exists, res) {
 
 	if (exists) {
 		console.log('The image already exists on server. Deleting it.');
-		
+
 		client.deleteImage(img, function(err) {
 			if (err) {
 				return console.log('Could not delete image :(', err);
