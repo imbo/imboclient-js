@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.2.3' };
+Imbo = { Node: false, Version: '0.3.0' };
 
 (function(Imbo, undef) {
 
