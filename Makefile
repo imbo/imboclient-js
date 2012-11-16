@@ -1,16 +1,15 @@
 MOCHA_OPTS =
 REPORTER = spec
-BROWSER_FILES = lib/browser.js lib/compat.js lib/url.js lib/client.js
 
 full: test min
 
 check: test
 
-build: $(BROWSER_FILES)
-	cat $^ > dist/imbo.js
+build:
+	node build-browser.js
 
 min: build
-	./node_modules/.bin/uglifyjs dist/imbo.js > dist/imbo.min.js
+	./node_modules/.bin/uglifyjs dist/imbo.browser.js > dist/imbo.browser.min.js
 
 test: test-unit
 

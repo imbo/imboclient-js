@@ -268,7 +268,7 @@ describe('Imbo.Client', function() {
                     return '*';
                 })
                 .put('/users/pub/images/' + catMd5, '*')
-                .reply(201, 'Created', { 'X-Imbo-Imageidentifier': catMd5 });
+                .reply(201, { imageIdentifier: catMd5 }, { 'X-Imbo-Imageidentifier': catMd5, 'Content-Type': 'application/json' });
 
             client.addImage(__dirname + '/cat.jpg', function(err, imageIdentifier, response) {
                 assert.equal(undef, err);
