@@ -285,6 +285,16 @@ form button[type="submit"] {
     color: #a25d9e;
 }
 
+#imbo-demo {
+    position: relative;
+}
+
+button.back {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+}
+
 @media (max-width:400px){
     body {
         padding: 0;
