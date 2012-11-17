@@ -22,9 +22,9 @@
 
                 <p>You will also need a browser that supports XMLHttpRequest2.</p>
 
-                <input type="text" class="input-block-level" placeholder="http://some.host/imbo" name="url">
-                <input type="text" class="input-block-level" placeholder="Public key" name="pubkey">
-                <input type="text" class="input-block-level" placeholder="Private key" name="privkey">
+                <input type="url" class="input-block-level" placeholder="http://some.host/imbo" name="url" value="http://" autocorrect="off" autocapitalize="off">
+                <input type="text" class="input-block-level" placeholder="Public key" name="pubkey"  autocorrect="off" autocapitalize="off">
+                <input type="text" class="input-block-level" placeholder="Private key" name="privkey"  autocorrect="off" autocapitalize="off">
 
                 <label class="checkbox hidden remember">
                     <input type="checkbox" value="remember-me" name="remember" checked> Remember configuration
@@ -33,6 +33,8 @@
             </form>
 
             <form id="imbo-demo" class="hidden">
+                <button type="button" class="btn btn-primary back">Back</button>
+
                 <h2>Imbo browser example</h2>
 
                 <p>Pick a file to upload:</p>
@@ -68,7 +70,7 @@
             </form>
         </div>
 
-        <script src="../dist/imbo.browser.min.js"></script>
+        <script src="../dist/imbo.browser.js"></script>
         <script src="demo-resources/zepto.min.js"></script>
         <script src="demo-resources/browser-demo.js"></script>
     </body>

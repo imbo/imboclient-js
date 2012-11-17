@@ -29,7 +29,7 @@
 
         // Save the settings to localstorage (if user has agreed)
         if (this.remember.checked && supportsLocalStorage()) {
-            localStorage['url'] = url;
+            localStorage['url'] = url || 'http://';
             localStorage['pubkey'] = pubkey;
             localStorage['privkey'] = privkey;
         }
@@ -42,7 +42,7 @@
     // Load settings from localstorage (if supported)
     if (supportsLocalStorage()) {
         var el = form.get(0);
-        el.url.value = localStorage['url'] || '';
+        el.url.value = localStorage['url'] || 'http://';
         el.pubkey.value = localStorage['pubkey'] || '';
         el.privkey.value = localStorage['privkey'] || '';
     }
@@ -97,8 +97,11 @@
             complete: function() { $(this).remove(); }
         });
 
-        // Check for any XHR errors (200 means image already e)
+        // Check for any XHR errors (200 means image already exists)
         if (err && res && res.headers['X-Imbo-Error-Internalcode'] != 200) {
+            if (err == 'Signature mismatch') {
+                err += ' (probably incorrect private key)';
+            }
             return alert(err);
         }
 
@@ -152,6 +155,10 @@
             complete: onImageUploaded,
             progress: onProgress
         });
+    });
+
+    $('button.back').on('click', function() {
+        $('#imbo-setup, #imbo-demo').toggleClass('hidden');
     });
 
 })(Zepto);

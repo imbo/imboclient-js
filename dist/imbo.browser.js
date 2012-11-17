@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.0' };
+Imbo = { Node: false, Version: '0.3.1' };
 
 (function(Imbo, undef) {
 
@@ -34,16 +34,26 @@ Imbo = { Node: false, Version: '0.3.0' };
     if (typeof XMLHttpRequest.prototype.sendAsBinary !== 'function') {
         XMLHttpRequest.prototype.sendAsBinary = function(text) {
             var buffer = Imbo.Browser.getArrayBuffer(text);
-            if (typeof Blob !== 'undefined' && typeof DataView !== 'undefined') {
-                var dataView = new DataView(buffer);
-                this.send(new Blob([dataView]));
-            } else if (typeof Blob !== 'undefined') {
-                this.send(new Blob([buffer]));
-            } else {
+            var data   = null;
+
+            try {
+                if (typeof Blob !== 'undefined' && typeof DataView !== 'undefined') {
+                    var dataView = new DataView(buffer);
+                    data = new Blob([dataView]);
+                } else if (typeof Blob !== 'undefined') {
+                    data = new Blob([buffer]);
+                }
+            } catch (e) {
+                data = null;
+            }
+
+            if (!data) {
                 var bb = new BlobBuilder();
                 bb.append(buffer);
-                this.send(bb.getBlob());
+                data = bb.getBlob();
             }
+
+            this.send(data);
         };
     }
 
@@ -419,8 +429,10 @@ Imbo = { Node: false, Version: '0.3.0' };
     };
 
     var getErrorMessage = function(res) {
-        if (res && res.headers) {
-            return res.headers['x-imbo-error-message'] || res.statusCode;
+        if (res && res.body && res.body.error) {
+            return res.body.error.message;
+        } else if (res && res.headers) {
+            return res.headers['X-Imbo-Error-Internalcode'] || res.statusCode;
         } else if (res) {
             return res;
         }
