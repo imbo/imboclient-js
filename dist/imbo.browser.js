@@ -34,8 +34,6 @@ Imbo = { Node: false, Version: '0.3.1' };
     if (typeof XMLHttpRequest.prototype.sendAsBinary !== 'function') {
         XMLHttpRequest.prototype.sendAsBinary = function(text) {
             var buffer = Imbo.Browser.getArrayBuffer(text);
-            console.log('Buffer: ' + JSON.stringify(buffer));
-            console.log('BlobBuilder: ' + (window.BlobBuilder ? 'yes' : 'no'));
             var data   = null;
 
             try {
