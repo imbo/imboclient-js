@@ -133,6 +133,20 @@ describe('Imbo.Url', function() {
         });
     });
 
+    describe('#sepia', function() {
+        it('should return correct transformation', function() {
+            url.sepia(90).toString().should.include('?t[]=sepia%3Athreshold%3D90&accessToken=15f821f1ee9f06b5be9b595898aa272eb4cac72244c241e6a4d38fc21fce6e54');
+        });
+
+        it('should handle non-integers correctly', function() {
+            url.sepia('40').toString().should.include('?t[]=sepia%3Athreshold%3D40&accessToken=07eb6a860f07af4b05ecfaa7ae8c0688e4af7528a435b03863ee336e312f1d3c');
+        });
+
+        it('should add default parameters if missing', function() {
+            url.sepia().toString().should.include('t[]=sepia%3Athreshold%3D80&accessToken=2dcc06e9dd30e192aa8a43e48bbe563791c210cc841fc13052d9691da9157c68');
+        });
+    });
+
     describe('#thumbnail', function() {
         it('should use default arguments if none are given', function() {
             url.thumbnail().toString().should.include('?t[]=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound&accessToken=dacfca5b7f2e309a6fa57330bcf3365ce1d183e54aaf8197a20ef7528766e7b9');
