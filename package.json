@@ -1,7 +1,7 @@
 {
     "name" : "imbo-client",
     "description" : "An Imbo client for node.js and recent browsers",
-    "version" : "0.3.1",
+    "version" : "0.3.2",
     "author" : "Espen Hovlandsdal <rexxars@gmail.com>",
     "contributors" : [],
     "repository" : {
