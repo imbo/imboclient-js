@@ -353,6 +353,11 @@ Imbo = { Node: false, Version: '0.3.1' };
         return this.append('rotate:angle=' + angle + ',bg=' + bg);
     };
 
+    ImboUrl.prototype.sepia = function(threshold) {
+        threshold = parseInt(threshold, 10);
+        return this.append('sepia:threshold=' + (threshold ? threshold : 80));
+    };
+
     ImboUrl.prototype.thumbnail = function(width, height, fit) {
         return this.append('thumbnail:width=' + (width || 50) + ',height=' + (height || 50) + ',fit=' + (fit || 'outbound'));
     };
