@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.2' };
+Imbo = { Node: false, Version: '0.3.3' };
 
 (function(Imbo, undef) {
 
@@ -399,7 +399,9 @@ Imbo = { Node: false, Version: '0.3.2' };
     };
 
     ImboUrl.prototype.getUrl = function() {
-        var url   = this.baseUrl + '/users/' + this.publicKey + '/images/' + this.imageIdentifier + this.path;
+        var url = this.baseUrl + '/users/' + this.publicKey + '/images/' + (this.imageIdentifier || '') + this.path;
+        url = url.replace(/\/$/, '');
+
         var qs    = this.getQueryString();
         if (qs.length) {
             url += '?' + qs;
@@ -459,6 +461,10 @@ Imbo = { Node: false, Version: '0.3.2' };
     ImboClient.prototype.getImageUrl = function(imageIdentifier) {
         var host = this.getHostForImageIdentifier(imageIdentifier);
         return new Imbo.Url(host, this.options.publicKey, this.options.privateKey, imageIdentifier);
+    };
+
+    ImboClient.prototype.getImagesUrl = function() {
+        return this.getResourceUrl();
     };
 
     ImboClient.prototype.getResourceUrl = function(resourceIdentifier, path) {

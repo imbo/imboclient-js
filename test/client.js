@@ -48,6 +48,18 @@ describe('Imbo.Client', function() {
         });
     });
 
+    describe('#getImagesUrl', function() {
+        it('should return a ImboUrl-instance', function() {
+            var url = client.getImagesUrl();
+            assert.equal(true, url instanceof Imbo.Url, 'getImagesUrl did not return instance of ImboUrl');
+        });
+
+        it('should return the expected URL-string', function() {
+            var url = client.getImagesUrl().toString();
+            assert.equal('http://imbo/users/pub/images?accessToken=8b3a122984a9200c9d1a9cfa9f377aa2977e077b07398dc6c4bf574afabff851', url);
+        });
+    });
+
     describe('#generateSignature', function() {
         it('should generate a valid signature', function() {
             var sig;
