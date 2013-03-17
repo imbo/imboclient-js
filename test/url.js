@@ -110,6 +110,20 @@ describe('Imbo.Url', function() {
         });
     });
 
+    describe('#maxSize', function() {
+        it('should return correct transformation', function() {
+            url.maxSize(320, 240).toString().should.include('?t[]=maxSize%3Awidth%3D320%2Cheight%3D240&accessToken=8b7e7f654a06c427285671c174349180686a6261aaf705b06bfe282e8b0a3b93');
+        });
+
+        it('should handle being passed only a width', function() {
+            url.maxSize(320).toString().should.include('?t[]=maxSize%3Awidth%3D320&accessToken=048eb874b111eafd3ed2ed8a858ac6e8a9f9835ce32483f1b3142ab3713a6c1f');
+        });
+
+        it('should handle being passed only a height', function() {
+            url.maxSize(null, 240).toString().should.include('?t[]=maxSize%3Aheight%3D240&accessToken=ce5f0c5faaab14157b7a1878cba765742e9ef78027bf3b720469e84f0e6fec49');
+        });
+    });
+
     describe('#rotate', function() {
         it('should return an unmodified url if angle is not a number', function() {
             var original = url.toString();
