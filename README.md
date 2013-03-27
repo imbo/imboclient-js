@@ -1,7 +1,7 @@
-# Node.js client for imbo
-A [node.js](http://nodejs.org/) client for [imbo](https://github.com/imbo/imbo).
+# Javascript client for imbo
+A javascript (browser/[node.js](http://nodejs.org/)) client for [imbo](https://github.com/imbo/imbo).
 
-## Basic usage
+## Basic usage (node.js)
 ```javascript
 var Imbo = require('imbo');
 
