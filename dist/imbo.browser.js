@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.3' };
+Imbo = { Node: false, Version: '0.3.5' };
 
 (function(Imbo, undef) {
 
@@ -108,6 +108,18 @@ Imbo = { Node: false, Version: '0.3.3' };
         xhr.send(null);
     };
 
+    Imbo.Browser.EtagCache = {
+        cache: {},
+
+        get: function(url) {
+            return Imbo.Browser.EtagCache[url];
+        },
+
+        put: function(url, etag) {
+            Imbo.Browser.EtagCache[url] = etag;
+        }
+    };
+
 })(Imbo);
 // Compatability layer for browsers
 
@@ -161,19 +173,26 @@ Imbo = { Node: false, Version: '0.3.3' };
                 data = JSON.stringify(data);
             }
 
-            if (Imbo.Node) {
-                
-            }
+            
 
             // Browser environment
-            var xhr = new XMLHttpRequest();
+            var xhr = new XMLHttpRequest(), etag;
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status !== 0 && onComplete) {
+                    etag = xhr.getResponseHeader('etag');
+                    etag && Imbo.Browser.EtagCache.put(uri, etag);
+
                     onComplete(undef, Imbo.Compat.requestDone(xhr, jsonRequest));
                 }
             };
             xhr.open(method, uri, true);
             xhr.setRequestHeader('Accept', headers.Accept);
+
+            var etag = Imbo.Browser.EtagCache.get(uri);
+            if (method == 'GET' && etag) {
+                xhr.setRequestHeader('If-None-Match', etag);
+            }
+
             xhr.onerror = function() {
                 onComplete('XMLHttpRequest failed - CORS disabled?');
             };
@@ -262,14 +281,15 @@ Imbo = { Node: false, Version: '0.3.3' };
     /**
      * Imbo URL helper
      */
-    function ImboUrl(baseUrl, publicKey, privateKey, imageIdentifier, path) {
+    var ImboUrl = function(baseUrl, publicKey, privateKey, imageIdentifier, path, queryString) {
         this.transformations = [];
         this.baseUrl = baseUrl;
         this.publicKey = publicKey;
-        this.imageIdentifier = imageIdentifier;
         this.privateKey = privateKey;
+        this.imageIdentifier = imageIdentifier || '';
         this.path = path || '';
-    }
+        this.queryString = queryString;
+    };
 
     ImboUrl.prototype.border = function(color, width, height) {
         color  = (color || '000000').replace(/^#/, '');
@@ -386,11 +406,12 @@ Imbo = { Node: false, Version: '0.3.3' };
     };
 
     ImboUrl.prototype.getQueryString = function() {
-        var query = '';
+        var query = this.queryString || '';
         if (this.transformations.length) {
             // We have some transformations. Generate a transformation key that will be sent to the
             // server so the server can verify if the transformations are valid or not.
-            query = 't[]=' + this.transformations.reduce(function(query, element) {
+            query += query.length ? '&' : '';
+            query += 't[]=' + this.transformations.reduce(function(query, element) {
                 return query + '&t[]=' + element;
             });
         }
@@ -399,17 +420,21 @@ Imbo = { Node: false, Version: '0.3.3' };
     };
 
     ImboUrl.prototype.getUrl = function() {
-        var url = this.baseUrl + '/users/' + this.publicKey + '/images/' + (this.imageIdentifier || '') + this.path;
-        url = url.replace(/\/$/, '');
+        var url = this.baseUrl + '/users/' + this.publicKey;
+        if (this.imageIdentifier || this.path) {
+            url = url + '/images/' + this.imageIdentifier + this.path;
+        }
 
-        var qs    = this.getQueryString();
+        url = url.replace(/\/+$/, '');
+
+        var qs = this.getQueryString();
         if (qs.length) {
             url += '?' + qs;
         }
 
         var token = this.getAccessToken(url, this.privateKey);
 
-        return url + (qs.length ? '&' : '?') + 'accessToken=' + token;
+        return url + (url.indexOf('?') > -1 ? '&' : '?') + 'accessToken=' + token;
     };
 
     ImboUrl.prototype.toString = function() {
@@ -422,6 +447,96 @@ Imbo = { Node: false, Version: '0.3.3' };
 
     Imbo.Url = ImboUrl;
     return ImboUrl;
+})(typeof Imbo !== 'undefined' ? Imbo : {});
+(function(Imbo, undef) {
+
+    var ImboQuery = function() {
+        this.values = {
+            page: 1,
+            num: 20,
+            metadata: false,
+            query: null,
+            from: null,
+            to: null
+        };
+    };
+
+    ImboQuery.prototype.page = function(val) {
+        if (!val) { return this.values.page; }
+        this.values.page = val;
+        return this;
+    };
+
+    ImboQuery.prototype.num = function(val) {
+        if (!val) { return this.values.num; }
+        this.values.num = val;
+        return this;
+    };
+
+    ImboQuery.prototype.limit = ImboQuery.prototype.num;
+
+    ImboQuery.prototype.metadata = function(val) {
+        if (typeof val === 'undefined') { return this.values.metadata; }
+        this.values.metadata = !!val;
+        return this;
+    };
+
+    ImboQuery.prototype.query = function(val) {
+        if (!val) { return this.values.query; }
+        this.values.query = val;
+        return this;
+    };
+
+    ImboQuery.prototype.from = function(val) {
+        if (!val) { return this.values.from; }
+        this.values.from = val;
+        return this;
+    };
+
+    ImboQuery.prototype.to = function(val) {
+        if (!val) { return this.values.to; }
+        this.values.to = val;
+        return this;
+    };
+
+    ImboQuery.prototype.toQueryString = function() {
+        // Retrieve query parameters, reduce params down to non-empty values
+        var params = {}, keys = ['page', 'num', 'metadata', 'query', 'from', 'to'];
+        for (var i = 0; i < keys.length; i++) {
+            if (!!this.values[keys[i]]) {
+                params[keys[i]] = this.values[keys[i]];
+            }
+        }
+
+        // JSON-encode metadata query, if present
+        if (params.query) {
+            params.query = JSON.stringify(params.query);
+        }
+
+        // Get timestamps from dates
+        if (params.from) {
+            params.from = Math.floor(params.from.getTime() / 1000);
+        }
+        if (params.to) {
+            params.to = Math.floor(params.to.getTime() / 1000);
+        }
+
+        // Build query string
+        var parts = [], key;
+        for (key in params) {
+            parts.push(key + '=' + encodeURIComponent(params[key]));
+        }
+        return parts.join('&');
+    };
+
+    ImboQuery.prototype.toString = ImboQuery.prototype.toQueryString;
+
+    if (typeof module !== 'undefined') {
+        module.exports = ImboQuery;
+    }
+
+    Imbo.Query = ImboQuery;
+    return ImboQuery;
 })(typeof Imbo !== 'undefined' ? Imbo : {});
 
 
@@ -463,12 +578,23 @@ Imbo = { Node: false, Version: '0.3.3' };
         return new Imbo.Url(host, this.options.publicKey, this.options.privateKey, imageIdentifier);
     };
 
-    ImboClient.prototype.getImagesUrl = function() {
+    ImboClient.prototype.getImagesUrl = function(query) {
+        return this.getResourceUrl('', '/', query ? query.toString() : null);
+    };
+
+    ImboClient.prototype.getUserUrl = function() {
         return this.getResourceUrl();
     };
 
-    ImboClient.prototype.getResourceUrl = function(resourceIdentifier, path) {
-        return new Imbo.Url(this.options.hosts[0], this.options.publicKey, this.options.privateKey, resourceIdentifier, path);
+    ImboClient.prototype.getResourceUrl = function(resourceIdentifier, path, query) {
+        return new Imbo.Url(
+            this.options.hosts[0],
+            this.options.publicKey,
+            this.options.privateKey,
+            resourceIdentifier,
+            path,
+            query
+        );
     };
 
     ImboClient.prototype.getSignedResourceUrl = function(method, url, date) {
@@ -517,7 +643,8 @@ Imbo = { Node: false, Version: '0.3.3' };
     /**
      * Image operations
      */
-    ImboClient.prototype.headImage = function(imageIdentifier, callback) {
+    ImboClient.prototype.headImage = function(imageIdentifier, cb) {
+        var callback = cb || function() {};
         var url = this.getResourceUrl(imageIdentifier), undef;
 
         Imbo.Compat.request('HEAD', url.toString(), function(err, res) {
@@ -530,8 +657,8 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.deleteImage = function(imgPath, callback) {
-        var self = this;
+    ImboClient.prototype.deleteImage = function(imgPath, cb) {
+        var self = this, callback = cb || function() {};
         self.getImageIdentifier(imgPath, function(err, imageIdentifier) {
             if (err) {
                 return callback(err);
@@ -541,7 +668,8 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.deleteImageByIdentifier = function(imageIdentifier, callback) {
+    ImboClient.prototype.deleteImageByIdentifier = function(imageIdentifier, cb) {
+        var callback = cb || function() {};
         var url = this.getSignedResourceUrl('DELETE', this.getResourceUrl(imageIdentifier));
 
         Imbo.Compat.request('DELETE', url, function(err, res) {
@@ -578,7 +706,8 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.addImageFromBlob = function(blob, callback) {
+    ImboClient.prototype.addImageFromBlob = function(blob, cb) {
+        var callback = cb || function() {};
         var self = this, onComplete = callback.complete || callback;
         var start = Date.now();
         self.getImageIdentifierFromString(blob, function(err, imageIdentifier) {
@@ -609,11 +738,11 @@ Imbo = { Node: false, Version: '0.3.3' };
     /**
      * Add a new image to the server (from filesystem)
      *
-     * @param {string|File}  path     Path to the local image, or an instance of File
-     * @param {Function}     callback Function to call when image has been uploaded
+     * @param {string|File}  path  Path to the local image, or an instance of File
+     * @param {Function}     cb    Function to call when image has been uploaded
      */
-    ImboClient.prototype.addImage = function(path, callback) {
-        var self = this;
+    ImboClient.prototype.addImage = function(path, cb) {
+        var self = this, callback = cb || function() {};
         Imbo.Compat.getContents(path, function(err, data) {
             if (err) {
                 return callback(err);
@@ -623,8 +752,8 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.addImageFromUrl = function(url, callback) {
-        var self = this;
+    ImboClient.prototype.addImageFromUrl = function(url, cb) {
+        var self = this, callback = cb || function() {};
         Imbo.Compat.getContentsFromUrl(url, function(err, data) {
             if (err) {
                 return callback(err);
@@ -635,10 +764,26 @@ Imbo = { Node: false, Version: '0.3.3' };
     };
 
     /**
-     * Metadata methods
+     * Fetch information for a given user/public key
      */
-    ImboClient.prototype.getMetadata = function(imageIdentifier, callback) {
-        var url = this.getResourceUrl(imageIdentifier, '/meta');
+    ImboClient.prototype.getUserInfo = function(callback) {
+        Imbo.Compat.request('GET', this.getUserUrl().toString(), function(err, res) {
+            if (err || (res && res.statusCode != 200)) {
+                return callback(err || getErrorMessage(res), null, res);
+            }
+
+            callback(undef, res.body, res);
+        });
+    };
+
+    /**
+     * Fetch images
+     */
+    ImboClient.prototype.getImages = function(callback, query) {
+        // Build the complete URL
+        var url = this.getImagesUrl(query);
+
+        // Fetch the response
         Imbo.Compat.request('GET', url.toString(), function(err, res) {
             if (err || (res && res.statusCode != 200)) {
                 return callback(err || getErrorMessage(res), null, res);
@@ -648,8 +793,24 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.deleteMetadata = function(imageIdentifier, callback) {
+    /**
+     * Metadata methods
+     */
+    ImboClient.prototype.getMetadata = function(imageIdentifier, cb) {
+        var url = this.getResourceUrl(imageIdentifier, '/meta');
+        var callback = cb || function() {};
+        Imbo.Compat.request('GET', url.toString(), function(err, res) {
+            if (err || (res && res.statusCode != 200)) {
+                return callback(err || getErrorMessage(res), null, res);
+            }
+
+            callback(undef, res.body, res);
+        });
+    };
+
+    ImboClient.prototype.deleteMetadata = function(imageIdentifier, cb) {
         var url = this.getSignedResourceUrl('DELETE', this.getResourceUrl(imageIdentifier, '/meta'));
+        var callback = cb || function() {};
         Imbo.Compat.request('DELETE', url, function(err, res) {
             if (err || (res && res.statusCode != 200)) {
                 return callback(err || getErrorMessage(res), res);
@@ -659,8 +820,9 @@ Imbo = { Node: false, Version: '0.3.3' };
         });
     };
 
-    ImboClient.prototype.editMetadata = function(imageIdentifier, data, callback) {
+    ImboClient.prototype.editMetadata = function(imageIdentifier, data, cb) {
         var url = this.getSignedResourceUrl('POST', this.getResourceUrl(imageIdentifier, '/meta'));
+        var callback = cb || function() {};
         Imbo.Compat.request('POST', url, data, function(err, res) {
             if (err || (res && res.statusCode != 200 && res.statusCode != 201)) {
                 return callback(err || getErrorMessage(res), res);
