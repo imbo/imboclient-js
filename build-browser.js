@@ -10,6 +10,7 @@ var files = [
     'lib/browser.js',
     'lib/compat.js',
     'lib/url.js',
+    'lib/query.js',
     'lib/client.js'
 ];
 
