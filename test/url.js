@@ -201,6 +201,11 @@ describe('Imbo.Url', function() {
             url.getQueryString().should.equal('');
         });
 
+        it('should be able to construct query with existing params', function() {
+            var u = new Imbo.Url(baseUrl, pub, priv, catMd5, null, 'foo=bar&moo=tools');
+            u.transverse().getQueryString().should.equal('foo=bar&moo=tools&t[]=transverse');
+        });
+
 /*
         it('should include transformation key when there are only convert-transformations', function() {
             //util.puts(url.png().getQueryString().toString());

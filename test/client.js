@@ -44,7 +44,7 @@ describe('Imbo.Client', function() {
 
         it('should return something containing the image identifier', function() {
             var url = client.getImageUrl(catMd5).toString();
-            assert.equal(true, url.indexOf(catMd5) > 0, 'did not contain ' + catMd5);
+            assert.equal(true, url.indexOf(catMd5) > 0, url + ' did not contain ' + catMd5);
         });
     });
 
@@ -57,6 +57,18 @@ describe('Imbo.Client', function() {
         it('should return the expected URL-string', function() {
             var url = client.getImagesUrl().toString();
             assert.equal('http://imbo/users/pub/images?accessToken=8b3a122984a9200c9d1a9cfa9f377aa2977e077b07398dc6c4bf574afabff851', url);
+        });
+    });
+
+    describe('#getUserUrl', function() {
+        it('should return a ImboUrl-instance', function() {
+            var url = client.getUserUrl();
+            assert.equal(true, url instanceof Imbo.Url, 'getUserUrl did not return instance of ImboUrl');
+        });
+
+        it('should return the expected URL-string', function() {
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/pub?accessToken=49d61296bd039ea36cb74597fb8ac51857f7fa8e77a42e72630cf03974abd2be', url);
         });
     });
 
@@ -288,6 +300,34 @@ describe('Imbo.Client', function() {
                 assert.equal(201, response.statusCode);
 
                 mock = nock('http://imbo');
+                done();
+            });
+        });
+    });
+
+    describe('#getUserInfo', function() {
+        it('should return an object of key => value data', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
+
+            client.getUserInfo(function(err, info, res) {
+                assert.equal(undef, err);
+                assert.equal('bar', info.foo);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the user does not exist', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(404, 'Not Found');
+
+            client.getUserInfo(function(err, body, res) {
+                assert.equal(404, err);
+                assert.equal(null, body);
+                assert.equal(404, res.statusCode);
                 done();
             });
         });
