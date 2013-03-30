@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.5' };
+Imbo = { Node: false, Version: '0.3.6' };
 
 (function(Imbo, undef) {
 
@@ -452,12 +452,12 @@ Imbo = { Node: false, Version: '0.3.5' };
 
     var ImboQuery = function() {
         this.values = {
-            page: 1,
-            num: 20,
+            page    : 1,
+            limit   : 20,
             metadata: false,
-            query: null,
-            from: null,
-            to: null
+            query   : null,
+            from    : null,
+            to      : null
         };
     };
 
@@ -467,13 +467,13 @@ Imbo = { Node: false, Version: '0.3.5' };
         return this;
     };
 
-    ImboQuery.prototype.num = function(val) {
-        if (!val) { return this.values.num; }
-        this.values.num = val;
+    ImboQuery.prototype.limit = function(val) {
+        if (!val) { return this.values.limit; }
+        this.values.limit = val;
         return this;
     };
 
-    ImboQuery.prototype.limit = ImboQuery.prototype.num;
+    ImboQuery.prototype.num = ImboQuery.prototype.limit;
 
     ImboQuery.prototype.metadata = function(val) {
         if (typeof val === 'undefined') { return this.values.metadata; }
@@ -501,7 +501,7 @@ Imbo = { Node: false, Version: '0.3.5' };
 
     ImboQuery.prototype.toQueryString = function() {
         // Retrieve query parameters, reduce params down to non-empty values
-        var params = {}, keys = ['page', 'num', 'metadata', 'query', 'from', 'to'];
+        var params = {}, keys = ['page', 'limit', 'metadata', 'query', 'from', 'to'];
         for (var i = 0; i < keys.length; i++) {
             if (!!this.values[keys[i]]) {
                 params[keys[i]] = this.values[keys[i]];
@@ -825,6 +825,18 @@ Imbo = { Node: false, Version: '0.3.5' };
         var callback = cb || function() {};
         Imbo.Compat.request('POST', url, data, function(err, res) {
             if (err || (res && res.statusCode != 200 && res.statusCode != 201)) {
+                return callback(err || getErrorMessage(res), res);
+            }
+
+            callback(undef, res);
+        });
+    };
+
+    ImboClient.prototype.replaceMetadata = function(imageIdentifier, data, cb) {
+        var url = this.getSignedResourceUrl('PUT', this.getResourceUrl(imageIdentifier, '/meta'));
+        var callback = cb || function() {};
+        Imbo.Compat.request('PUT', url, data, function(err, res) {
+            if (err) {
                 return callback(err || getErrorMessage(res), res);
             }
 
