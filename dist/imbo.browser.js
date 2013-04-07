@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.7' };
+Imbo = { Node: false, Version: '0.3.8' };
 
 (function(Imbo, undef) {
 
@@ -110,6 +110,12 @@ Imbo = { Node: false, Version: '0.3.7' };
 
     Imbo.Browser.EtagCache = {
         cache: {},
+
+        purge: function(url) {
+            url = url.replace(/[?&]signature=.*?(&|$)/g, '$1');
+            url = url.replace(/[?&]timestamp=.*?(&|$)/g, '$1');
+            delete Imbo.Browser.EtagCache.cache[url];
+        },
 
         get: function(url) {
             return Imbo.Browser.EtagCache.cache[url];
@@ -255,6 +261,10 @@ Imbo = { Node: false, Version: '0.3.7' };
 
         getContents: function(file, callback) {
             return Imbo.Browser.getContentsFromFile(file, callback);            
+        },
+
+        purgeCache: function(url) {
+            return Imbo.Browser.EtagCache.purge(url);
         }
     };
 
@@ -664,6 +674,7 @@ Imbo = { Node: false, Version: '0.3.7' };
                 return callback(err || getErrorMessage(res), res);
             }
 
+            Imbo.Compat.purgeCache(url);
             callback(undef, res);
         });
     };
@@ -803,6 +814,7 @@ Imbo = { Node: false, Version: '0.3.7' };
                 return callback(err || getErrorMessage(res), res);
             }
 
+            Imbo.Compat.purgeCache(url);
             callback(undef, res);
         });
     };
@@ -815,6 +827,7 @@ Imbo = { Node: false, Version: '0.3.7' };
                 return callback(err || getErrorMessage(res), res);
             }
 
+            Imbo.Compat.purgeCache(url);
             callback(undef, res);
         });
     };
@@ -827,6 +840,7 @@ Imbo = { Node: false, Version: '0.3.7' };
                 return callback(err || getErrorMessage(res), res);
             }
 
+            Imbo.Compat.purgeCache(url);
             callback(undef, res);
         });
     };
