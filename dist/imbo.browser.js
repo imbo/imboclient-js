@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.6' };
+Imbo = { Node: false, Version: '0.3.7' };
 
 (function(Imbo, undef) {
 
@@ -112,18 +112,23 @@ Imbo = { Node: false, Version: '0.3.6' };
         cache: {},
 
         get: function(url) {
-            return Imbo.Browser.EtagCache[url];
+            return Imbo.Browser.EtagCache.cache[url];
         },
 
-        put: function(url, etag) {
-            Imbo.Browser.EtagCache[url] = etag;
+        put: function(url, etag, content) {
+            if (!content) {
+                return;
+            }
+
+            Imbo.Browser.EtagCache.cache[url] = {
+                "tag"    : etag,
+                "content": content
+            };
         }
     };
 
 })(Imbo);
 // Compatability layer for browsers
-
-
 (function(env, undef) {
 
     var headers = {
@@ -133,28 +138,21 @@ Imbo = { Node: false, Version: '0.3.6' };
 
     Imbo.Compat = {
         sha256: function(key, data) {
-            if (Imbo.Node) {
-                return crypto.createHmac('sha256', key).update(data).digest('hex');
-            }
-
             return Imbo.Browser.sha256(key, data);
         },
 
         md5: function(buffer, callback, isString) {
-            // Browser?
-            if (!Imbo.Node) {
-                if (buffer instanceof File) {
-                    return Imbo.Browser.getContentsFromFile(buffer, function(err, data) {
-                        Imbo.Compat.md5(data, callback);
-                    });
-                }
 
-                return callback(undef, Imbo.Browser.md5(buffer), {
-                    size: buffer.length
+            
+            if (buffer instanceof File) {
+                return Imbo.Browser.getContentsFromFile(buffer, function(err, data) {
+                    Imbo.Compat.md5(data, callback);
                 });
             }
 
-            
+            return callback(undef, Imbo.Browser.md5(buffer), {
+                size: buffer.length
+            });
         },
 
         request: function(method, uri, data, callback) {
@@ -173,16 +171,13 @@ Imbo = { Node: false, Version: '0.3.6' };
                 data = JSON.stringify(data);
             }
 
-            
-
-            // Browser environment
-            var xhr = new XMLHttpRequest(), etag;
+            var xhr = new XMLHttpRequest(), etag, getReq = (method == 'GET');
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4 && xhr.status !== 0 && onComplete) {
                     etag = xhr.getResponseHeader('etag');
-                    etag && Imbo.Browser.EtagCache.put(uri, etag);
+                    getReq && etag && Imbo.Browser.EtagCache.put(uri, etag, xhr.responseText);
 
-                    onComplete(undef, Imbo.Compat.requestDone(xhr, jsonRequest));
+                    onComplete(undef, Imbo.Compat.requestDone(xhr, jsonRequest, uri));
                 }
             };
             xhr.open(method, uri, true);
@@ -190,7 +185,7 @@ Imbo = { Node: false, Version: '0.3.6' };
 
             var etag = Imbo.Browser.EtagCache.get(uri);
             if (method == 'GET' && etag) {
-                xhr.setRequestHeader('If-None-Match', etag);
+                xhr.setRequestHeader('If-None-Match', etag.tag);
             }
 
             xhr.onerror = function() {
@@ -210,17 +205,25 @@ Imbo = { Node: false, Version: '0.3.6' };
             }
         },
 
-        requestDone: function(xhr, json) {
-            var resHeaders = {
-                'Content-Type': xhr.getResponseHeader('Content-Type'),
-                'Last-Modified': xhr.getResponseHeader('Last-Modified'),
-                'X-Imbo-Error-Internalcode': xhr.getResponseHeader('X-Imbo-Error-Internalcode')
-            };
+        requestDone: function(xhr, json, uri) {
+            var headers    = xhr.getAllResponseHeaders().split("\n")
+              , resHeaders = {}
+              , i          = headers.length
+              , response   = xhr.responseText
+              , item
+              , pos;
 
-            for (var key in resHeaders) {
-                if (!resHeaders[key]) {
-                    delete resHeaders[key];
-                }
+            while (--i) {
+                item = headers[i].trim();
+                pos  = item.indexOf(':');
+                if (pos == -1) { continue; }
+
+                resHeaders[item.slice(0, pos)] = item.slice(pos + 2);
+            }
+
+            if (xhr.status == 304 && !response.length) {
+                var etag = Imbo.Browser.EtagCache.get(uri);
+                response = etag.content;
             }
 
             if (resHeaders['Content-Type'] == 'application/json') {
@@ -229,7 +232,7 @@ Imbo = { Node: false, Version: '0.3.6' };
 
             return {
                 statusCode: xhr.status,
-                body      : json ? JSON.parse(xhr.responseText) : xhr.responseText,
+                body      : json ? JSON.parse(response) : response,
                 headers   : resHeaders
             };
         },
@@ -247,33 +250,15 @@ Imbo = { Node: false, Version: '0.3.6' };
         },
 
         getContentsFromUrl: function(url, callback) {
-            if (!Imbo.Node) {
-                return Imbo.Browser.getContentsFromUrl(url, callback);
-            }
-
-            
+            return Imbo.Browser.getContentsFromUrl(url, callback);
         },
 
         getContents: function(file, callback) {
-            if (typeof file == 'string' && Imbo.Node) {
-                return fs.readFile(file, 'binary', function(err, data) {
-                    if (err && err.code == 'ENOENT') {
-                        return callback('File does not exist (' + err.path + ')');
-                    }
-
-                    callback(err, data);
-                });
-            } else if (!Imbo.Node) {
-                return Imbo.Browser.getContentsFromFile(file, callback);
-            }
-
-            return callback('getContents() - not sure what to do with the passed file');
+            return Imbo.Browser.getContentsFromFile(file, callback);            
         }
     };
 
-    
-
-})(typeof env === 'undefined' ? null : env);
+    })(typeof env === 'undefined' ? null : env);
 (function(Imbo, undef) {
 
     Imbo.Compat = Imbo.Compat || require('./compat');
@@ -538,8 +523,6 @@ Imbo = { Node: false, Version: '0.3.6' };
     Imbo.Query = ImboQuery;
     return ImboQuery;
 })(typeof Imbo !== 'undefined' ? Imbo : {});
-
-
 (function(Imbo, undef) {
 
     var ImboClient = function(serverUrls, publicKey, privateKey) {
@@ -560,6 +543,10 @@ Imbo = { Node: false, Version: '0.3.6' };
         }
 
         return 'Unknown error';
+    };
+
+    var requestFailed = function(res) {
+        return res && res.statusCode >= 400;;
     };
 
     /**
@@ -673,7 +660,7 @@ Imbo = { Node: false, Version: '0.3.6' };
         var url = this.getSignedResourceUrl('DELETE', this.getResourceUrl(imageIdentifier));
 
         Imbo.Compat.request('DELETE', url, function(err, res) {
-            if (err || (res && res.statusCode != 200)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), res);
             }
 
@@ -768,7 +755,7 @@ Imbo = { Node: false, Version: '0.3.6' };
      */
     ImboClient.prototype.getUserInfo = function(callback) {
         Imbo.Compat.request('GET', this.getUserUrl().toString(), function(err, res) {
-            if (err || (res && res.statusCode != 200)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), null, res);
             }
 
@@ -785,7 +772,7 @@ Imbo = { Node: false, Version: '0.3.6' };
 
         // Fetch the response
         Imbo.Compat.request('GET', url.toString(), function(err, res) {
-            if (err || (res && res.statusCode != 200)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), null, res);
             }
 
@@ -800,7 +787,7 @@ Imbo = { Node: false, Version: '0.3.6' };
         var url = this.getResourceUrl(imageIdentifier, '/meta');
         var callback = cb || function() {};
         Imbo.Compat.request('GET', url.toString(), function(err, res) {
-            if (err || (res && res.statusCode != 200)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), null, res);
             }
 
@@ -812,7 +799,7 @@ Imbo = { Node: false, Version: '0.3.6' };
         var url = this.getSignedResourceUrl('DELETE', this.getResourceUrl(imageIdentifier, '/meta'));
         var callback = cb || function() {};
         Imbo.Compat.request('DELETE', url, function(err, res) {
-            if (err || (res && res.statusCode != 200)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), res);
             }
 
@@ -824,7 +811,7 @@ Imbo = { Node: false, Version: '0.3.6' };
         var url = this.getSignedResourceUrl('POST', this.getResourceUrl(imageIdentifier, '/meta'));
         var callback = cb || function() {};
         Imbo.Compat.request('POST', url, data, function(err, res) {
-            if (err || (res && res.statusCode != 200 && res.statusCode != 201)) {
+            if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), res);
             }
 
@@ -843,8 +830,6 @@ Imbo = { Node: false, Version: '0.3.6' };
             callback(undef, res);
         });
     };
-
-    
 
     Imbo.Client = ImboClient;
     return ImboClient;

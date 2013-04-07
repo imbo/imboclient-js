@@ -21,8 +21,14 @@ for (var i = 0; i < files.length; i++) {
 }
 
 // Remove node-specific parts
-js = js.replace(/\/\/\s+<Node>[\s\S]+?<\/Node>/g, '');
+js = js.replace(/\/\/\s+<Node>[\s\S]+?<\/Node>\s+/g, '');
+
+// Put correct version into the files
 js = js.replace(/%Imbo.Version%/g, version);
+
+// Remove browser-indicators
+js = js.replace(/\s+\/\/\s+<Browser>/g, "\n");
+js = js.replace(/\s+\/\/\s+<\/Browser>\s+/g, "\n");
 
 // Put to filesystem
 fs.writeFileSync(__dirname + '/dist/imbo.browser.js', js, 'utf8');
