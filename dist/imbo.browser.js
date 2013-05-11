@@ -1,6 +1,6 @@
 // browser.js
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.10' };
+Imbo = { Node: false, Version: '0.3.11' };
 
 (function(Imbo, undef) {
 
@@ -706,7 +706,6 @@ Imbo = { Node: false, Version: '0.3.10' };
     ImboClient.prototype.addImageFromBlob = function(blob, cb) {
         var callback = cb || function() {};
         var self = this, onComplete = callback.complete || callback;
-        var start = Date.now();
         self.getImageIdentifierFromString(blob, function(err, imageIdentifier) {
             if (err) {
                 return onComplete(err);
