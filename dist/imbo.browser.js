@@ -1,5 +1,5 @@
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.8' };
+Imbo = { Node: false, Version: '0.3.9' };
 
 (function(Imbo, undef) {
 
@@ -752,6 +752,11 @@ Imbo = { Node: false, Version: '0.3.8' };
 
     ImboClient.prototype.addImageFromUrl = function(url, cb) {
         var self = this, callback = cb || function() {};
+
+        if (url instanceof Imbo.Url) {
+            url = url.toString();
+        }
+
         Imbo.Compat.getContentsFromUrl(url, function(err, data) {
             if (err) {
                 return callback(err);
@@ -848,3 +853,4 @@ Imbo = { Node: false, Version: '0.3.8' };
     Imbo.Client = ImboClient;
     return ImboClient;
 })(Imbo);
+
