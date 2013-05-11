@@ -3,7 +3,7 @@ A javascript (browser/[node.js](http://nodejs.org/)) client for [imbo](https://g
 
 ## Basic usage (node.js)
 ```javascript
-var Imbo = require('imbo');
+var Imbo = require('imbo-client');
 
 var client = new Imbo.Client(['http://imbo.somehost.com'], 'publicKey', 'privateKey');
 
