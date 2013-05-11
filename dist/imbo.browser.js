@@ -1,5 +1,6 @@
+// browser.js
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.9' };
+Imbo = { Node: false, Version: '0.3.10' };
 
 (function(Imbo, undef) {
 
@@ -134,6 +135,8 @@ Imbo = { Node: false, Version: '0.3.9' };
     };
 
 })(Imbo);
+
+// compat.js
 // Compatability layer for browsers
 (function(env, undef) {
 
@@ -149,7 +152,6 @@ Imbo = { Node: false, Version: '0.3.9' };
 
         md5: function(buffer, callback, isString) {
 
-            
             if (buffer instanceof File) {
                 return Imbo.Browser.getContentsFromFile(buffer, function(err, data) {
                     Imbo.Compat.md5(data, callback);
@@ -189,7 +191,7 @@ Imbo = { Node: false, Version: '0.3.9' };
             xhr.open(method, uri, true);
             xhr.setRequestHeader('Accept', headers.Accept);
 
-            var etag = Imbo.Browser.EtagCache.get(uri);
+            etag = Imbo.Browser.EtagCache.get(uri);
             if (method == 'GET' && etag) {
                 xhr.setRequestHeader('If-None-Match', etag.tag);
             }
@@ -260,7 +262,7 @@ Imbo = { Node: false, Version: '0.3.9' };
         },
 
         getContents: function(file, callback) {
-            return Imbo.Browser.getContentsFromFile(file, callback);            
+            return Imbo.Browser.getContentsFromFile(file, callback);
         },
 
         purgeCache: function(url) {
@@ -269,6 +271,9 @@ Imbo = { Node: false, Version: '0.3.9' };
     };
 
     })(typeof env === 'undefined' ? null : env);
+
+
+// url.js
 (function(Imbo, undef) {
 
     Imbo.Compat = Imbo.Compat || require('./compat');
@@ -436,13 +441,10 @@ Imbo = { Node: false, Version: '0.3.9' };
         return this.getUrl();
     };
 
-    if (typeof module !== 'undefined') {
-        module.exports = ImboUrl;
-    }
-
     Imbo.Url = ImboUrl;
-    return ImboUrl;
 })(typeof Imbo !== 'undefined' ? Imbo : {});
+
+// query.js
 (function(Imbo, undef) {
 
     var ImboQuery = function() {
@@ -526,13 +528,10 @@ Imbo = { Node: false, Version: '0.3.9' };
 
     ImboQuery.prototype.toString = ImboQuery.prototype.toQueryString;
 
-    if (typeof module !== 'undefined') {
-        module.exports = ImboQuery;
-    }
-
     Imbo.Query = ImboQuery;
-    return ImboQuery;
 })(typeof Imbo !== 'undefined' ? Imbo : {});
+
+// client.js
 (function(Imbo, undef) {
 
     var ImboClient = function(serverUrls, publicKey, privateKey) {
@@ -556,7 +555,7 @@ Imbo = { Node: false, Version: '0.3.9' };
     };
 
     var requestFailed = function(res) {
-        return res && res.statusCode >= 400;;
+        return res && res.statusCode >= 400;
     };
 
     /**
@@ -851,6 +850,6 @@ Imbo = { Node: false, Version: '0.3.9' };
     };
 
     Imbo.Client = ImboClient;
-    return ImboClient;
 })(Imbo);
+
 

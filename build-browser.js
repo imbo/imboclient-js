@@ -17,7 +17,8 @@ var files = [
 // Concatenate files
 var js = '';
 for (var i = 0; i < files.length; i++) {
-    js += fs.readFileSync(__dirname + '/' + files[i], 'utf8') + "\n";
+    js += '// ' + files[i].replace(/^lib\//, '') + "\n";
+    js += fs.readFileSync(__dirname + '/' + files[i], 'utf8') + "\n\n";
 }
 
 // Remove node-specific parts
