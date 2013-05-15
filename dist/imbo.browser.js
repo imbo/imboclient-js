@@ -1,6 +1,6 @@
 // browser.js
 // Set up a global Imbo-namespace and signify that we're not in Node
-Imbo = { Node: false, Version: '0.3.11' };
+Imbo = { Node: false, Version: '0.3.12' };
 
 (function(Imbo, undef) {
 
@@ -825,7 +825,9 @@ Imbo = { Node: false, Version: '0.3.11' };
     ImboClient.prototype.editMetadata = function(imageIdentifier, data, cb) {
         var url = this.getSignedResourceUrl('POST', this.getResourceUrl(imageIdentifier, '/meta'));
         var callback = cb || function() {};
-        Imbo.Compat.request('POST', url, data, function(err, res) {
+        var meta = typeof data == 'string' ? data : JSON.stringify(data);
+
+        Imbo.Compat.request('POST', url, meta, function(err, res) {
             if (err || requestFailed(res)) {
                 return callback(err || getErrorMessage(res), res);
             }
@@ -838,7 +840,9 @@ Imbo = { Node: false, Version: '0.3.11' };
     ImboClient.prototype.replaceMetadata = function(imageIdentifier, data, cb) {
         var url = this.getSignedResourceUrl('PUT', this.getResourceUrl(imageIdentifier, '/meta'));
         var callback = cb || function() {};
-        Imbo.Compat.request('PUT', url, data, function(err, res) {
+        var meta = typeof data == 'string' ? data : JSON.stringify(data);
+
+        Imbo.Compat.request('PUT', url, meta, function(err, res) {
             if (err) {
                 return callback(err || getErrorMessage(res), res);
             }
