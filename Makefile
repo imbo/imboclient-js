@@ -1,4 +1,4 @@
-MOCHA_OPTS =
+MOCHA_OPTS = test/unit/*.js
 REPORTER = spec
 
 full: test min

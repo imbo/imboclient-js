@@ -1,16 +1,31 @@
+'use strict';
 var through = require('through');
+var mountFolder = function(connect, dir) {
+    return connect.static(require('path').resolve(dir));
+};
 
 module.exports = function(grunt) {
-    'use strict';
+    // load all grunt tasks
+    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
     // Project configuration.
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
 
         watch: {
+            options: {
+                nospawn: false
+            },
+
             browserify: {
-                files: ['lib/**/*.js'],
-                tasks: ['browserify:all'],
+                files: [
+                    'lib/**/*.js',
+                    'test/**/*.js'
+                ],
+                tasks: [
+                    //'browserify:all',
+                    'mochaTest'
+                ],
                 options: {
                     debounceDelay: 500
                 }
@@ -25,6 +40,62 @@ module.exports = function(grunt) {
             build: {
                 src: 'dist/browser-bundle.js',
                 dest: 'dist/browser-bundle.min.js'
+            }
+        },
+
+        connect: {
+            options: {
+                port: 7911,
+                hostname: 'localhost'
+            },
+            test: {
+                options: {
+                    middleware: function (connect) {
+                        return [
+                            mountFolder(connect, '.tmp'),
+                            mountFolder(connect, 'test')
+                        ];
+                    }
+                }
+            }
+        },
+
+        clean: {
+            server: '.tmp'
+        },
+
+        jshint: {
+            options: {
+                jshintrc: '.jshintrc'
+            },
+            all: [
+                'Gruntfile.js',
+                'lib/{,*/}*.js',
+                'test/unit/{,*/}*.js'
+            ]
+        },
+
+        open: {
+            server: {
+                path: 'http://localhost:<%= connect.options.port %>'
+            }
+        },
+
+        mocha: {
+            all: {
+                options: {
+                    run: true,
+                    urls: ['http://localhost:<%= connect.options.port %>/index.html']
+                }
+            }
+        },
+
+        mochaTest: {
+            test: {
+                options: {
+                    reporter: 'spec'
+                },
+                src: ['test/unit/*.js']
             }
         },
 
@@ -52,9 +123,12 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-browserify');
+    grunt.registerTask('test', [
+        'clean:server',
+        'browserify',
+        'connect:test',
+        'mochaTest'
+    ]);
 
     // Default task(s).
     grunt.registerTask('default', [
