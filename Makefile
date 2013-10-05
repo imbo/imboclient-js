@@ -15,14 +15,14 @@ test: test-unit
 
 test-unit:
 	@NODE_ENV=test ./node_modules/.bin/mocha \
+		--require blanket \
 		--reporter $(REPORTER) \
 		$(MOCHA_OPTS)
 
-test-cov: lib-cov
-	@IMBO_COV=1 $(MAKE) -s test REPORTER=html-cov > coverage.html
-	@rm -rf lib-cov
-
-lib-cov:
-	@jscoverage lib lib-cov
+test-cov:
+	@NODE_ENV=test ./node_modules/.bin/mocha \
+		--require blanket \
+		$(MOCHA_OPTS) \
+		-R html-cov > coverage.html
 
 .PHONY: test test-unit

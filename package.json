@@ -1,21 +1,21 @@
 {
-    "name" : "imboclient-js",
-    "description" : "An Imbo client for node.js and recent browsers",
-    "version" : "1.0.0",
-    "author" : "Espen Hovlandsdal <espen@hovlandsdal.com>",
-    "contributors" : [],
-    "repository" : {
-        "type" : "git",
-        "url" : "http://github.com/imbo/imboclient-js"
+    "name": "imboclient-js",
+    "description": "An Imbo client for node.js and recent browsers",
+    "version": "2.0.0-beta",
+    "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
+    "contributors": [],
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/imbo/imboclient-js"
     },
-    "bugs" : {
-        "url" : "http://github.com/imbo/imboclient-js/issues"
+    "bugs": {
+        "url": "http://github.com/imbo/imboclient-js/issues"
     },
-    "dependencies" : {
-        "request" : "~2.25.0",
+    "dependencies": {
+        "request": "~2.25.0",
         "jshashes": "~1.0.4"
     },
-    "devDependencies" : {
+    "devDependencies": {
         "grunt": "~0.4.1",
         "grunt-browserify": "~1.2.1",
         "grunt-contrib-uglify": "~0.2.2",
@@ -27,14 +27,21 @@
         "through": "~2.3.4",
         "matchdep": "~0.1.1",
         "setimmediate": "~1.0.1",
-        "mocha" : "~1.12.0",
-        "nock" : "~0.22.1",
-        "should": "~1.2.2"
+        "mocha": "~1.12.0",
+        "nock": "~0.22.1",
+        "should": "~1.2.2",
+        "blanket": "~1.1.5"
     },
-    "scripts" : {
-        "test" : "make test"
+    "scripts": {
+        "test": "make test",
+        "blanket": {
+            "pattern": "lib",
+            "data-cover-never": "node_modules"
+        }
     },
-    "main" : "index",
-    "engines" : { "node" : ">=0.10.0" },
-    "license" : "MIT"
+    "main": "index",
+    "engines": {
+        "node": ">=0.10.0"
+    },
+    "license": "MIT"
 }
