@@ -2,7 +2,6 @@ var assert    = require('assert')
   , nock      = require('nock')
   , fs        = require('fs')
   , Imbo      = require('../../')
-  , ImboUrl   = require('../../lib/url')
   , errServer = require('../servers').createResetServer()
   , stcServer = require('../servers').createStaticServer()
   , fixtures  = __dirname + '/../fixtures'
@@ -24,8 +23,8 @@ var client, errClient, mock, stcUrl = 'http://localhost:6775';
 
 describe('ImboClient', function() {
     before(function() {
-        client = new Imbo(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv');
-        errClient = new Imbo('http://localhost:6776', 'pub', 'priv');
+        client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv');
+        errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
     });
 
     after(function() {
@@ -82,7 +81,7 @@ describe('ImboClient', function() {
     describe('#getImageUrl', function() {
         it('should return a ImboUrl-instance', function() {
             var url = client.getImageUrl(catMd5);
-            assert.equal(true, url instanceof ImboUrl, 'getImageUrl did not return instance of ImboUrl');
+            assert.equal(true, url instanceof Imbo.Url, 'getImageUrl did not return instance of ImboUrl');
         });
 
         it('should return something containing the image identifier', function() {
@@ -94,7 +93,7 @@ describe('ImboClient', function() {
     describe('#getImagesUrl', function() {
         it('should return a ImboUrl-instance', function() {
             var url = client.getImagesUrl();
-            assert.equal(true, url instanceof ImboUrl, 'getImagesUrl did not return instance of ImboUrl');
+            assert.equal(true, url instanceof Imbo.Url, 'getImagesUrl did not return instance of ImboUrl');
         });
 
         it('should return the expected URL-string', function() {
@@ -106,7 +105,7 @@ describe('ImboClient', function() {
     describe('#getUserUrl', function() {
         it('should return a ImboUrl-instance', function() {
             var url = client.getUserUrl();
-            assert.equal(true, url instanceof ImboUrl, 'getUserUrl did not return instance of ImboUrl');
+            assert.equal(true, url instanceof Imbo.Url, 'getUserUrl did not return instance of ImboUrl');
         });
 
         it('should return the expected URL-string', function() {

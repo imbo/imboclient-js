@@ -9,7 +9,7 @@ describe('Imbo.Url', function() {
     var baseUrl = 'http://imbo'
       , pub = 'pub'
       , priv = 'priv'
-      , url = new Imbo.URL({
+      , url = new Imbo.Url({
           baseUrl: baseUrl,
           publicKey: pub,
           privateKey: priv,
@@ -210,7 +210,7 @@ describe('Imbo.Url', function() {
         });
 
         it('should be able to construct query with existing params', function() {
-            var u = new Imbo.URL({
+            var u = new Imbo.Url({
                 baseUrl: baseUrl,
                 publicKey: pub,
                 privateKey: priv,
@@ -218,7 +218,7 @@ describe('Imbo.Url', function() {
                 queryString: 'foo=bar&moo=tools'
             });
 
-            u.transverse().getQueryString().should.equal('foo=bar&moo=tools&t[]=transverse');
+            u.transverse().flipHorizontally().getQueryString().should.equal('foo=bar&moo=tools&t[]=transverse&t[]=flipHorizontally');
         });
     });
 
