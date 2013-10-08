@@ -23,6 +23,6 @@ test-cov:
 	@NODE_ENV=test ./node_modules/.bin/mocha \
 		--require blanket \
 		$(MOCHA_OPTS) \
-		-R html-cov > coverage.html
+		--reporter html-cov > coverage.html
 
 .PHONY: test test-unit
