@@ -1,13 +1,21 @@
-var Imbo   = require('../')
+var Imbo   = require('../../')
   , assert = require('assert')
   , util   = require('util')
-  , catMd5 = '61da9892205a0d5077a353eb3487e8c8'
   , should = require('should')
-  , undef;
+  , catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 describe('Imbo.Url', function() {
 
-    var baseUrl = 'http://imbo', pub = 'pub', priv = 'priv', url = new Imbo.Url(baseUrl, pub, priv, catMd5);
+    var baseUrl = 'http://imbo'
+      , pub = 'pub'
+      , priv = 'priv'
+      , url = new Imbo.URL({
+          baseUrl: baseUrl,
+          publicKey: pub,
+          privateKey: priv,
+          imageIdentifier: catMd5
+      });
+
     beforeEach(function() {
         url.reset();
     });
@@ -202,23 +210,16 @@ describe('Imbo.Url', function() {
         });
 
         it('should be able to construct query with existing params', function() {
-            var u = new Imbo.Url(baseUrl, pub, priv, catMd5, null, 'foo=bar&moo=tools');
+            var u = new Imbo.URL({
+                baseUrl: baseUrl,
+                publicKey: pub,
+                privateKey: priv,
+                imageIdentifier: catMd5,
+                queryString: 'foo=bar&moo=tools'
+            });
+
             u.transverse().getQueryString().should.equal('foo=bar&moo=tools&t[]=transverse');
         });
-
-/*
-        it('should include transformation key when there are only convert-transformations', function() {
-            //util.puts(url.png().getQueryString().toString());
-            url.png().getQueryString().should.equal('tk=4f4ceaa5d960ac8e795aff1b5bf7b3b2');
-        });
-
-        it('should include transformation key when there are transformations', function() {
-            url.flipHorizontally().getQueryString().should.equal('t[]=flipHorizontally&tk=0b7477773552a0ef6a92aa9b364c47fc');
-        });
-
-        it('should contain transformations in the right order', function() {
-            url.flipHorizontally().thumbnail().getQueryString().should.equal('t[]=flipHorizontally&t[]=thumbnail:width=50,height=50,fit=outbound&tk=07735c3240cbd169db28ba69e9c1db35');
-        });*/
     });
 
     describe('#getUrl', function() {
