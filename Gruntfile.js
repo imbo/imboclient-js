@@ -112,7 +112,7 @@ module.exports = function(grunt) {
                             return through(
                                 function(buf) { data += buf; },
                                 function() {
-                                    this.queue(data.replace(/\.\/node\//, './browser/'));
+                                    this.queue(data.replace(/\.\/node\//g, './browser/'));
                                     this.queue(null);
                                 }
                             );
