@@ -27,11 +27,6 @@ describe('ImboClient', function() {
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
     });
 
-    after(function() {
-        errServer.close();
-        stcServer.close();
-    });
-
     beforeEach(function() {
         mock = nock('http://imbo');
     });
@@ -367,7 +362,7 @@ describe('ImboClient', function() {
                 .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
-                    'X-Imbo-Image-Identifier': catMd5,
+                    'X-Imbo-Imageidentifier': catMd5,
                     'Content-Type': 'application/json' 
                 });
 
@@ -419,7 +414,7 @@ describe('ImboClient', function() {
                 .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
-                    'X-Imbo-Image-Identifier': catMd5,
+                    'X-Imbo-Imageidentifier': catMd5,
                     'Content-Type': 'application/json' 
                 });
 
