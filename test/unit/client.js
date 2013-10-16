@@ -343,7 +343,7 @@ describe('ImboClient', function() {
 
         it('should return an error if the image could not be added', function(done) {
             mock.filteringPath(signatureCleaner)
-                .filteringRequestBody(function(data) { return '*'; })
+                .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -364,7 +364,7 @@ describe('ImboClient', function() {
 
         it('should return an image identifier and an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
-                .filteringRequestBody(function(data) { return '*'; })
+                .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Image-Identifier': catMd5,
@@ -395,7 +395,7 @@ describe('ImboClient', function() {
 
         it('should return an error if the image could not be added', function(done) {
             mock.filteringPath(signatureCleaner)
-                .filteringRequestBody(function(data) { return '*'; })
+                .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -416,7 +416,7 @@ describe('ImboClient', function() {
 
         it('should return an image identifier and an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
-                .filteringRequestBody(function(data) { return '*'; })
+                .filteringRequestBody(bodyCleaner)
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Image-Identifier': catMd5,
