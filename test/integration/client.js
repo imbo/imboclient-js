@@ -8,6 +8,9 @@ var assert    = require('assert')
 
 var stcUrl = 'http://localhost:6775'
   , describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip)
+  , imboHost    = process.env.IMBOCLIENT_INTEGRATION_HOST    || 'http://localhost:9012'
+  , imboPubKey  = process.env.ImboClient_INTEGRATION_PUBKEY  || 'test'
+  , imboPrivKey = process.env.ImboClient_INTEGRATION_PRIVKEY || 'test'
   , client
   , errClient;
 
@@ -17,7 +20,7 @@ describeIntegration('ImboClient (integration)', function() {
     });
     
     beforeEach(function(done) {
-        client = new Imbo.Client(['http://imbo'], 'test', 'test');
+        client = new Imbo.Client([imboHost], imboPubKey, imboPrivKey);
 
         client.deleteImageByIdentifier(catMd5, function() {
             done();
