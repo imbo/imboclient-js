@@ -6,9 +6,12 @@ var assert    = require('assert')
   , fixtures  = __dirname + '/../fixtures'
   , catMd5    = '61da9892205a0d5077a353eb3487e8c8';
 
-var client, errClient, stcUrl = 'http://localhost:6775';
+var stcUrl = 'http://localhost:6775'
+  , describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip)
+  , client
+  , errClient;
 
-describe('ImboClient', function() {
+describeIntegration('ImboClient (integration)', function() {
     before(function() {
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
     });
