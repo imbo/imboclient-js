@@ -13,8 +13,8 @@ before_install:
 services:
   - mongodb
 before_script:
-  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers -vvv"
+  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv"
 after_script:
-  - "imbolauncher/imbolauncher kill-servers -vvv"
+  - "imbolauncher/imbolauncher kill-servers --no-interaction -vvv"
 env:
   - IMBOCLIENT_RUN_INTEGRATION_TESTS=1
