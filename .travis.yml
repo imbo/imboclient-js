@@ -7,6 +7,8 @@ before_install:
   - sudo apt-get install -qq php5-cli
   - php -v
   - curl https://getcomposer.org/installer | php
+  - chmod +x composer.phar
+  - sudo ln -s "$PWD/composer.phar" /usr/local/bin/composer
   - php composer.phar create-project -n imbo/imbolauncher imbolauncher dev-develop
 services:
   - mongodb
