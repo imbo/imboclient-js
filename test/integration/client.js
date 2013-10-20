@@ -17,6 +17,7 @@ var stcUrl = 'http://localhost:6775'
 describeIntegration('ImboClient (integration)', function() {
     before(function() {
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
+        console.log('Using host: ' + imboHost + ' (' + imboPubKey + ' / ' + imboPrivKey + ')');
     });
     
     beforeEach(function(done) {
@@ -39,7 +40,8 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the image could not be added', function(done) {
-            client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier) {
+            client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier, res) {
+                //console.log(res);
                 assert.equal(415, err);
                 assert.equal(null, imageIdentifier);
                 done();
@@ -226,7 +228,7 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            client = new Imbo.Client(['http://imbo'], 'AngLAmgALNFAGLKdmgdAGmkl', 'test');
+            client = new Imbo.Client([imboHost], 'AngLAmgALNFAGLKdmgdAGmkl', 'test');
             client.getUserInfo(function(err, body, res) {
                 assert.equal(404, err);
                 assert.equal(404, res.statusCode);
