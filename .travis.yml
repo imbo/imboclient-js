@@ -4,7 +4,7 @@ node_js:
 before_install:
   - echo 'yes' | sudo add-apt-repository ppa:ondrej/php5
   - sudo apt-get update -qq
-  - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick
+  - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php-pear
   - sudo pecl install mongo
   - php -v
   - curl https://getcomposer.org/installer | php
