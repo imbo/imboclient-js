@@ -6,7 +6,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php5-dev php-pear
   - sudo pecl install mongo
-  - sudo echo "extension=mongo.so" >> /etc/php5/cli/php.ini
+  - echo "extension=mongo.so" | sudo tee /etc/php5/cli/php.ini
   - php -v
   - curl https://getcomposer.org/installer | php
   - chmod +x composer.phar
@@ -15,7 +15,7 @@ before_install:
 services:
   - mongodb
 before_script:
-  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv ; cat /tmp/imbo-servers/0.3.3/httpd.log"
+  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv || cat /tmp/imbo-servers/0.3.3/httpd.log"
 after_script:
   - "imbolauncher/imbolauncher kill-servers --no-interaction -vvv"
 env:
