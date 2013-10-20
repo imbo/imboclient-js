@@ -4,7 +4,7 @@ node_js:
 before_install:
   - echo 'yes' | sudo add-apt-repository ppa:ondrej/php5
   - sudo apt-get update -qq
-  - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php-pear
+  - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php5-dev php-pear
   - sudo pecl install mongo
   - php -v
   - curl https://getcomposer.org/installer | php
@@ -14,7 +14,7 @@ before_install:
 services:
   - mongodb
 before_script:
-  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv"
+  - "imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv ; cat /tmp/imbo-servers/0.3.3/httpd.log"
 after_script:
   - "imbolauncher/imbolauncher kill-servers --no-interaction -vvv"
 env:
