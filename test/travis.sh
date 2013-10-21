@@ -9,7 +9,7 @@ if [ $OUT -eq 0 ];then
 else
     echo "Tests failed, httpd log: "
     cat /tmp/imbo-servers/0.3.3/httpd.log
-    ps -aux | grep php
+    ps aux | grep php
 fi
 
 ./imbolauncher/imbolauncher kill-servers --no-interaction -vvv
