@@ -41,7 +41,6 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should return an error if the image could not be added', function(done) {
             client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier, res) {
-                console.log(res);
                 assert.equal(415, err);
                 assert.equal(null, imageIdentifier);
                 done();
