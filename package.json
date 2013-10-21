@@ -32,7 +32,7 @@
         "blanket": "~1.1.5"
     },
     "scripts": {
-        "test": "make test",
+        "test": "make test ; cat /tmp/imbo-servers/0.3.3/httpd.log",
         "blanket": {
             "pattern": "lib",
             "data-cover-never": "node_modules"
