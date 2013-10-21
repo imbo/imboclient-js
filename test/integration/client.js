@@ -6,9 +6,9 @@ var assert    = require('assert')
   , fixtures  = __dirname + '/../fixtures'
   , catMd5    = '61da9892205a0d5077a353eb3487e8c8';
 
-var stcUrl = 'http://localhost:6775'
+var stcUrl = 'http://127.0.0.1:6775'
   , describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip)
-  , imboHost    = process.env.IMBOCLIENT_INTEGRATION_HOST    || 'http://localhost:9012'
+  , imboHost    = process.env.IMBOCLIENT_INTEGRATION_HOST    || 'http://127.0.0.1:9012'
   , imboPubKey  = process.env.ImboClient_INTEGRATION_PUBKEY  || 'test'
   , imboPrivKey = process.env.ImboClient_INTEGRATION_PRIVKEY || 'test'
   , client
@@ -16,7 +16,7 @@ var stcUrl = 'http://localhost:6775'
 
 describeIntegration('ImboClient (integration)', function() {
     before(function() {
-        errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
+        errClient = new Imbo.Client('http://127.0.0.1:6776', 'pub', 'priv');
         console.log('Using host: ' + imboHost + ' (' + imboPubKey + ' / ' + imboPrivKey + ')');
     });
     

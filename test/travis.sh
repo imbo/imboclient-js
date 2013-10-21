@@ -10,7 +10,7 @@ else
     echo "Tests failed, httpd log: "
     cat /tmp/imbo-servers/0.3.3/httpd.log
     ps aux | grep php
-    curl http://localhost:9012/users/test
+    curl http://127.0.0.1:9012/users/test
 fi
 
 ./imbolauncher/imbolauncher kill-servers --no-interaction -vvv
