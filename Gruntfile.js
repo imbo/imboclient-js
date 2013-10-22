@@ -24,6 +24,7 @@ module.exports = function(grunt) {
                 ],
                 tasks: [
                     'browserify:all',
+                    'uglify',
                     'mochaTest'
                 ],
                 options: {
@@ -126,6 +127,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test', [
         'clean:server',
         'browserify',
+        'uglify',
         'connect:test',
         'mochaTest'
     ]);
