@@ -152,8 +152,8 @@
         $('#file-picker').after(progress);
 
         client.addImage(files[0], {
-            complete: onImageUploaded,
-            progress: onProgress
+            onComplete: onImageUploaded,
+            onProgress: onProgress
         });
     });
 

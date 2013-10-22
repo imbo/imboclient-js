@@ -23,7 +23,7 @@ module.exports = function(grunt) {
                     'test/**/*.js'
                 ],
                 tasks: [
-                    //'browserify:all',
+                    'browserify:all',
                     'mochaTest'
                 ],
                 options: {
@@ -101,7 +101,7 @@ module.exports = function(grunt) {
 
         browserify: {
             all: {
-                src: 'lib/client.js',
+                src: 'index.js',
                 dest: 'dist/browser-bundle.js',
                 options: {
                     'standalone': 'Imbo',

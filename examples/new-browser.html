@@ -73,15 +73,5 @@
         <script src="../dist/browser-bundle.js"></script>
         <script src="demo-resources/zepto.min.js"></script>
         <script src="demo-resources/browser-demo.js"></script>
-
-
-        <script>
-        var client = new Imbo('url', 'pub', 'priv');
-        client.browserTest();
-        var file = $('<input type="file" />').appendTo(document.body);
-        file.on('change', function(e) {
-            client.browserTest(this.files[0]);
-        });
-        </script>
     </body>
 </html>
