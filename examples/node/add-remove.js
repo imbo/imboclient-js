@@ -10,9 +10,9 @@
  */
 
 // Include the essentials (we only use fs for checking for a config-file)
-var Imbo = require('../')
+var Imbo = require('../../')
   , fs   = require('fs')
-  , img  = __dirname + '/../test/fixtures/cat.jpg'
+  , img  = __dirname + '/../../test/fixtures/cat.jpg'
   , config;
 
 try {
