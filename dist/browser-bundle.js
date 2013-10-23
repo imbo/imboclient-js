@@ -1,47 +1,65 @@
 (function(e){if("function"==typeof bootstrap)bootstrap("imbo",e);else if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else if("undefined"!=typeof ses){if(!ses.ok())return;ses.makeImbo=e}else"undefined"!=typeof window?window.Imbo=e():global.Imbo=e()})(function(){var define,ses,bootstrap,module,exports;
 return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
 exports.Client  = require('./lib/client');
 exports.Url     = require('./lib/url');
 exports.Query   = require('./lib/query');
-exports.Version = require('./package.json').version;
+},{"./lib/client":5,"./lib/query":6,"./lib/url":7}],2:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
+'use strict';
 
-},{"./lib/client":5,"./lib/query":6,"./lib/url":7,"./package.json":11}],2:[function(require,module,exports){
 var hashes  = require('jshashes')
   , readers = require('./readers');
 
-(function(undefined) {
-    'use strict';
+module.exports = {
+    sha256: function(key, data) {
+        var sha256 =  new hashes.SHA256();
+        return sha256.hex_hmac(key, data);
+    },
 
-    module.exports = {
-        sha256: function(key, data) {
-            var sha256 =  new hashes.SHA256();
-            return sha256.hex_hmac(key, data);
-        },
-
-        md5: function(buffer, callback, options) {
-            // URL?
-            if (options && options.type === 'url') {
-                return readers.getContentsFromUrl(buffer, function(err, data) {
-                    module.exports.md5(data, callback, { binary: true });
-                });
-            }
-
-            // File instance?
-            if (buffer instanceof window.File) {
-                return readers.getContentsFromFile(buffer, function(err, data) {
-                    module.exports.md5(data, callback, { binary: true });
-                });
-            }
-
-            // String, then?
-            var hasher = new hashes.MD5().setUTF8(!(options && options.binary));
-            return setImmediate(callback, undefined, hasher.hex(buffer));
+    md5: function(buffer, callback, options) {
+        // URL?
+        if (options && options.type === 'url') {
+            return readers.getContentsFromUrl(buffer, function(err, data) {
+                module.exports.md5(data, callback, { binary: true });
+            });
         }
-    };
 
-})();
+        // File instance?
+        if (buffer instanceof window.File) {
+            return readers.getContentsFromFile(buffer, function(err, data) {
+                module.exports.md5(data, callback, { binary: true });
+            });
+        }
 
+        // String, then?
+        var hasher = new hashes.MD5().setUTF8(!(options && options.binary));
+        return setImmediate(callback, undefined, hasher.hex(buffer));
+    }
+};
 },{"./readers":3,"jshashes":9}],3:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
 'use strict';
 
 exports.getContentsFromFile = function(file, callback) {
@@ -65,7 +83,16 @@ exports.getContentsFromUrl = function(url, callback) {
 };
 
 },{}],4:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
 'use strict';
+
 var disallowedHeaders = [
     'User-Agent',
     'Content-Length'
@@ -146,15 +173,19 @@ module.exports = function(options) {
 
 },{}],5:[function(require,module,exports){
 /**
- * Base Imbo client
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
  */
 'use strict';
 
 var ImboUrl = require('./url')
   , crypto  = require('./browser/crypto')
   , request = require('./browser/request')
-  , readers = require('./browser/readers')
-  , version = require('../package.json').version;
+  , readers = require('./browser/readers');
 
 if (typeof window !== 'undefined') {
     // Load setImmediate shim
@@ -320,7 +351,7 @@ ImboClient.prototype.addImageFromBlob = function(blob, callback, source) {
             body   : typeof window !== 'undefined' && source instanceof File ? source : blob,
             headers: {
                 'Accept': 'application/json',
-                'User-Agent': 'imboclient-js ' + version,
+                'User-Agent': 'imboclient-js',
                 'Content-Length': blob.length
             },
             onComplete: function(err, res) {
@@ -440,7 +471,15 @@ ImboClient.prototype.replaceMetadata = function(imageIdentifier, data, callback)
 };
 
 module.exports = ImboClient;
-},{"../package.json":11,"./browser/crypto":2,"./browser/readers":3,"./browser/request":4,"./url":7,"setimmediate":10}],6:[function(require,module,exports){
+},{"./browser/crypto":2,"./browser/readers":3,"./browser/request":4,"./url":7,"setimmediate":10}],6:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
 'use strict';
 
 var ImboQuery = function() {
@@ -525,6 +564,14 @@ ImboQuery.prototype.toString = ImboQuery.prototype.toQueryString;
 module.exports = ImboQuery;
 
 },{}],7:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view the LICENSE file that was
+ * distributed with this source code.
+ */
 'use strict';
 
 var crypto = require('./browser/crypto');
@@ -1681,56 +1728,7 @@ var process=require("__browserify_process"),global=typeof self !== "undefined" ?
     }
 }(typeof global === "object" && global ? global : this));
 
-},{"__browserify_process":8}],11:[function(require,module,exports){
-module.exports={
-    "name": "imboclient-js",
-    "description": "An Imbo client for node.js and recent browsers",
-    "version": "2.0.0-beta",
-    "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
-    "contributors": [],
-    "repository": {
-        "type": "git",
-        "url": "http://github.com/imbo/imboclient-js"
-    },
-    "bugs": {
-        "url": "http://github.com/imbo/imboclient-js/issues"
-    },
-    "dependencies": {
-        "request": "~2.25.0",
-        "jshashes": "~1.0.4"
-    },
-    "devDependencies": {
-        "grunt": "~0.4.1",
-        "grunt-browserify": "~1.2.8",
-        "grunt-contrib-uglify": "~0.2.2",
-        "grunt-contrib-jshint": "~0.6.0",
-        "grunt-contrib-watch": "~0.4.0",
-        "grunt-contrib-connect": "~0.2.0",
-        "grunt-contrib-clean": "~0.4.0",
-        "grunt-mocha-test": "~0.6.2",
-        "through": "~2.3.4",
-        "matchdep": "~0.1.1",
-        "mocha": "~1.12.0",
-        "nock": "~0.22.1",
-        "should": "~1.2.2",
-        "blanket": "~1.1.5",
-        "setimmediate": "~1.0.1"
-    },
-    "scripts": {
-        "test": "make test",
-        "blanket": {
-            "pattern": "lib",
-            "data-cover-never": "node_modules"
-        }
-    },
-    "main": "index",
-    "engines": {
-        "node": ">=0.10.0"
-    },
-    "license": "MIT"
-}
-
-},{}]},{},[1])
+},{"__browserify_process":8}]},{},[1])
 (1)
 });
 ;
