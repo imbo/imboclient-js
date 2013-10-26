@@ -41,6 +41,24 @@ describe('Imbo.Url', function() {
         });
     });
 
+    describe('#canvas', function() {
+        it('should return correct transformation', function() {
+            url.canvas(120, 130).toString().should.include('?t[]=canvas');
+        });
+
+        it('should strip the hash-symbol from colors', function() {
+            url.canvas(120, 130, 'free', 0, 0, '#c00c00').toString().should.include('bg%3Dc00c00');
+        });
+
+        it('should include the mode, if passed', function() {
+            url.canvas(120, 120, 'center').toString().should.include('mode%3Dcenter');
+        });
+
+        it('should include the x and y positions, if passed', function() {
+            url.canvas(130, 130, 'center', 10, 20, '#f00baa').toString().should.include('x%3D10%2Cy%3D20')
+        });
+    });
+
     describe('#compress', function() {
         it('should return correct transformation', function() {
             url.compress(90).toString().should.include('?t[]=compress%3Aquality%3D90&accessToken=e5287cd9eabdbeb3894241c5d58812053d4a06f5e8309c139c26d74889149c17');
