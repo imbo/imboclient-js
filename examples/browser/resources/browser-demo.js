@@ -1,16 +1,19 @@
+/* global Imbo */
 (function($) {
+    'use strict';
 
     $('.host').text(window.location.hostname);
 
     var form = $('#imbo-setup'), client;
-    var hasXhr2 = window.XMLHttpRequest && ('upload' in new XMLHttpRequest());
-    if (!hasXhr2) {
-        return form.html('<h2>Sorry, your browser does not support XMLHttpRequest2 :-(</h2>');
+    try {
+        new Imbo.Client('', '', '');
+    } catch (e) {
+        return form.html('<h2>Sorry! ' + e.message + ' :-(</h2>');
     }
 
     var supportsLocalStorage = function() {
         try {
-            return 'localStorage' in window && window['localStorage'] !== null;
+            return 'localStorage' in window;
         } catch (e) {
             return false;
         }
@@ -20,6 +23,7 @@
         $('.checkbox.remember').removeClass('hidden');
     }
 
+    form.find('[name="url"]').val(window.location.protocol + '//');
     form.on('submit', function(e) {
         e.preventDefault();
 
@@ -29,9 +33,9 @@
 
         // Save the settings to localstorage (if user has agreed)
         if (this.remember.checked && supportsLocalStorage()) {
-            localStorage['url'] = url || 'http://';
-            localStorage['pubkey'] = pubkey;
-            localStorage['privkey'] = privkey;
+            localStorage.url = url || window.location.protocol + '//';
+            localStorage.pubkey = pubkey;
+            localStorage.privkey = privkey;
         }
 
         client = new Imbo.Client(url, pubkey, privkey);
@@ -42,9 +46,9 @@
     // Load settings from localstorage (if supported)
     if (supportsLocalStorage()) {
         var el = form.get(0);
-        el.url.value = localStorage['url'] || 'http://';
-        el.pubkey.value = localStorage['pubkey'] || '';
-        el.privkey.value = localStorage['privkey'] || '';
+        el.url.value = localStorage.url || window.location.protocol + '//';
+        el.pubkey.value = localStorage.pubkey || '';
+        el.privkey.value = localStorage.privkey || '';
     }
 
     // Set up some DOM-elements
@@ -98,11 +102,12 @@
         });
 
         // Check for any XHR errors (200 means image already exists)
-        if (err && res && res.headers['X-Imbo-Error-Internalcode'] != 200) {
-            if (err == 'Signature mismatch') {
+        if (err && res && res.headers['X-Imbo-Error-Internalcode'] !== 200) {
+            if (err === 'Signature mismatch') {
                 err += ' (probably incorrect private key)';
             }
-            return alert(err);
+
+            return window.alert(err);
         }
 
         // Build an Imbo-url
@@ -121,7 +126,7 @@
 
                 url[transformation].apply(url, pass);
 
-                if (transformation == 'reset') {
+                if (transformation === 'reset') {
                     url.maxSize(result.width());
                 }
 
@@ -161,4 +166,4 @@
         $('#imbo-setup, #imbo-demo').toggleClass('hidden');
     });
 
-})(Zepto);
+})(window.Zepto || window.jQuery);

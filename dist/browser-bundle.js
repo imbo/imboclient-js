@@ -11,7 +11,7 @@ return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requi
 exports.Client  = require('./lib/client');
 exports.Url     = require('./lib/url');
 exports.Query   = require('./lib/query');
-},{"./lib/client":7,"./lib/query":8,"./lib/url":9}],2:[function(require,module,exports){
+},{"./lib/client":8,"./lib/query":9,"./lib/url":10}],2:[function(require,module,exports){
 var process=require("__browserify_process");/**
  * This file is part of the imboclient-js package
  *
@@ -52,7 +52,30 @@ module.exports = {
         });
     }
 };
-},{"./md5":3,"./readers":4,"./sha":6,"__browserify_process":10}],3:[function(require,module,exports){
+},{"./md5":4,"./readers":5,"./sha":7,"__browserify_process":11}],3:[function(require,module,exports){
+'use strict';
+
+exports.getUnsupported = function() {
+    var unsupported = [];
+    if (!window.FileReader) {
+        unsupported.push('FileReader');
+    }
+
+    if (!window.ArrayBuffer) {
+        unsupported.push('ArrayBuffer');
+    }
+
+    if (!window.XMLHttpRequest) {
+        unsupported.push('XMLHttpRequest');
+    }
+
+    if (!('upload' in new XMLHttpRequest())) {
+        unsupported.push('XMLHttpRequest2');
+    }
+
+    return unsupported;
+};
+},{}],4:[function(require,module,exports){
 /*jshint bitwise:false*/
 /*global unescape*/
 
@@ -652,7 +675,7 @@ module.exports = {
 
     return SparkMD5;
 }));
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -683,7 +706,7 @@ exports.getContentsFromUrl = function(url, callback) {
     xhr.send(null);
 };
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -772,7 +795,7 @@ module.exports = function(options) {
     xhr.send(options.body);
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * This is based on the following work:
  *
@@ -919,7 +942,7 @@ exports.sha256 = function(string) {
 exports.sha256hmac = function(key, data) {
     return binb2hex(core_hmac_sha256(key, data));
 };
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -930,10 +953,11 @@ exports.sha256hmac = function(key, data) {
  */
 'use strict';
 
-var ImboUrl = require('./url')
-  , crypto  = require('./browser/crypto')
-  , request = require('./browser/request')
-  , readers = require('./browser/readers');
+var ImboUrl  = require('./url')
+  , crypto   = require('./browser/crypto')
+  , request  = require('./browser/request')
+  , readers  = require('./browser/readers')
+  , features = require('./browser/feature-support');
 
 var ImboClient = function(serverUrls, publicKey, privateKey) {
     this.options = {
@@ -941,6 +965,13 @@ var ImboClient = function(serverUrls, publicKey, privateKey) {
         publicKey:  publicKey,
         privateKey: privateKey
     };
+
+    if (typeof window !== 'undefined') {
+        var unsupported = features.getUnsupported();
+        if (unsupported.length) {
+            throw new Error('Browser does not support ' + unsupported.join(', '));
+        }
+    }
 };
 
 /**
@@ -1214,7 +1245,7 @@ ImboClient.prototype.replaceMetadata = function(imageIdentifier, data, callback)
 };
 
 module.exports = ImboClient;
-},{"./browser/crypto":2,"./browser/readers":4,"./browser/request":5,"./url":9}],8:[function(require,module,exports){
+},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":5,"./browser/request":6,"./url":10}],9:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1306,7 +1337,7 @@ ImboQuery.prototype.toString = ImboQuery.prototype.toQueryString;
 
 module.exports = ImboQuery;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1511,7 +1542,7 @@ ImboUrl.prototype.toString = function() {
 
 module.exports = ImboUrl;
 
-},{"./browser/crypto":2}],10:[function(require,module,exports){
+},{"./browser/crypto":2}],11:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
