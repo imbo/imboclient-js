@@ -1,6 +1,6 @@
 # Remaining tasks
 
-- [ ] Test in IE 10
+- [x] Test in IE 10
 - [x] Test in IE 11
 - [x] Test in Opera
 - [x] Test in Safari
