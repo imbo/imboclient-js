@@ -122,7 +122,7 @@
                 var el = $(this)
                   , transformation = el.data('transformation')
                   , args = el.data('args')
-                  , pass = args ? args.split(',') : [];
+                  , pass = args ? (args + '').split(',') : [];
 
                 url[transformation].apply(url, pass);
 
