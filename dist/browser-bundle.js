@@ -22,10 +22,24 @@ var process=require("__browserify_process");/**
  */
 'use strict';
 
+var supportsWebWorkers = function() {
+    if (typeof window.Worker === 'undefined' || typeof window.URL === 'undefined') {
+        return false;
+    }
+
+    try {
+        new Worker(window.URL.createObjectURL(new Blob([''], { type:'text/javascript' })));
+    } catch (e) {
+        return false;
+    }
+
+    return true;
+};
+
 var sha     = require('./sha')
   , md5     = require('./md5.min')
   , readers = require('./readers')
-  , supportsWorkers = typeof window.Worker !== 'undefined'
+  , supportsWorkers = supportsWebWorkers()
   , workerQueue     = []
   , md5Worker;
 
