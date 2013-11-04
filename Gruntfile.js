@@ -117,7 +117,8 @@ module.exports = function(grunt) {
                                     this.queue(null);
                                 }
                             );
-                        }
+                        },
+                        'workerify'
                     ]
                 },
             },

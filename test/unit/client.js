@@ -54,10 +54,10 @@ describe('ImboClient', function() {
         });
     });
 
-    describe('#getImageIdentifierFromString', function() {
+    describe('#getImageIdentifierFromArrayBuffer', function() {
         it('should generate correct md5sum for a normal text string', function(done) {
-            client.getImageIdentifierFromString('pliney-the-elder', function(err, identifier) {
-                assert.ifError(err, 'getImageIdentifierFromString should not give an error on success');
+            client.getImageIdentifierFromArrayBuffer('pliney-the-elder', function(err, identifier) {
+                assert.ifError(err, 'getImageIdentifierFromArrayBuffer should not give an error on success');
                 assert.equal('f755bd139f9026604d4bdd31bf6ee50e', identifier);
                 done();
             });
@@ -65,8 +65,8 @@ describe('ImboClient', function() {
 
         it('should generate correct md5sum for a buffer', function(done) {
             var content = fs.readFileSync(fixtures + '/cat.jpg');
-            client.getImageIdentifierFromString(content, function(err, identifier) {
-                assert.ifError(err, 'getImageIdentifierFromString should not give an error on success');
+            client.getImageIdentifierFromArrayBuffer(content, function(err, identifier) {
+                assert.ifError(err, 'getImageIdentifierFromArrayBuffer should not give an error on success');
                 assert.equal(catMd5, identifier);
                 done();
             });
@@ -363,7 +363,7 @@ describe('ImboClient', function() {
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Imageidentifier': catMd5,
-                    'Content-Type': 'application/json' 
+                    'Content-Type': 'application/json'
                 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, response) {
@@ -415,7 +415,7 @@ describe('ImboClient', function() {
                 .put('/users/pub/images/' + catMd5, '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Imageidentifier': catMd5,
-                    'Content-Type': 'application/json' 
+                    'Content-Type': 'application/json'
                 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, response) {

@@ -1,5 +1,4 @@
 var assert    = require('assert')
-  , fs        = require('fs')
   , Imbo      = require('../../')
   , errServer = require('../servers').createResetServer()
   , stcServer = require('../servers').createStaticServer()
@@ -19,7 +18,7 @@ describeIntegration('ImboClient (integration)', function() {
         errClient = new Imbo.Client('http://127.0.0.1:6776', 'pub', 'priv');
         console.log('Using host: ' + imboHost + ' (' + imboPubKey + ' / ' + imboPrivKey + ')');
     });
-    
+
     beforeEach(function(done) {
         client = new Imbo.Client([imboHost], imboPubKey, imboPrivKey);
 
@@ -40,7 +39,7 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the image could not be added', function(done) {
-            client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier, res) {
+            client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier) {
                 assert.equal(415, err);
                 assert.equal(null, imageIdentifier);
                 done();
@@ -48,7 +47,7 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the server could not be reached', function(done) {
-            errClient.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, res) {
+            errClient.addImage(fixtures + '/cat.jpg', function(err) {
                 assert.ok(err, 'addImage should give error if host is unreachable');
                 done();
             });
@@ -78,7 +77,7 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the server could not be reached', function(done) {
-            errClient.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, res) {
+            errClient.addImage(fixtures + '/cat.jpg', function(err) {
                 assert.ok(err, 'addImage should give error if host is unreachable');
                 done();
             });
