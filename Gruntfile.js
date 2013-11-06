@@ -1,9 +1,5 @@
 'use strict';
 var through = require('through');
-var mountFolder = function(connect, dir) {
-    return connect.static(require('path').resolve(dir));
-};
-
 module.exports = function(grunt) {
     // load all grunt tasks
     require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
@@ -44,27 +40,6 @@ module.exports = function(grunt) {
             }
         },
 
-        connect: {
-            options: {
-                port: 7911,
-                hostname: 'localhost'
-            },
-            test: {
-                options: {
-                    middleware: function (connect) {
-                        return [
-                            mountFolder(connect, '.tmp'),
-                            mountFolder(connect, 'test')
-                        ];
-                    }
-                }
-            }
-        },
-
-        clean: {
-            server: '.tmp'
-        },
-
         jshint: {
             options: {
                 jshintrc: '.jshintrc'
@@ -76,27 +51,25 @@ module.exports = function(grunt) {
             ]
         },
 
-        open: {
-            server: {
-                path: 'http://localhost:<%= connect.options.port %>'
-            }
-        },
+        mochacov: {
+            options: {
+                files: [
+                    'test/unit/*.js',
+                    'test/integration/*.js'
+                ]
+            },
 
-        mocha: {
-            all: {
+            coverage: {
                 options: {
-                    run: true,
-                    urls: ['http://localhost:<%= connect.options.port %>/index.html']
+                    reporter: 'html-cov',
+                    output: 'coverage.html'
                 }
-            }
-        },
+            },
 
-        mochaTest: {
             test: {
                 options: {
                     reporter: 'spec'
-                },
-                src: ['test/unit/*.js']
+                }
             }
         },
 
@@ -126,14 +99,10 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test', [
-        'clean:server',
-        'browserify',
-        'uglify',
-        'connect:test',
-        'mochaTest'
+        'mochacov:test',
+        'mochacov:coverage'
     ]);
 
-    // Default task(s).
     grunt.registerTask('default', [
         'browserify',
         'uglify'

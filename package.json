@@ -1,7 +1,7 @@
 {
     "name": "imboclient-js",
     "description": "An Imbo client for node.js and recent browsers",
-    "version": "2.0.0-beta",
+    "version": "2.0.0",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
@@ -23,6 +23,7 @@
         "grunt-contrib-connect": "~0.2.0",
         "grunt-contrib-clean": "~0.4.0",
         "grunt-mocha-test": "~0.6.2",
+        "grunt-mocha-cov": "~0.0.7",
         "through": "~2.3.4",
         "matchdep": "~0.1.1",
         "mocha": "~1.12.0",
@@ -32,7 +33,7 @@
         "workerify": "~0.2.2"
     },
     "scripts": {
-        "test": "make test",
+        "test": "grunt test",
         "blanket": {
             "pattern": "lib",
             "data-cover-never": "node_modules"
