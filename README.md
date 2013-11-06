@@ -3,11 +3,6 @@ A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
 
 [![Current build Status](https://secure.travis-ci.org/imbo/imboclient-js.png)](http://travis-ci.org/imbo/imboclient-js)
 
-## License
-Copyright (c) 2011-2013, Espen Hovlandsdal <espen@hovlandsdal.com>
-
-Licensed under the MIT License
-
 ## Installation
 imboclient-js can be installed using [npm](https://npmjs.org/):
 
@@ -310,3 +305,8 @@ When using `getImageUrl(imageIdentifier)`, the client will pick one of the URLs 
 
 ## More examples
 Check out the `examples` folder for a few intros on how to use the client.
+
+## License
+Copyright (c) 2011-2013, Espen Hovlandsdal <espen@hovlandsdal.com>
+
+Licensed under the MIT License
