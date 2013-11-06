@@ -130,7 +130,7 @@ client.replaceMetadata(imageIdentifier, metadata, function(err) {
 ### Check if a local image exists on server
 ```javascript
 var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , path = '/path/to/image.jpg;
+  , path = '/path/to/image.jpg';
 
 client.imageExist(path, function(err, exists)) {
     if (err) {
