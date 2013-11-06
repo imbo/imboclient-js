@@ -1,0 +1,23 @@
+{
+    "name": "imboclient",
+    "main": "dist/browser-bundle.js",
+    "version": "2.0.0",
+    "homepage": "https://github.com/imbo/imboclient-js",
+    "authors": [
+        "Espen Hovlandsdal <espen@hovlandsdal.com>"
+    ],
+    "description": "An Imbo client for node.js and modern browsers",
+    "keywords": [
+        "imbo",
+        "image"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests",
+        "examples"
+    ]
+}
