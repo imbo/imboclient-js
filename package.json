@@ -1,5 +1,5 @@
 {
-    "name": "imboclient-js",
+    "name": "imboclient",
     "description": "An Imbo client for node.js and recent browsers",
     "version": "2.0.0",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
