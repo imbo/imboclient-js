@@ -1,7 +1,7 @@
 # Javascript client for Imbo
 A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
 
-[![Current build Status](https://secure.travis-ci.org/imbo/imboclient-js.png)](http://travis-ci.org/imbo/imboclient-js)
+[![Build Status](https://travis-ci.org/imbo/imboclient-js.png)](https://travis-ci.org/imbo/imboclient-js)
 
 ## Installation
 imboclient-js can be installed using [npm](https://npmjs.org/):
