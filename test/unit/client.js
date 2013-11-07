@@ -1,5 +1,6 @@
 var assert    = require('assert')
   , nock      = require('nock')
+  , should    = require('should')
   , fs        = require('fs')
   , Imbo      = require('../../')
   , errServer = require('../servers').createResetServer()
@@ -106,6 +107,18 @@ describe('ImboClient', function() {
         it('should return the expected URL-string', function() {
             var url = client.getUserUrl().toString();
             assert.equal('http://imbo/users/pub?accessToken=49d61296bd039ea36cb74597fb8ac51857f7fa8e77a42e72630cf03974abd2be', url);
+        });
+    });
+
+    describe('#getResourceUrl', function() {
+        it('should return a ImboUrl-instance', function() {
+            var url = client.getResourceUrl('resource', 'path', 'page=2&limit=3');
+            assert.equal(true, url instanceof Imbo.Url, 'getUserUrl did not return instance of ImboUrl');
+        });
+
+        it('should return the expected URL-string', function() {
+            var url = client.getResourceUrl('resource', 'path', 'page=2&limit=3').toString();
+            url.should.include('http://imbo/users/pub/images/resourcepath?page=2&limit=3&accessToken');
         });
     });
 
