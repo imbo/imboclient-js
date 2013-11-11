@@ -1,7 +1,7 @@
 {
     "name": "imboclient",
     "main": "dist/browser-bundle.js",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "homepage": "https://github.com/imbo/imboclient-js",
     "authors": [
         "Espen Hovlandsdal <espen@hovlandsdal.com>"
