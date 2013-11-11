@@ -18,6 +18,10 @@
         "bower_components",
         "test",
         "tests",
-        "examples"
+        "lib",
+        "examples",
+        "Gruntfile.js",
+        "bower.json",
+        "index.js"
     ]
 }
