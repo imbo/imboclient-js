@@ -13,7 +13,7 @@ var signatureCleaner = function(path) {
     return path.replace(/timestamp=[^&]*&?/, '')
                .replace(/signature=[^&]*&?/, '')
                .replace(/accessToken=[^&]*&?/, '')
-               .replace(/\?$/g, '');
+               .replace(/[?&]$/g, '');
 };
 
 var bodyCleaner = function() {
@@ -37,28 +37,28 @@ describe('ImboClient', function() {
     });
 
 
-    describe('#getImageIdentifier', function() {
+    describe('#getImageChecksum', function() {
         it('should return an error if file does not exist', function(done) {
             var filename = __dirname + '/does-not-exist.jpg';
-            client.getImageIdentifier(filename, function(err) {
+            client.getImageChecksum(filename, function(err) {
                 assert.equal('File does not exist (' + filename + ')', err);
                 done();
             });
         });
 
         it('should generate correct md5sum for a file that exists', function(done) {
-            client.getImageIdentifier(fixtures + '/cat.jpg', function(err, identifier) {
-                assert.ifError(err, 'getImageIdentifier should not give an error on success');
+            client.getImageChecksum(fixtures + '/cat.jpg', function(err, identifier) {
+                assert.ifError(err, 'getImageChecksum should not give an error on success');
                 assert.equal(catMd5, identifier);
                 done();
             });
         });
     });
 
-    describe('#getImageIdentifierFromArrayBuffer', function() {
+    describe('#getImageChecksumFromBuffer', function() {
         it('should generate correct md5sum for a normal text string', function(done) {
-            client.getImageIdentifierFromArrayBuffer('pliney-the-elder', function(err, identifier) {
-                assert.ifError(err, 'getImageIdentifierFromArrayBuffer should not give an error on success');
+            client.getImageChecksumFromBuffer('pliney-the-elder', function(err, identifier) {
+                assert.ifError(err, 'getImageChecksumFromBuffer should not give an error on success');
                 assert.equal('f755bd139f9026604d4bdd31bf6ee50e', identifier);
                 done();
             });
@@ -66,8 +66,8 @@ describe('ImboClient', function() {
 
         it('should generate correct md5sum for a buffer', function(done) {
             var content = fs.readFileSync(fixtures + '/cat.jpg');
-            client.getImageIdentifierFromArrayBuffer(content, function(err, identifier) {
-                assert.ifError(err, 'getImageIdentifierFromArrayBuffer should not give an error on success');
+            client.getImageChecksumFromBuffer(content, function(err, identifier) {
+                assert.ifError(err, 'getImageChecksumFromBuffer should not give an error on success');
                 assert.equal(catMd5, identifier);
                 done();
             });
@@ -128,15 +128,15 @@ describe('ImboClient', function() {
             sig = client.generateSignature('GET', '/images', '2012-10-11T15:10:17Z');
             assert.equal(sig, 'fd16a910040350f12df83b2e077aa2afdcd0f4d262e69eb84d3ad3ee1e5a243c');
 
-            sig = client.generateSignature('PUT', '/images/' + catMd5, '2012-10-03T12:43:37Z');
-            assert.equal(sig, '76ae720ada115f6425f2496c8cf38470f90d302fefd6269205efd53695135aac');
+            sig = client.generateSignature('PUT', '/images/' + catMd5 + '/meta', '2012-10-03T12:43:37Z');
+            assert.equal(sig, 'afd4c4de76a95d5ed5c23a908278cab40817012a5a5c750d971177d3cba97bf5');
         });
     });
 
     describe('#getSignedResourceUrl', function() {
         it('should generate a valid, signed resource url', function() {
-            var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5, new Date(1349268217000));
-            assert.equal(url, '/images/' + catMd5 + '?signature=76ae720ada115f6425f2496c8cf38470f90d302fefd6269205efd53695135aac&timestamp=2012-10-03T12%3A43%3A37Z');
+            var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5 + '/meta', new Date(1349268217000));
+            assert.equal(url, '/images/' + catMd5 + '/meta?signature=afd4c4de76a95d5ed5c23a908278cab40817012a5a5c750d971177d3cba97bf5&timestamp=2012-10-03T12%3A43%3A37Z');
         });
     });
 
@@ -234,36 +234,13 @@ describe('ImboClient', function() {
 
     });
 
-    describe('#deleteImage()', function() {
+    describe('#deleteImage', function() {
         it('should return an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
                 .intercept('/users/pub/images/' + catMd5, 'DELETE')
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
-            client.deleteImage(fixtures + '/cat.jpg', function(err, res) {
-                assert.ifError(err, 'Successful delete should not give an error');
-                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
-                done();
-            });
-        });
-
-        it('should return error if the local image does not exist', function(done) {
-            var filename = __dirname + '/does-not-exist.jpg';
-            client.deleteImage(filename, function(err, exists) {
-                assert.equal('File does not exist (' + filename + ')', err);
-                assert.equal(undefined, exists);
-                done();
-            });
-        });
-    });
-
-    describe('#deleteImageByIdentifier', function() {
-        it('should return an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
-                .intercept('/users/pub/images/' + catMd5, 'DELETE')
-                .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
-
-            client.deleteImageByIdentifier(catMd5, function(err, res) {
+            client.deleteImage(catMd5, function(err, res) {
                 assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                 done();
             });
@@ -315,8 +292,10 @@ describe('ImboClient', function() {
 
         it('should return true if the image exists on disk and on server', function(done) {
             mock.filteringPath(signatureCleaner)
-                .head('/users/pub/images/' + catMd5)
-                .reply(200, 'OK');
+                .get('/users/pub/images?page=1&limit=1&checksums[]=' + catMd5)
+                .reply(200, { search: { hits: 1 } }, {
+                    'Content-Type': 'application/json'
+                });
 
             client.imageExists(fixtures + '/cat.jpg', function(err, exists) {
                 assert.ifError(err, 'imageExists should not give error if image exists on disk and server');
@@ -327,8 +306,10 @@ describe('ImboClient', function() {
 
         it('should return false if the image exists on disk but not on server', function(done) {
             mock.filteringPath(signatureCleaner)
-                .head('/users/pub/images/' + catMd5)
-                .reply(404, 'File not found');
+                .get('/users/pub/images?page=1&limit=1&checksums[]=' + catMd5)
+                .reply(200, { search: { hits: 0 } }, {
+                    'Content-Type': 'application/json'
+                });
 
             client.imageExists(fixtures + '/cat.jpg', function(err, exists) {
                 assert.ifError(err, 'imageExists should not give error if the image does not exist on server');
@@ -352,7 +333,7 @@ describe('ImboClient', function() {
         it('should return an error if the image could not be added', function(done) {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
-                .put('/users/pub/images/' + catMd5, '*')
+                .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
 
@@ -364,7 +345,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the server could not be reached', function(done) {
-            errClient.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, res) {
+            errClient.addImage(fixtures + '/cat.jpg', function(err) {
                 assert.ok(err, 'addImage should give error if host is unreachable');
                 done();
             });
@@ -373,7 +354,7 @@ describe('ImboClient', function() {
         it('should return an image identifier and an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
-                .put('/users/pub/images/' + catMd5, '*')
+                .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Imageidentifier': catMd5,
                     'Content-Type': 'application/json'
@@ -390,6 +371,41 @@ describe('ImboClient', function() {
 
     });
 
+    describe('#addImageFromBuffer', function() {
+        it('should return an error if the image could not be added', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .filteringRequestBody(bodyCleaner)
+                .post('/users/pub/images', '*')
+                .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
+
+            var buffer = fs.readFileSync(fixtures + '/cat.jpg');
+            client.addImageFromBuffer(buffer, function(err, imageIdentifier) {
+                assert.equal(400, err);
+                assert.equal(null, imageIdentifier);
+                done();
+            });
+        });
+
+        it('should return an image identifier and an http-response on success', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .filteringRequestBody(bodyCleaner)
+                .post('/users/pub/images', '*')
+                .reply(201, { imageIdentifier: catMd5 }, {
+                    'X-Imbo-Imageidentifier': catMd5,
+                    'Content-Type': 'application/json'
+                });
+
+            var buffer = fs.readFileSync(fixtures + '/cat.jpg');
+            client.addImageFromBuffer(buffer, function(err, imageIdentifier, response) {
+                assert.equal(undefined, err);
+                assert.equal(catMd5, imageIdentifier);
+                assert.equal(201, response.statusCode);
+
+                done();
+            });
+        });
+    });
+
     describe('#addImageFromUrl', function() {
         it('should return error if the remote image does not exist', function(done) {
             var url = stcUrl + '/some-404-image.jpg';
@@ -404,7 +420,7 @@ describe('ImboClient', function() {
         it('should return an error if the image could not be added', function(done) {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
-                .put('/users/pub/images/' + catMd5, '*')
+                .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
 
@@ -415,23 +431,22 @@ describe('ImboClient', function() {
             });
         });
 
-        it('should return an error if the server could not be reached', function(done) {
-            errClient.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, res) {
-                assert.ok(err, 'addImage should give error if host is unreachable');
-                done();
-            });
-        });
-
         it('should return an image identifier and an http-response on success', function(done) {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
-                .put('/users/pub/images/' + catMd5, '*')
+                .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
                     'X-Imbo-Imageidentifier': catMd5,
                     'Content-Type': 'application/json'
                 });
 
-            client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, response) {
+            mock.get('/cat.jpg')
+                .reply(200, fs.readFileSync(fixtures + '/cat.jpg'), {
+                    'Content-Type': 'image/jpeg',
+                    'Content-Length': fs.statSync(fixtures + '/cat.jpg').size
+                });
+
+            client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier, response) {
                 assert.equal(undefined, err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(201, response.statusCode);
@@ -470,29 +485,72 @@ describe('ImboClient', function() {
         });
     });
 
+    describe('#getNumImages', function() {
+        it('should return a number on success', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(200, JSON.stringify({ 'numImages': 50 }), { 'Content-Type': 'application/json' });
+
+            client.getNumImages(function(err, numImages) {
+                assert.ifError(err, 'getNumImages() should not give an error on success');
+                assert.equal(50, numImages);
+                done();
+            });
+        });
+
+        it('should return an error if the user does not exist', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(404, 'Not Found');
+
+            client.getNumImages(function(err, numImages) {
+                assert.equal(404, err);
+                assert.equal(undefined, numImages);
+                done();
+            });
+        });
+    });
+
     describe('#getImages', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images')
-                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
+                .reply(200, JSON.stringify({ 'images': [], 'search': { 'hits': 3 } }), {
+                    'Content-Type': 'application/json'
+                });
 
-            client.getImages(null, function(err, meta, res) {
+            client.getImages(function(err, images, search, res) {
                 assert.ifError(err, 'getImages should not give an error on success');
-                assert.equal('bar', meta.foo);
+                assert.equal(3, search.hits);
                 assert.equal(200, res.statusCode);
                 done();
             });
         });
 
-        it('should return an error if the identifier does not exist', function(done) {
+        it('should return an error if the user does not exist', function(done) {
             mock.filteringPath(signatureCleaner)
-                .get('/users/pub/images/non-existant/meta')
-                .reply(404, 'Image not found');
+                .get('/users/pub/images')
+                .reply(404, 'User not found');
 
-            client.getMetadata('non-existant', function(err, body, res) {
+            client.getImages(function(err, images, search, res) {
                 assert.equal(404, err);
-                assert.equal('Image not found', body);
                 assert.equal(404, res.statusCode);
+                done();
+            });
+        });
+
+        it('should allow an optional query', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub/images?page=1&limit=5&ids[]=blah')
+                .reply(200, JSON.stringify({ 'images': [], 'search': { 'hits': 0 } }), {
+                    'Content-Type': 'application/json'
+                });
+
+            var query = new Imbo.Query().limit(5).ids(['blah']);
+            client.getImages(query, function(err, images, search, res) {
+                assert.ifError(err, 'getImages should not give an error on success');
+                assert.equal(0,   search.hits);
+                assert.equal(200, res.statusCode);
                 done();
             });
         });

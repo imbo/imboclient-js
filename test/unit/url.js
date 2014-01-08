@@ -1,20 +1,20 @@
 var Imbo   = require('../../')
   , assert = require('assert')
-  , util   = require('util')
-  , should = require('should')
   , catMd5 = '61da9892205a0d5077a353eb3487e8c8';
+
+require('should');
 
 describe('Imbo.Url', function() {
 
-    var baseUrl = 'http://imbo'
-      , pub = 'pub'
-      , priv = 'priv'
-      , url = new Imbo.Url({
-          baseUrl: baseUrl,
-          publicKey: pub,
-          privateKey: priv,
-          imageIdentifier: catMd5
-      });
+    var baseUrl = 'http://imbo',
+        pub = 'pub',
+        priv = 'priv',
+        url = new Imbo.Url({
+            baseUrl: baseUrl,
+            publicKey: pub,
+            privateKey: priv,
+            imageIdentifier: catMd5
+        });
 
     beforeEach(function() {
         url.reset();
@@ -55,21 +55,21 @@ describe('Imbo.Url', function() {
         });
 
         it('should include the x and y positions, if passed', function() {
-            url.canvas(130, 130, 'center', 10, 20, '#f00baa').toString().should.include('x%3D10%2Cy%3D20')
+            url.canvas(130, 130, 'center', 10, 20, '#f00baa').toString().should.include('x%3D10%2Cy%3D20');
         });
     });
 
     describe('#compress', function() {
         it('should return correct transformation', function() {
-            url.compress(90).toString().should.include('?t[]=compress%3Aquality%3D90&accessToken=e5287cd9eabdbeb3894241c5d58812053d4a06f5e8309c139c26d74889149c17');
+            url.compress(90).toString().should.include('?t[]=compress%3Alevel%3D90&accessToken=61afbd656c99e8b2efe1504bd2dd51cd02b83c5710e2a70937499219487b80a8');
         });
 
         it('should handle non-integers correctly', function() {
-            url.compress('40').toString().should.include('?t[]=compress%3Aquality%3D40&accessToken=ad3b6b35659a7a54d9ec74baa40beb266e0119e73d1d9bfbf4fc3b0298783b69');
+            url.compress('40').toString().should.include('?t[]=compress%3Alevel%3D40&accessToken=2e0bf4a1fc152240cb363713cbaa09c524ff9c1b94400ae075bed4799019863b');
         });
 
         it('should add default parameters if missing', function() {
-            url.compress().toString().should.include('t[]=compress%3Aquality%3D75&accessToken=d837de15840e2457a213a83ae281497ac751e4eac82d82b23e97ce4abe478c98');
+            url.compress().toString().should.include('t[]=compress%3Alevel%3D75&accessToken=1a3618d3dfa6e32e5a6ab63ccd5376fb50529207806f7da1f37f264df65fa386');
             url.reset();
         });
     });

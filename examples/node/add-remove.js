@@ -8,6 +8,7 @@
  *  - Prints the URL for the added image
  *  - Applies some transformations to the image and prints the URL for that version
  */
+'use strict';
 
 // Include the essentials (we only use fs for checking for a config-file)
 var Imbo = require('../../')
@@ -29,7 +30,7 @@ var client = new Imbo.Client(config.hosts, config.pubKey, config.privKey);
 
 // Check if the image exists on the server already
 console.log('Checking if the image already exists on server...');
-client.imageExists(img, function(err, exists, res) {
+client.imageExists(img, function(err, exists) {
     if (err) {
         return console.log('Oh ouch, something went wrong!', err);
     }

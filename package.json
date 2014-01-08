@@ -1,7 +1,7 @@
 {
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
@@ -12,25 +12,24 @@
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.25.0"
+        "request": "~2.33.0"
     },
     "devDependencies": {
-        "grunt": "~0.4.1",
-        "grunt-browserify": "~1.2.8",
-        "grunt-contrib-uglify": "~0.2.2",
-        "grunt-contrib-jshint": "~0.6.0",
-        "grunt-contrib-watch": "~0.4.0",
-        "grunt-contrib-connect": "~0.2.0",
-        "grunt-contrib-clean": "~0.4.0",
-        "grunt-mocha-test": "~0.6.2",
-        "grunt-mocha-cov": "~0.0.7",
+        "grunt": "~0.4.2",
+        "grunt-browserify": "~2.0.0",
+        "grunt-contrib-uglify": "~0.3.2",
+        "grunt-contrib-jshint": "~0.8.0",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-mocha-test": "~0.9.0",
+        "grunt-mocha-cov": "~0.2.0",
+        "grunt-replace": "~0.5.1",
         "through": "~2.3.4",
-        "matchdep": "~0.1.1",
-        "mocha": "~1.12.0",
-        "nock": "~0.22.1",
-        "should": "~1.2.2",
-        "blanket": "~1.1.5",
-        "workerify": "~0.2.2"
+        "matchdep": "~0.3.0",
+        "mocha": "~1.17.1",
+        "nock": "~0.27.2",
+        "should": "~3.1.2",
+        "blanket": "~1.1.6",
+        "workerify": "~0.2.3"
     },
     "scripts": {
         "test": "grunt test",

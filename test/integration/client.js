@@ -22,7 +22,7 @@ describeIntegration('ImboClient (integration)', function() {
     beforeEach(function(done) {
         client = new Imbo.Client([imboHost], imboPubKey, imboPrivKey);
 
-        client.deleteImageByIdentifier(catMd5, function() {
+        client.deleteImage(catMd5, function() {
             done();
         });
     });
@@ -66,16 +66,6 @@ describeIntegration('ImboClient (integration)', function() {
     });
 
     describe('#addImageFromUrl', function() {
-        it('should return error if the remote image does not exist', function(done) {
-            var url = stcUrl + '/some-404-image.jpg';
-            client.addImageFromUrl(url, function(err, response) {
-                assert.ok(err, 'addImage should give error if file does not exist');
-                assert.equal(404, err);
-                assert.equal(undefined, response);
-                done();
-            });
-        });
-
         it('should return an error if the server could not be reached', function(done) {
             errClient.addImage(fixtures + '/cat.jpg', function(err) {
                 assert.ok(err, 'addImage should give error if host is unreachable');
@@ -129,32 +119,13 @@ describeIntegration('ImboClient (integration)', function() {
 
     });
 
-    describe('#deleteImage()', function() {
+    describe('#deleteImage', function() {
         it('should return an http-response on success', function(done) {
             client.addImage(fixtures + '/cat.jpg', function() {
-                client.deleteImage(fixtures + '/cat.jpg', function(err, res) {
-                    assert.ifError(err, 'Successful delete should not give an error');
+                client.deleteImage(catMd5, function(err, res) {
                     assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                     done();
                 });
-            });
-        });
-
-        it('should return error if the local image does not exist', function(done) {
-            var filename = __dirname + '/does-not-exist.jpg';
-            client.deleteImage(filename, function(err, exists) {
-                assert.equal('File does not exist (' + filename + ')', err);
-                assert.equal(undefined, exists);
-                done();
-            });
-        });
-    });
-
-    describe('#deleteImageByIdentifier', function() {
-        it('should return an http-response on success', function(done) {
-            client.deleteImageByIdentifier(catMd5, function(err, res) {
-                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
-                done();
             });
         });
     });
@@ -237,11 +208,30 @@ describeIntegration('ImboClient (integration)', function() {
 
     describe('#getImages', function() {
         it('should return an array of image objects', function(done) {
-            client.getImages(null, function(err, images, res) {
-                assert.ifError(err, 'getImages should not give an error on success');
-                assert.equal(true, Array.isArray(images));
-                assert.equal(200, res.statusCode);
-                done();
+            client.addImage(fixtures + '/cat.jpg', function() {
+                client.getImages(function(err, images, search, res) {
+                    assert.ifError(err, 'getImages should not give an error on success');
+                    assert.equal(true, Array.isArray(images));
+                    assert.equal(200, res.statusCode);
+                    done();
+                });
+            });
+        });
+
+        it('should return correct search params', function(done) {
+            client.addImage(fixtures + '/cat.jpg', function() {
+                var query = new Imbo.Query();
+                query.limit(5).checksums([catMd5]);
+
+                client.getImages(query, function(err, images, search, res) {
+                    assert.ifError(err, 'getImages should not give an error on success');
+                    assert.equal(true, Array.isArray(images));
+                    assert.equal(images[0].checksum, catMd5);
+                    assert.equal(5, search.limit);
+                    assert.equal(1,  search.hits);
+                    assert.equal(200, res.statusCode);
+                    done();
+                });
             });
         });
     });

@@ -8,13 +8,13 @@ return array(
 
     'database' => function() {
         return new Database\MongoDB(array(
-            'databaseName' => 'imbo-033',
+            'databaseName' => 'imbo-develop',
         ));
     },
 
     'storage' => function() {
         return new Storage\GridFS(array(
-            'databaseName' => 'imbo-033-storage',
+            'databaseName' => 'imbo-develop-storage',
         ));
     }
 );

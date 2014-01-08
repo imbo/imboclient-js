@@ -7,6 +7,7 @@
  *  - Retrieves and displays the stored metadata
  *  - Deletes the metadata
  */
+'use strict';
 
 // Include the essentials (we only use fs for checking for a config-file)
 var Imbo = require('../../')
@@ -28,7 +29,7 @@ var client = new Imbo.Client(config.hosts, config.pubKey, config.privKey);
 
 // Check if the image exists on the server
 console.log('Checking if the image exists on server...');
-client.imageIdentifierExists(md5, function(err, exists, res) {
+client.imageIdentifierExists(md5, function(err, exists) {
     if (err) {
         return console.log('Oh ouch, something went wrong!', err);
     }
