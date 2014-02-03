@@ -19,9 +19,7 @@ module.exports = function(grunt) {
                     'test/**/*.js'
                 ],
                 tasks: [
-                    'browserify:all',
-                    'uglify',
-                    'mochaTest'
+                    'test'
                 ],
                 options: {
                     debounceDelay: 500
@@ -95,12 +93,30 @@ module.exports = function(grunt) {
                     ]
                 },
             },
+        },
+
+        replace: {
+            coverage: {
+                options: {
+                    patterns: [{
+                        match: new RegExp(__dirname + '/lib/', 'g'),
+                        replacement: '',
+                        expression: true
+                    }]
+                },
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: ['coverage.html']
+                }]
+            }
         }
     });
 
     grunt.registerTask('test', [
         'mochacov:test',
-        'mochacov:coverage'
+        'mochacov:coverage',
+        'replace:coverage'
     ]);
 
     grunt.registerTask('default', [

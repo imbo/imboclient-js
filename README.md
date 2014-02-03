@@ -1,7 +1,7 @@
+[![Build Status][1]][2] [![dependency status][3]][4] [![dev dependency status][5]][6]
+
 # Javascript client for Imbo
 A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
-
-[![Build Status](https://travis-ci.org/imbo/imboclient-js.png)](https://travis-ci.org/imbo/imboclient-js)
 
 ## Installation
 imboclient-js can be installed using [npm](https://npmjs.org/):
@@ -11,6 +11,11 @@ npm install imboclient
 ```
 
 Bower support is coming soon.
+
+## Version note
+Imbo 1.0 and up requires imboclient-js >= 2.1.0
+Imbo 0.3.3 and below requires imboclient-js <= 2.0.2
+Note that there are API changes between version 2.1 and 2.0 of the client.
 
 ## Usage
 
@@ -310,3 +315,10 @@ Check out the `examples` folder for a few intros on how to use the client.
 Copyright (c) 2011-2013, Espen Hovlandsdal <espen@hovlandsdal.com>
 
 Licensed under the MIT License
+
+[1]: https://travis-ci.org/imbo/imboclient-js.png
+[2]: https://travis-ci.org/imbo/imboclient-js
+[3]: https://david-dm.org/imbo/imboclient-js.png
+[4]: https://david-dm.org/imbo/imboclient-js
+[5]: https://david-dm.org/imbo/imboclient-js/dev-status.png
+[6]: https://david-dm.org/imbo/imboclient-js#info=devDependencies
