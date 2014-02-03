@@ -122,7 +122,7 @@ client.deleteMetadata(imageIdentifier, function(err) {
 ### Replace existing meta data attached to an image
 ```javascript
 var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
-    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8'
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8',
     metadata = { 'all-new': 'metadata' };
 
 client.replaceMetadata(imageIdentifier, metadata, function(err) {
