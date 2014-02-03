@@ -4,26 +4,28 @@
 A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
 
 ## Installation
-imboclient-js can be installed using [npm](https://npmjs.org/):
+imboclient-js can be installed using [npm](https://npmjs.org/) or [bower](http://bower.io/):
 
 ```
+# NPM:
 npm install imboclient
-```
 
-Bower support is coming soon.
+# Bower:
+bower install imboclient
+```
 
 ## Version note
 Imbo 1.0 and up requires imboclient-js >= 2.1.0
 Imbo 0.3.3 and below requires imboclient-js <= 2.0.2
-Note that there are API changes between version 2.1 and 2.0 of the client.
+Note that there are breaking API changes between version 2.0 and 2.1 of the client.
 
 ## Usage
 
 ### Add an image
 ```javascript
-var Imbo   = require('imboclient')
-  , client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , path   = '/path/to/image.jpg';
+var Imbo   = require('imboclient'),
+    client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    path   = '/path/to/image.jpg';
 
 // From Node (and local filesystem):
 client.addImage(path, function(err, imageIdentifier) {
@@ -57,8 +59,8 @@ fileInput.addEventListener('change', function(e) {
 
 ### Add/edit meta data
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 // Add some meta data to the image
 var metadata = {
@@ -77,8 +79,8 @@ client.editMetadata(imageIdentifier, metadata, function(err) {
 
 ### Get meta data
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 client.getMetadata(imageIdentifier, function(err, metadata) {
     if (err) {
@@ -91,8 +93,8 @@ client.getMetadata(imageIdentifier, function(err, metadata) {
 
 ### Delete an image
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 client.deleteImageByIdentifier(imageIdentifier, function(err) {
     if (err) {
@@ -105,8 +107,8 @@ client.deleteImageByIdentifier(imageIdentifier, function(err) {
 
 ### Delete all meta data attached to an image
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 client.deleteMetadata(imageIdentifier, function(err) {
     if (err) {
@@ -119,9 +121,9 @@ client.deleteMetadata(imageIdentifier, function(err) {
 
 ### Replace existing meta data attached to an image
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8'
-  , metadata = { 'all-new': 'metadata' };
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8'
+    metadata = { 'all-new': 'metadata' };
 
 client.replaceMetadata(imageIdentifier, metadata, function(err) {
     if (err) {
@@ -134,8 +136,8 @@ client.replaceMetadata(imageIdentifier, metadata, function(err) {
 
 ### Check if a local image exists on server
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , path = '/path/to/image.jpg';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    path = '/path/to/image.jpg';
 
 client.imageExist(path, function(err, exists)) {
     if (err) {
@@ -150,8 +152,8 @@ client.imageExist(path, function(err, exists)) {
 
 ### Check if an image identifier exists on server
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 client.imageIdentifierExists(imageIdentifier, function(err, exists) {
     if (err) {
@@ -173,12 +175,12 @@ The `convert()` method is special in that it does not append anything to the URL
 Here's an example of how we can use it to resize an image while maintaining aspect ratio, then adding a border and outputting it in PNG format:
 
 ```javascript
-var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
-  , imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
+var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
+    imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 // Generate an image URL and add some transformations
-var imageUrl    = client.getImageUrl(imageIdentifier)
-  , transformed = imageUrl.maxSize(320, 240).border('f00baa', 2, 2).png();
+var imageUrl    = client.getImageUrl(imageIdentifier),
+    transformed = imageUrl.maxSize(320, 240).border('f00baa', 2, 2).png();
 
 // Add an img-element to the body with the transformed URL
 var img = document.createElement('img');
@@ -211,7 +213,7 @@ Builds a new canvas and allows easy positioning of the original image within it.
 
 Compress the image on the fly.
 
-* `(int) quality` Quality of the resulting image. 100 is maximum quality (lowest compression rate)
+* `(int) level` level of the resulting image. 100 is maximum quality (lowest compression rate)
 
 **convert()**
 
