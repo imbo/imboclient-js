@@ -1,5 +1,5 @@
 #!/bin/bash
-php composer.phar create-project -n imbo/imbolauncher imbolauncher dev-develop
+php composer.phar create-project --prefer-source --no-dev --no-interaction imbo/imbolauncher imbolauncher dev-develop
 ./imbolauncher/imbolauncher start-servers --config=$TRAVIS_BUILD_DIR/test/imbolauncher/config.json --install-path=/tmp/imbo-servers --no-interaction -vvv ; cat /tmp/imbo-servers/dev-develop/httpd.log
 npm test
 OUT=$?
