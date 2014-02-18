@@ -47,7 +47,7 @@ client.addImageFromUrl('http://example.com/image.png', function(err, imageIdenti
 
 // OR, from the browser:
 fileInput.addEventListener('change', function(e) {
-    client.addImage(e.files[0], function(err, imageIdentifier) {
+    client.addImage(e.target.files[0], function(err, imageIdentifier) {
         if (err) {
             console.error('Oh no, an error occured: ' + err);
         } else {
