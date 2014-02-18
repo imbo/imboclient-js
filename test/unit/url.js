@@ -22,28 +22,28 @@ describe('Imbo.Url', function() {
 
     describe('#border', function() {
         it('should return correct transformation', function() {
-            url.border('c00c00', 13, 37).toString().should.include('?t[]=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37&accessToken=23344399b19763e260db22a40ea2e9cd0f0a68d3cd6277737932fa7b9637bc7c');
+            url.border('c00c00', 13, 37).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.border('#c00c00').toString().should.include('?t[]=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1&accessToken=1b09a610c831da1427306280bb518cb16eb10a172e00199c405d9d5922b7326a');
+            url.border('#c00c00').toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1');
         });
 
         it('should add default parameters if missing', function() {
-            url.border().toString().should.include('?t[]=border%3Acolor%3D000000%2Cwidth%3D1%2Cheight%3D1&accessToken=bff30f0d7e47b108c71c68d475d13aed226b7e9ce955bd1e3b1c1d3938519f8a');
+            url.border().toString().should.include('?t%5B%5D=border%3Acolor%3D000000%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border('ffffff').toString().should.include('?t[]=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1&accessToken=fec56797715d24e98e1a0aa5e563fdbfc9947718bc3a1e59e31ccb4a647c3924');
+            url.border('ffffff').toString().should.include('?t%5B%5D=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border('f00baa', 5).toString().should.include('?t[]=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1&accessToken=4ed17df69d3706d327d89f261a684649bb261aa328b5530360b20212e6457f26');
+            url.border('f00baa', 5).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1');
             url.reset();
         });
     });
 
     describe('#canvas', function() {
         it('should return correct transformation', function() {
-            url.canvas(120, 130).toString().should.include('?t[]=canvas');
+            url.canvas(120, 130).toString().should.include('?t%5B%5D=canvas');
         });
 
         it('should strip the hash-symbol from colors', function() {
@@ -61,15 +61,15 @@ describe('Imbo.Url', function() {
 
     describe('#compress', function() {
         it('should return correct transformation', function() {
-            url.compress(90).toString().should.include('?t[]=compress%3Alevel%3D90&accessToken=61afbd656c99e8b2efe1504bd2dd51cd02b83c5710e2a70937499219487b80a8');
+            url.compress(90).toString().should.include('?t%5B%5D=compress%3Alevel%3D90');
         });
 
         it('should handle non-integers correctly', function() {
-            url.compress('40').toString().should.include('?t[]=compress%3Alevel%3D40&accessToken=2e0bf4a1fc152240cb363713cbaa09c524ff9c1b94400ae075bed4799019863b');
+            url.compress('40').toString().should.include('?t%5B%5D=compress%3Alevel%3D40');
         });
 
         it('should add default parameters if missing', function() {
-            url.compress().toString().should.include('t[]=compress%3Alevel%3D75&accessToken=1a3618d3dfa6e32e5a6ab63ccd5376fb50529207806f7da1f37f264df65fa386');
+            url.compress().toString().should.include('t%5B%5D=compress%3Alevel%3D75');
             url.reset();
         });
     });
@@ -100,53 +100,53 @@ describe('Imbo.Url', function() {
 
     describe('#crop', function() {
         it('should return correct transformation', function() {
-            url.crop(0, 1, 2, 3).toString().should.include('?t[]=crop%3Ax%3D0%2Cy%3D1%2Cwidth%3D2%2Cheight%3D3&accessToken=520c7f2e1327697a7a49945e06eb00450b62510a55b3f159cd95d99b448e158d');
+            url.crop(0, 1, 2, 3).toString().should.include('?t%5B%5D=crop%3Ax%3D0%2Cy%3D1%2Cwidth%3D2%2Cheight%3D3');
         });
     });
 
     describe('#desaturate', function() {
         it('should return correct transformation', function() {
-            url.desaturate().toString().should.include('?t[]=desaturate');
+            url.desaturate().toString().should.include('?t%5B%5D=desaturate');
         });
     });
 
     describe('#flipHorizontally', function() {
         it('should return correct transformation', function() {
-            url.flipHorizontally().toString().should.include('?t[]=flipHorizontally');
+            url.flipHorizontally().toString().should.include('?t%5B%5D=flipHorizontally');
         });
     });
 
     describe('#flipVertically', function() {
         it('should return correct transformation', function() {
-            url.flipVertically().toString().should.include('?t[]=flipVertically');
+            url.flipVertically().toString().should.include('?t%5B%5D=flipVertically');
         });
     });
 
     describe('#resize', function() {
         it('should return correct transformation', function() {
-            url.resize(320, 240).toString().should.include('?t[]=resize%3Awidth%3D320%2Cheight%3D240&accessToken=0b2695c3f284f4b01359c37f056b658ce9897db52d3a929407e22ae9dd2f53f4');
+            url.resize(320, 240).toString().should.include('?t%5B%5D=resize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.resize(320).toString().should.include('?t[]=resize%3Awidth%3D320&accessToken=1537826f842b3269650082fab6f5d2699c4fb7b9416330d9114aa23a75d6febb');
+            url.resize(320).toString().should.include('?t%5B%5D=resize%3Awidth%3D320');
         });
 
         it('should handle being passed only a height', function() {
-            url.resize(null, 240).toString().should.include('?t[]=resize%3Aheight%3D240&accessToken=d9c59e7deb1c70d88ae4f2d0e12978d1a9b38360b1f6e2f3bf01f8291e8a8a4c');
+            url.resize(null, 240).toString().should.include('?t%5B%5D=resize%3Aheight%3D240');
         });
     });
 
     describe('#maxSize', function() {
         it('should return correct transformation', function() {
-            url.maxSize(320, 240).toString().should.include('?t[]=maxSize%3Awidth%3D320%2Cheight%3D240&accessToken=8b7e7f654a06c427285671c174349180686a6261aaf705b06bfe282e8b0a3b93');
+            url.maxSize(320, 240).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.maxSize(320).toString().should.include('?t[]=maxSize%3Awidth%3D320&accessToken=048eb874b111eafd3ed2ed8a858ac6e8a9f9835ce32483f1b3142ab3713a6c1f');
+            url.maxSize(320).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320');
         });
 
         it('should handle being passed only a height', function() {
-            url.maxSize(null, 240).toString().should.include('?t[]=maxSize%3Aheight%3D240&accessToken=ce5f0c5faaab14157b7a1878cba765742e9ef78027bf3b720469e84f0e6fec49');
+            url.maxSize(null, 240).toString().should.include('?t%5B%5D=maxSize%3Aheight%3D240');
         });
     });
 
@@ -157,55 +157,55 @@ describe('Imbo.Url', function() {
         });
 
         it('should allow a custom background color', function() {
-            url.rotate(-45, 'f00baa').toString().should.include('?t[]=rotate%3Aangle%3D-45%2Cbg%3Df00baa&accessToken=023e75f6cc20b2cb444a597591b643458df8dbead3ff15b7ddfcdcc6897b450d');
+            url.rotate(-45, 'f00baa').toString().should.include('?t%5B%5D=rotate%3Aangle%3D-45%2Cbg%3Df00baa');
         });
 
         it('should default to a black background color', function() {
-            url.rotate(30).toString().should.include('?t[]=rotate%3Aangle%3D30%2Cbg%3D000000&accessToken=19c0e3f79a8bd5d128f66188eb80007796f0339c3b787c8d534ff64d09258a61');
+            url.rotate(30).toString().should.include('?t%5B%5D=rotate%3Aangle%3D30%2Cbg%3D000000');
         });
 
         it('should handle angles with decimals', function() {
-            url.rotate(13.37).toString().should.include('?t[]=rotate%3Aangle%3D13.37%2Cbg%3D000000&accessToken=91741ba7ae499e9736aea6226056aef77aee346a8beba8fa132c7d220b920eb4');
+            url.rotate(13.37).toString().should.include('?t%5B%5D=rotate%3Aangle%3D13.37%2Cbg%3D000000');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.rotate(51, '#c00c00').toString().should.include('?t[]=rotate%3Aangle%3D51%2Cbg%3Dc00c00&accessToken=f79a9a15d4fac89ec30b5201d2836b73c212fc4fe7e50a73b6087695badf0dbd');
+            url.rotate(51, '#c00c00').toString().should.include('?t%5B%5D=rotate%3Aangle%3D51%2Cbg%3Dc00c00');
         });
     });
 
     describe('#sepia', function() {
         it('should return correct transformation', function() {
-            url.sepia(90).toString().should.include('?t[]=sepia%3Athreshold%3D90&accessToken=15f821f1ee9f06b5be9b595898aa272eb4cac72244c241e6a4d38fc21fce6e54');
+            url.sepia(90).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D90');
         });
 
         it('should handle non-integers correctly', function() {
-            url.sepia('40').toString().should.include('?t[]=sepia%3Athreshold%3D40&accessToken=07eb6a860f07af4b05ecfaa7ae8c0688e4af7528a435b03863ee336e312f1d3c');
+            url.sepia('40').toString().should.include('?t%5B%5D=sepia%3Athreshold%3D40');
         });
 
         it('should add default parameters if missing', function() {
-            url.sepia().toString().should.include('t[]=sepia%3Athreshold%3D80&accessToken=2dcc06e9dd30e192aa8a43e48bbe563791c210cc841fc13052d9691da9157c68');
+            url.sepia().toString().should.include('t%5B%5D=sepia%3Athreshold%3D80');
         });
     });
 
     describe('#thumbnail', function() {
         it('should use default arguments if none are given', function() {
-            url.thumbnail().toString().should.include('?t[]=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound&accessToken=dacfca5b7f2e309a6fa57330bcf3365ce1d183e54aaf8197a20ef7528766e7b9');
+            url.thumbnail().toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
         });
 
         it('should allow custom arguments', function() {
-            url.thumbnail(150, 100, 'inset').toString().should.include('?t[]=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset&accessToken=930a15483521b195fb86659ddcaddb00b64e9c2de27c84bc4b93ae5a78f50573');
+            url.thumbnail(150, 100, 'inset').toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset');
         });
     });
 
     describe('#transpose', function() {
         it('should return correct transformation', function() {
-            url.transpose().toString().should.include('?t[]=transpose');
+            url.transpose().toString().should.include('?t%5B%5D=transpose');
         });
     });
 
     describe('#transverse', function() {
         it('should return correct transformation', function() {
-            url.transverse().toString().should.include('?t[]=transverse');
+            url.transverse().toString().should.include('?t%5B%5D=transverse');
         });
     });
 
@@ -218,7 +218,7 @@ describe('Imbo.Url', function() {
 
     describe('#append', function() {
         it('should append to the transformations array', function() {
-            url.append('custom:foo=bar').toString().should.equal('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t[]=custom%3Afoo%3Dbar&accessToken=3ac245d9c6f8b59cedff5a8db5d2791a459fcdb88318591b6330ff42e00a8d3c');
+            url.append('custom:foo=bar').toString().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=custom%3Afoo%3Dbar');
         });
     });
 
@@ -238,6 +238,18 @@ describe('Imbo.Url', function() {
 
             u.transverse().flipHorizontally().getQueryString().should.equal('foo=bar&moo=tools&t[]=transverse&t[]=flipHorizontally');
         });
+
+        it('should generate unencoded URLs by default', function() {
+            url.append('someTransformation:foo=bar,other=thing').getQueryString().should.equal('t[]=someTransformation:foo=bar,other=thing');
+        });
+
+        it('should generate unencoded URLs if told to do so', function() {
+            url.append('someTransformation:foo=bar,other=thing').getQueryString(false).should.equal('t[]=someTransformation:foo=bar,other=thing');
+        });
+
+        it('should generate encoded URLs if told to do so', function() {
+            url.append('someTransformation:foo=bar,other=thing').getQueryString(true).should.equal('t%5B%5D=someTransformation%3Afoo%3Dbar%2Cother%3Dthing');
+        });
     });
 
     describe('#getUrl', function() {
@@ -246,11 +258,42 @@ describe('Imbo.Url', function() {
         });
 
         it('should generate the correct URL with no transformations', function() {
-            url.getUrl().should.equal('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?accessToken=e67dd2d9e3d46fb458d3bfc238a496127aef57e3156cdd5bd72ee488e4d33465');
+            url.getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8');
         });
 
         it('should generate the correct URL with transformations', function() {
-            url.flipVertically().getUrl().should.equal('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t[]=flipVertically&accessToken=24f11a20edc6c6a1ce0eee9db225b464024492cc58e634bc27042bd833981d60');
+            url.flipVertically().getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically');
+        });
+
+        it('should generate correct URL-encoded URLs for advanced combinations', function() {
+            url.flipVertically().maxSize(123, 456).border('#bf1942').getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically&t%5B%5D=maxSize%3Awidth%3D123%2Cheight%3D456&t%5B%5D=border%3Acolor%3Dbf1942%2Cwidth%3D1%2Cheight%3D1&accessToken=02a5af1bc197e03d3a226878a8181880d01c2e9ac1a380da0550dccb0519f07e');
+        });
+
+        it('should generate correct access tokens for various urls', function() {
+            url.flipVertically().maxSize(123, 456).border('#bf1942').getUrl().should.include('accessToken=02a5af1bc197e03d3a226878a8181880d01c2e9ac1a380da0550dccb0519f07e');
+            url.reset().thumbnail(123, 456).flipHorizontally().canvas(150, 160, 'inset', 17, 18, 'c0ff83').getUrl().should.include('accessToken=0eabe01f6897360b5da05b9450b9e236fc6ff4e8408f541dc950cff5fdb97a3b');
+
+            // Real stress-testing here...
+            url
+                .reset()
+                .border('#bf1942', 2, 3)
+                .canvas(150, 160, 'inset', 17, 18, 'c0ff83')
+                .compress(77)
+                .convert('gif')
+                .crop(10, 12, 140, 140)
+                .desaturate()
+                .flipHorizontally()
+                .flipVertically()
+                .maxSize(130, 120)
+                .resize(110, 100)
+                .rotate(17.8, 'c08833')
+                .sepia(60)
+                .thumbnail(100, 90, 'inbound')
+                .transpose()
+                .transverse()
+                .getUrl()
+                .should.include('accessToken=68beaa9a99888c7cc845b210d2070a15c34cd18a682192059fbbac97ca38b62d');
+
         });
     });
 

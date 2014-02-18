@@ -8,8 +8,8 @@ var assert    = require('assert')
 var stcUrl = 'http://127.0.0.1:6775'
   , describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip)
   , imboHost    = process.env.IMBOCLIENT_INTEGRATION_HOST    || 'http://127.0.0.1:9012'
-  , imboPubKey  = process.env.ImboClient_INTEGRATION_PUBKEY  || 'test'
-  , imboPrivKey = process.env.ImboClient_INTEGRATION_PRIVKEY || 'test'
+  , imboPubKey  = process.env.IMBOCLIENT_INTEGRATION_PUBKEY  || 'test'
+  , imboPrivKey = process.env.IMBOCLIENT_INTEGRATION_PRIVKEY || 'test'
   , client
   , errClient;
 
@@ -190,7 +190,7 @@ describeIntegration('ImboClient (integration)', function() {
         it('should return an object of key => value data', function(done) {
             client.getUserInfo(function(err, info, res) {
                 assert.ifError(err, 'getUserInfo should not give an error on success');
-                assert.equal('test', info.publicKey);
+                assert.equal(imboPubKey, info.publicKey);
                 assert.equal(200, res.statusCode);
                 done();
             });
@@ -239,11 +239,13 @@ describeIntegration('ImboClient (integration)', function() {
     describe('#getMetadata', function() {
         it('should return a blank object if no data is present', function(done) {
             client.addImage(fixtures + '/cat.jpg', function() {
-                client.getMetadata(catMd5, function(err, meta, res) {
-                    assert.ifError(err, 'getMetadata should not give error on success');
-                    assert.equal('{}', JSON.stringify(meta));
-                    assert.equal(200, res.statusCode);
-                    done();
+                client.deleteMetadata(catMd5, function() {
+                    client.getMetadata(catMd5, function(err, meta, res) {
+                        assert.ifError(err, 'getMetadata should not give error on success');
+                        assert.equal('{}', JSON.stringify(meta));
+                        assert.equal(200, res.statusCode);
+                        done();
+                    });
                 });
             });
         });

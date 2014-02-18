@@ -1101,8 +1101,8 @@ extend(ImboUrl.prototype, {
         return this;
     },
 
-    append: function(part) {
-        this.transformations.push(encodeURIComponent(part));
+    append: function(transformation) {
+        this.transformations.push(transformation);
         return this;
     },
 
@@ -1110,11 +1110,18 @@ extend(ImboUrl.prototype, {
         return crypto.sha256(this.privateKey, url);
     },
 
-    getQueryString: function() {
-        var query = this.queryString || '';
+    getQueryString: function(encode) {
+        var query             = this.queryString || '',
+            transformations   = this.transformations,
+            transformationKey = encode ? 't%5B%5D=' : 't[]=';
+
+        if (encode) {
+            transformations = transformations.map(encodeURIComponent);
+        }
+
         if (this.transformations.length) {
             query += query.length ? '&' : '';
-            query += 't[]=' + this.transformations.join('&t[]=');
+            query += transformationKey + transformations.join('&' + transformationKey);
         }
 
         return query;
@@ -1128,14 +1135,16 @@ extend(ImboUrl.prototype, {
 
         url = url.replace(/\/+$/, '');
 
+        var encodedUrl = url;
         var qs = this.getQueryString();
         if (qs.length) {
-            url += '?' + qs;
+            encodedUrl += '?' + this.getQueryString(true);
+            url        += '?' + qs;
         }
 
         var token = this.getAccessToken(url, this.privateKey);
 
-        return url + (url.indexOf('?') > -1 ? '&' : '?') + 'accessToken=' + token;
+        return encodedUrl + (url.indexOf('?') > -1 ? '&' : '?') + 'accessToken=' + token;
     },
 
     toString: function() {
@@ -1222,7 +1231,7 @@ process.chdir = function (dir) {
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
