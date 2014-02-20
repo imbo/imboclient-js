@@ -621,13 +621,17 @@ describe('ImboClient', function() {
         });
 
         it('should not return any error on success', function(done) {
+            var response = { foo: 'bar', existing: 'key' };
             mock.filteringPath(signatureCleaner)
                 .post('/users/pub/images/' + catMd5 + '/meta', { foo: 'bar' })
-                .reply(200, 'OK');
+                .reply(200, response, {
+                    'Content-Type': 'application/json'
+                });
 
-            client.editMetadata(catMd5, { foo: 'bar' }, function(err, res) {
+            client.editMetadata(catMd5, { foo: 'bar' }, function(err, body, res) {
                 assert.ifError(err, 'editMetadata should not give error on success');
                 assert.equal(200, res.statusCode);
+                assert.equal(JSON.stringify(response), JSON.stringify(body));
                 done();
             });
         });
@@ -646,13 +650,23 @@ describe('ImboClient', function() {
         });
 
         it('should not return any error on success', function(done) {
+            var responseBody = { foo: 'bar', some: 'key' },
+                sentData     = { some: 'key', foo: 'bar' };
+
             mock.filteringPath(signatureCleaner)
-                .put('/users/pub/images/' + catMd5 + '/meta', { foo: 'bar' })
+                .put('/users/pub/images/' + catMd5 + '/meta', responseBody)
                 .reply(200, 'OK');
 
-            client.replaceMetadata(catMd5, { foo: 'bar' }, function(err, res) {
+            client.replaceMetadata(catMd5, sentData, function(err, body, res) {
                 assert.ifError(err, 'replaceMetadata should not give error on success');
                 assert.equal(200, res.statusCode);
+                assert.equal(responseBody.foo, body.foo);
+                assert.equal(responseBody.some, body.some);
+                assert.equal(
+                    Object.keys(responseBody).length,
+                    Object.keys(body).length
+                );
+
                 done();
             });
         });

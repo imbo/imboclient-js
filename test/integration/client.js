@@ -300,9 +300,13 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should not return any error on success', function(done) {
             client.addImage(fixtures + '/cat.jpg', function() {
-                client.editMetadata(catMd5, { foo: 'bar' }, function(err, res) {
+                var metadata = { foo: 'bar', some: 'key' };
+
+                client.editMetadata(catMd5, metadata, function(err, body, res) {
                     assert.ifError(err, 'editMetadata should not give error on success');
                     assert.equal(200, res.statusCode);
+                    assert.equal('bar', body.foo);
+                    assert.equal('some', body.some);
                     done();
                 });
             });
@@ -319,8 +323,12 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should not return any error on success', function(done) {
             client.addImage(fixtures + '/cat.jpg', function() {
-                client.replaceMetadata(catMd5, { foo: 'bar' }, function(err, res) {
+                var metadata = { foo: 'bar', random: Math.floor(Math.random() * 100000) };
+                client.replaceMetadata(catMd5, metadata, function(err, body, res) {
                     assert.ifError(err, 'replaceMetadata should not give error on success');
+                    assert.equal(metadata.foo, body.foo);
+                    assert.equal(metadata.random, body.random);
+                    assert.equal(Object.keys(metadata).length, Object.keys(body).length);
                     assert.equal(200, res.statusCode);
                     done();
                 });
