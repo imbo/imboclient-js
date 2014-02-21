@@ -654,8 +654,10 @@ describe('ImboClient', function() {
                 sentData     = { some: 'key', foo: 'bar' };
 
             mock.filteringPath(signatureCleaner)
-                .put('/users/pub/images/' + catMd5 + '/meta', responseBody)
-                .reply(200, 'OK');
+                .put('/users/pub/images/' + catMd5 + '/meta', sentData)
+                .reply(200, responseBody, {
+                    'Content-Type': 'application/json'
+                });
 
             client.replaceMetadata(catMd5, sentData, function(err, body, res) {
                 assert.ifError(err, 'replaceMetadata should not give error on success');
