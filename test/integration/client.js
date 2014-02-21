@@ -306,7 +306,7 @@ describeIntegration('ImboClient (integration)', function() {
                     assert.ifError(err, 'editMetadata should not give error on success');
                     assert.equal(200, res.statusCode);
                     assert.equal('bar', body.foo);
-                    assert.equal('some', body.some);
+                    assert.equal('key', body.some);
                     done();
                 });
             });
