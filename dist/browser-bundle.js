@@ -13,7 +13,8 @@ exports.Query   = _dereq_('./lib/query');
 exports.Version = _dereq_('./package.json').version;
 
 },{"./lib/client":8,"./lib/query":9,"./lib/url":10,"./package.json":13}],2:[function(_dereq_,module,exports){
-(function (process){/**
+(function (process){
+/**
  * This file is part of the imboclient-js package
  *
  * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
@@ -106,7 +107,8 @@ module.exports = {
             addMd5Task(buffer, callback);
         });
     }
-};}).call(this,_dereq_("/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+};
+}).call(this,_dereq_("/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"./md5.min":4,"./readers":5,"./sha":7,"/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":12}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
@@ -775,7 +777,9 @@ ImboClient.prototype.editMetadata = function(imageIdentifier, data, callback, me
         method    : method || 'POST',
         uri       : url,
         json      : data,
-        onComplete: callback
+        onComplete: function(err, res, body) {
+            callback(err, body, res);
+        }
     });
 };
 
@@ -967,6 +971,10 @@ var ImboUrl = function(options) {
 };
 
 extend(ImboUrl.prototype, {
+    autoRotate: function() {
+        return this.append('autoRotate');
+    },
+
     border: function(color, width, height) {
         color  = (color || '000000').replace(/^#/, '');
         width  = parseInt(isNaN(width)  ? 1 : width,  10);
@@ -1009,20 +1017,37 @@ extend(ImboUrl.prototype, {
         return this;
     },
 
-    gif: function() {
-        return this.convert('gif');
-    },
+    crop: function(x, y, width, height, mode) {
+        if (!mode && (isNaN(x) || isNaN(y))) {
+            throw new Error('x and y needs to be specified without a crop mode');
+        }
 
-    jpg: function() {
-        return this.convert('jpg');
-    },
+        if (mode === 'center-x' && isNaN(y)) {
+            throw new Error('y needs to be specified when mode is center-x');
+        } else if (mode === 'center-y' && isNaN(x)) {
+            throw new Error('x needs to be specified when mode is center-y');
+        } else if (isNaN(width) || isNaN(height)) {
+            throw new Error('width and height needs to be specified');
+        }
 
-    png: function() {
-        return this.convert('png');
-    },
+        var params = [
+            'width='  + parseInt(width,  10),
+            'height=' + parseInt(height, 10),
+        ];
 
-    crop: function(x, y, width, height) {
-        return this.append('crop:x=' + x + ',y=' + y + ',width=' + width + ',height=' + height);
+        if (!isNaN(x)) {
+            params.push('x=' + parseInt(x, 10));
+        }
+
+        if (!isNaN(y)) {
+            params.push('y=' + parseInt(y, 10));
+        }
+
+        if (mode) {
+            params.push('mode=' + mode);
+        }
+
+        return this.append('crop:' + params.join(','));
     },
 
     desaturate: function() {
@@ -1051,6 +1076,28 @@ extend(ImboUrl.prototype, {
         return this.append('maxSize:' + params.join(','));
     },
 
+    modulate: function(brightness, saturation, hue) {
+        var params = [];
+
+        if (brightness !== null) {
+            params.push('b=' + brightness);
+        }
+
+        if (saturation !== null && saturation !== undefined) {
+            params.push('s=' + saturation);
+        }
+
+        if (hue !== null && hue !== undefined) {
+            params.push('h=' + hue);
+        }
+
+        return this.append('modulate:' + params.join(','));
+    },
+
+    progressive: function() {
+        return this.append('progressive');
+    },
+
     resize: function(width, height) {
         var params = [];
 
@@ -1062,12 +1109,16 @@ extend(ImboUrl.prototype, {
             params.push('height=' + parseInt(height, 10));
         }
 
+        if (!params.length) {
+            throw new Error('width and/or height needs to be specified');
+        }
+
         return this.append('resize:' + params.join(','));
     },
 
     rotate: function(angle, bg) {
         if (isNaN(angle)) {
-            return this;
+            throw new Error('angle needs to be specified');
         }
 
         bg = (bg || '000000').replace(/^#/, '');
@@ -1076,7 +1127,11 @@ extend(ImboUrl.prototype, {
 
     sepia: function(threshold) {
         threshold = parseInt(threshold, 10);
-        return this.append('sepia:threshold=' + (threshold ? threshold : 80));
+        return this.append('sepia:threshold=' + (threshold || 80));
+    },
+
+    strip: function() {
+        return this.append('strip');
     },
 
     thumbnail: function(width, height, fit) {
@@ -1095,6 +1150,40 @@ extend(ImboUrl.prototype, {
         return this.append('transverse');
     },
 
+    watermark: function(imageIdentifier, width, height, position, x, y) {
+        var params = [
+            'position=' + (position || 'top-left'),
+            'x=' + (x || 0),
+            'y=' + (y || 0)
+        ];
+
+        if (imageIdentifier) {
+            params.push('img=' + imageIdentifier);
+        }
+
+        if (width > 0) {
+            params.push('width=' + width);
+        }
+
+        if (height > 0) {
+            params.push('height=' + height);
+        }
+
+        return this.append('watermark:' + params.join(','));
+    },
+
+    gif: function() {
+        return this.convert('gif');
+    },
+
+    jpg: function() {
+        return this.convert('jpg');
+    },
+
+    png: function() {
+        return this.convert('png');
+    },
+
     reset: function() {
         this.imageIdentifier = this.imageIdentifier.substr(0, 32);
         this.transformations = [];
@@ -1104,6 +1193,10 @@ extend(ImboUrl.prototype, {
     append: function(transformation) {
         this.transformations.push(transformation);
         return this;
+    },
+
+    getTransformations: function() {
+        return this.transformations;
     },
 
     getAccessToken: function(url) {
@@ -1231,7 +1324,7 @@ process.chdir = function (dir) {
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
@@ -1242,7 +1335,7 @@ module.exports={
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.33.0"
+        "request": "~2.34.0"
     },
     "devDependencies": {
         "grunt": "~0.4.2",
@@ -1252,7 +1345,7 @@ module.exports={
         "grunt-contrib-watch": "~0.5.3",
         "grunt-mocha-test": "~0.9.0",
         "grunt-mocha-cov": "~0.2.0",
-        "grunt-replace": "~0.5.1",
+        "grunt-replace": "~0.6.2",
         "through": "~2.3.4",
         "matchdep": "~0.3.0",
         "mocha": "~1.17.1",
