@@ -28,46 +28,73 @@ describe('Imbo.Url', function() {
 
     describe('#border', function() {
         it('should return correct transformation', function() {
-            url.border('c00c00', 13, 37).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37');
+            url.border({ color: 'c00c00', width: 13, height: 37 }).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.border('#c00c00').toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1');
+            url.border({ color: '#c00c00' }).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1');
         });
 
         it('should add default parameters if missing', function() {
             url.border().toString().should.include('?t%5B%5D=border%3Acolor%3D000000%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border('ffffff').toString().should.include('?t%5B%5D=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1');
+            url.border({ color: 'ffffff'}).toString().should.include('?t%5B%5D=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border('f00baa', 5).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1');
+            url.border({ color: 'f00baa', width: 5 }).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1');
+            url.reset();
+
+            url.border({ color: 'f00baa', height: 5 }).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D1%2Cheight%3D5');
             url.reset();
         });
     });
 
     describe('#canvas', function() {
         it('should return correct transformation', function() {
-            url.canvas(120, 130).toString().should.include('?t%5B%5D=canvas');
+            url.canvas({ width: 120, height: 130 }).toString().should.include('?t%5B%5D=canvas');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.canvas(120, 130, 'free', 0, 0, '#c00c00').toString().should.include('bg%3Dc00c00');
+            url.canvas({ width: 120, height: 130, bg: '#c00c00' }).toString().should.include('bg%3Dc00c00');
         });
 
         it('should include the mode, if passed', function() {
-            url.canvas(120, 120, 'center').toString().should.include('mode%3Dcenter');
+            url.canvas({ width: 120, height: 130, mode: 'center' }).toString().should.include('mode%3Dcenter');
         });
 
         it('should include the x and y positions, if passed', function() {
-            url.canvas(130, 130, 'center', 10, 20, '#f00baa').toString().should.include('x%3D10%2Cy%3D20');
+            url.canvas({ width: 130, height: 130, x: 10, y: 20 }).toString().should.include('x%3D10%2Cy%3D20');
+        });
+
+        it('should return correct transformation with all params present', function() {
+            url
+                .canvas({ width: 130, height: 130, x: 10, y: 20, mode: 'free', bg: 'f00baa' })
+                .toString()
+                .should
+                .include('?t%5B%5D=canvas%3Awidth%3D130%2Cheight%3D130%2Cmode%3Dfree%2Cx%3D10%2Cy%3D20%2Cbg%3Df00baa');
+        });
+
+        it('should throw an error if width and height is not present', function() {
+            assert.throws(function() { url.canvas(); }, Error);
+        });
+
+        it('should throw an error if width is not present', function() {
+            assert.throws(function() { url.canvas({ height: 130 }); }, Error);
+        });
+
+        it('should throw an error if height is not present', function() {
+            assert.throws(function() { url.canvas({ width: 188 }); }, Error);
         });
     });
 
     describe('#compress', function() {
         it('should return correct transformation', function() {
-            url.compress(90).toString().should.include('?t%5B%5D=compress%3Alevel%3D90');
+            url.compress({ level: 90 }).toString().should.include('?t%5B%5D=compress%3Alevel%3D90');
+        });
+
+        it('should allow being passed an integer instead of an object', function() {
+            url.compress(85).toString().should.include('?t%5B%5D=compress%3Alevel%3D85');
         });
 
         it('should handle non-integers correctly', function() {
@@ -77,6 +104,8 @@ describe('Imbo.Url', function() {
         it('should add default parameters if missing', function() {
             url.compress().toString().should.include('t%5B%5D=compress%3Alevel%3D75');
             url.reset();
+
+            url.compress({}).toString().should.include('t%5B%5D=compress%3Alevel%3D75');
         });
     });
 
@@ -87,8 +116,36 @@ describe('Imbo.Url', function() {
     });
 
     describe('#crop', function() {
+        it('should throw an error if no x/y is provided without a mode', function() {
+            assert.throws(function() { url.crop({  }); }, Error);
+        });
+
+        it('should throw an error if no y is provided with mode set to center-x', function() {
+            assert.throws(function() { url.crop({ mode: 'center-x' }); }, Error);
+        });
+
+        it('should throw an error if no x is provided with mode set to center-y', function() {
+            assert.throws(function() { url.crop({ mode: 'center-y' }); }, Error);
+        });
+
+        it('should throw an error if width is not provided', function() {
+            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free', height: 50 }); }, Error);
+        });
+
+        it('should throw an error if height is not provided', function() {
+            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free', width: 50 }); }, Error);
+        });
+
+        it('should throw an error if neither width or height is provided', function() {
+            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free' }); }, Error);
+        });
+
         it('should return correct transformation', function() {
-            url.crop(0, 1, 2, 3).toString().should.include('?t%5B%5D=crop%3Awidth%3D2%2Cheight%3D3%2Cx%3D0%2Cy%3D1');
+            url
+                .crop({ x: 5, y: 6, mode: 'free', width: 50, height: 60 })
+                .toString()
+                .should
+                .include('?t%5B%5D=crop%3Awidth%3D50%2Cheight%3D60%2Cx%3D5%2Cy%3D6');
         });
     });
 
@@ -111,34 +168,42 @@ describe('Imbo.Url', function() {
     });
 
     describe('#maxSize', function() {
-        it('should return correct transformation', function() {
-            url.maxSize(320, 240).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320%2Cheight%3D240');
+        it('should return correct transformation if passed both width and height', function() {
+            url.maxSize({ width: 320, height: 240 }).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.maxSize(320).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320');
+            url.maxSize({ width: 320 }).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320');
         });
 
         it('should handle being passed only a height', function() {
-            url.maxSize(null, 240).toString().should.include('?t%5B%5D=maxSize%3Aheight%3D240');
+            url.maxSize({ height: 240 }).toString().should.include('?t%5B%5D=maxSize%3Aheight%3D240');
+        });
+
+        it('should throw an error if neither width or height is provided', function() {
+            assert.throws(function() { url.maxSize({ }); }, Error);
         });
     });
 
     describe('#modulate', function() {
-        it('should return correct transformation', function() {
-            url.modulate(14, 23, 88).toString().should.include('?t%5B%5D=modulate%3Ab%3D14%2Cs%3D23%2Ch%3D88');
+        it('should return correct transformation given all parameters', function() {
+            url
+                .modulate({ brightness: 14, saturation: 23, hue: 88 })
+                .toString()
+                .should
+                .include('?t%5B%5D=modulate%3Ab%3D14%2Cs%3D23%2Ch%3D88');
         });
 
         it('should handle being passed only a brightness', function() {
-            url.modulate(320).toString().should.include('?t%5B%5D=modulate%3Ab%3D320');
+            url.modulate({ brightness: 320 }).toString().should.include('?t%5B%5D=modulate%3Ab%3D320&');
         });
 
         it('should handle being passed only a saturation', function() {
-            url.modulate(null, 240).toString().should.include('?t%5B%5D=modulate%3As%3D240');
+            url.modulate({ saturation: 240 }).toString().should.include('?t%5B%5D=modulate%3As%3D240&');
         });
 
         it('should handle being passed only a hue', function() {
-            url.modulate(null, null, 777).toString().should.include('?t%5B%5D=modulate%3Ah%3D777');
+            url.modulate({ hue: 777 }).toString().should.include('?t%5B%5D=modulate%3Ah%3D777&');
         });
     });
 
@@ -149,44 +214,52 @@ describe('Imbo.Url', function() {
     });
 
     describe('#resize', function() {
-        it('should return correct transformation', function() {
-            url.resize(320, 240).toString().should.include('?t%5B%5D=resize%3Awidth%3D320%2Cheight%3D240');
+        it('should return correct transformation if passed both width and height', function() {
+            url.resize({ width: 320, height: 240 }).toString().should.include('?t%5B%5D=resize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.resize(320).toString().should.include('?t%5B%5D=resize%3Awidth%3D320');
+            url.resize({ width: 320 }).toString().should.include('?t%5B%5D=resize%3Awidth%3D320&');
         });
 
         it('should handle being passed only a height', function() {
-            url.resize(null, 240).toString().should.include('?t%5B%5D=resize%3Aheight%3D240');
+            url.resize({ height: 240 }).toString().should.include('?t%5B%5D=resize%3Aheight%3D240&');
+        });
+
+        it('should throw an error if neither width or height is provided', function() {
+            assert.throws(function() { url.resize({ }); }, Error);
         });
     });
 
     describe('#rotate', function() {
         it('should throw an error if angle is not a number', function() {
-            assert.throws(function() { url.rotate('foo'); }, Error);
+            assert.throws(function() { url.rotate({ angle: 'foo' }); }, Error);
         });
 
         it('should allow a custom background color', function() {
-            url.rotate(-45, 'f00baa').toString().should.include('?t%5B%5D=rotate%3Aangle%3D-45%2Cbg%3Df00baa');
+            url.rotate({ angle: -45, bg: 'f00baa' }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D-45%2Cbg%3Df00baa');
         });
 
         it('should default to a black background color', function() {
-            url.rotate(30).toString().should.include('?t%5B%5D=rotate%3Aangle%3D30%2Cbg%3D000000');
+            url.rotate({ angle: 30 }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D30%2Cbg%3D000000');
         });
 
         it('should handle angles with decimals', function() {
-            url.rotate(13.37).toString().should.include('?t%5B%5D=rotate%3Aangle%3D13.37%2Cbg%3D000000');
+            url.rotate({ angle: 13.37 }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D13.37%2Cbg%3D000000');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.rotate(51, '#c00c00').toString().should.include('?t%5B%5D=rotate%3Aangle%3D51%2Cbg%3Dc00c00');
+            url.rotate({ angle: 51, bg: '#c00c00' }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D51%2Cbg%3Dc00c00');
         });
     });
 
     describe('#sepia', function() {
         it('should return correct transformation', function() {
-            url.sepia(90).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D90');
+            url.sepia({ threshold: 90 }).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D90');
+        });
+
+        it('should handle being passed an integer instead of an object', function() {
+            url.sepia(36).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D36');
         });
 
         it('should handle non-integers correctly', function() {
@@ -195,6 +268,10 @@ describe('Imbo.Url', function() {
 
         it('should add default parameters if missing', function() {
             url.sepia().toString().should.include('t%5B%5D=sepia%3Athreshold%3D80');
+
+            url.reset();
+
+            url.sepia({}).toString().should.include('t%5B%5D=sepia%3Athreshold%3D80');
         });
     });
 
@@ -207,10 +284,13 @@ describe('Imbo.Url', function() {
     describe('#thumbnail', function() {
         it('should use default arguments if none are given', function() {
             url.thumbnail().toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
+
+            url.reset();
+            url.thumbnail({}).toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
         });
 
         it('should allow custom arguments', function() {
-            url.thumbnail(150, 100, 'inset').toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset');
+            url.thumbnail({ width: 150, height: 100, fit: 'inset' }).toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset');
         });
     });
 
@@ -231,33 +311,47 @@ describe('Imbo.Url', function() {
             url.watermark().toString().should.include(
                 '?t%5B%5D=watermark' + encodeURIComponent(':position=top-left,x=0,y=0')
             );
+
+            url.reset();
+
+            url.watermark({}).toString().should.include(
+                '?t%5B%5D=watermark' + encodeURIComponent(':position=top-left,x=0,y=0')
+            );
         });
 
         it('should include imageIdentifier, if passed', function() {
-            url.watermark(catMd5).toString().should.include('img%3D' + catMd5);
+            url.watermark({ imageIdentifier: catMd5 }).toString().should.include('img%3D' + catMd5);
         });
 
         it('should include width, if passed', function() {
-            url.watermark(null, 50).toString().should.include('width%3D50');
+            url.watermark({ width: 50 }).toString().should.include('width%3D50');
         });
 
         it('should include height, if passed', function() {
-            url.watermark(null, null, 120).toString().should.include('height%3D120');
+            url.watermark({ height: 120 }).toString().should.include('height%3D120');
         });
 
         it('should use the passed position mode', function() {
-            url.watermark(catMd5, 120, 120, 'bottom-left').toString().should.include('position%3Dbottom-left');
+            url.watermark({ position: 'bottom-left'}).toString().should.include('position%3Dbottom-left');
         });
 
         it('should use the passed x and y coordinates', function() {
-            url.watermark(catMd5, 120, 120, 'bottom-left', 66, 77)
+            url.watermark({ x: 66, y: 77 })
                 .toString()
                 .should
                 .include('x%3D66%2Cy%3D77');
         });
 
         it('should generate correct transformation with all arguments set', function() {
-            url.watermark(catMd5, 33, 44, 'center', 55, 66)
+            url
+                .watermark({
+                    imageIdentifier: catMd5,
+                    width: 33,
+                    height: 44,
+                    position: 'center',
+                    x: 55,
+                    y: 66
+                })
                 .toString()
                 .should
                 .include('?t%5B%5D=watermark' + encodeURIComponent(
@@ -338,8 +432,8 @@ describe('Imbo.Url', function() {
 
         it('should return transformations that are not URL-encoded', function() {
             url
-                .maxSize(66, 77)
-                .rotate(19, 'bf1942');
+                .maxSize({ width: 66, height: 77 })
+                .rotate({ angle: 19, bg: 'bf1942' });
 
             var transformations = url.getTransformations();
             transformations[0].should.equal('maxSize:width=66,height=77');
@@ -391,38 +485,38 @@ describe('Imbo.Url', function() {
         });
 
         it('should generate correct URL-encoded URLs for advanced combinations', function() {
-            url.flipVertically().maxSize(123, 456).border('#bf1942').getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically&t%5B%5D=maxSize%3Awidth%3D123%2Cheight%3D456&t%5B%5D=border%3Acolor%3Dbf1942%2Cwidth%3D1%2Cheight%3D1&accessToken=02a5af1bc197e03d3a226878a8181880d01c2e9ac1a380da0550dccb0519f07e');
+            url.flipVertically().maxSize({ width: 123, height: 456 }).border({ color: '#bf1942' }).getUrl().should.equal('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically&t%5B%5D=maxSize%3Awidth%3D123%2Cheight%3D456&t%5B%5D=border%3Acolor%3Dbf1942%2Cwidth%3D1%2Cheight%3D1%2Cmode%3Doutbound&accessToken=9258d52a05c40a6ca82e69a435a510855506caf565845f2c7bed863e2bb3f25b');
         });
 
         it('should generate correct access tokens for various urls', function() {
-            url.flipVertically().maxSize(123, 456).border('#bf1942').getUrl().should.include('accessToken=02a5af1bc197e03d3a226878a8181880d01c2e9ac1a380da0550dccb0519f07e');
-            url.reset().thumbnail(123, 456).flipHorizontally().canvas(150, 160, 'inset', 17, 18, 'c0ff83').getUrl().should.include('accessToken=0eabe01f6897360b5da05b9450b9e236fc6ff4e8408f541dc950cff5fdb97a3b');
+            url.flipVertically().maxSize({ width: 123, height: 456 }).border({ color: '#bf1942' }).getUrl().should.include('accessToken=9258d52a05c40a6ca82e69a435a510855506caf565845f2c7bed863e2bb3f25b');
+            url.reset().thumbnail({ width: 123, height: 456 }).flipHorizontally().canvas({ width: 150, height: 160, mode: 'inset', x: 17, y: 18, bg: 'c0ff83' }).getUrl().should.include('accessToken=0eabe01f6897360b5da05b9450b9e236fc6ff4e8408f541dc950cff5fdb97a3b');
 
             // Real stress-testing here...
             url
                 .reset()
                 .autoRotate()
-                .border('#bf1942', 2, 3)
-                .canvas(150, 160, 'inset', 17, 18, 'c0ff83')
-                .compress(77)
+                .border({ color: '#bf1942', width: 2, height: 3 })
+                .canvas({ width: 15, height: 16, mode: 'inset', x: 17, y: 18, bg: 'f00' })
+                .compress({ level: 77 })
                 .convert('gif')
-                .crop(10, 12, 140, 140, 'center-x')
+                .crop({ x: 10, y: 12, width: 140, height: 140, mode: 'center-x' })
                 .desaturate()
                 .flipHorizontally()
                 .flipVertically()
-                .maxSize(130, 120)
-                .modulate(11, 22, 33)
+                .maxSize({ width: 130, height: 120 })
+                .modulate({ brightness: 11, saturation: 22, hue: 33 })
                 .progressive()
-                .resize(110, 100)
-                .rotate(17.8, 'c08833')
-                .sepia(60)
+                .resize({ width: 110, height: 100 })
+                .rotate({ angle: 17.8, bg: 'c08833' })
+                .sepia({ threshold: 60 })
                 .strip()
-                .thumbnail(100, 90, 'inbound')
+                .thumbnail({ width: 100, height: 90, fit: 'inbound' })
                 .transpose()
                 .transverse()
-                .watermark(catMd5, 44, 55, 'top-left', 11, 22)
+                .watermark({ imageIdentifier: catMd5, width: 44, height: 55, position: 'top-left', x: 11, y: 22 })
                 .getUrl()
-                .should.include('accessToken=2f1f9a3cbb9778e495389f54affc21789ad79d37167e3ebecc91100d3e3f056b');
+                .should.include('accessToken=71b10b6e437ff1750a32f290c7ea072299b35f0fb87a4c2dd629fbd66ff730fb');
         });
     });
 
