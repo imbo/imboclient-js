@@ -970,54 +970,77 @@ var ImboUrl = function(options) {
     this.queryString = options.queryString;
 };
 
+// Simple function wrappers for better readability and compression
+var toInt = function(num) { return parseInt(num, 10); },
+    isNumeric = function(num) { return !isNaN(num); };
+
 extend(ImboUrl.prototype, {
     autoRotate: function() {
         return this.append('autoRotate');
     },
 
-    border: function(color, width, height) {
-        color  = (color || '000000').replace(/^#/, '');
-        width  = parseInt(isNaN(width)  ? 1 : width,  10);
-        height = parseInt(isNaN(height) ? 1 : height, 10);
-        return this.append('border:color=' + color + ',width=' + width + ',height=' + height);
-    },
+    border: function(options) {
+        options = options || {};
 
-    canvas: function(width, height, mode, x, y, bg) {
         var params = [
-            'width=' + parseInt(width, 10),
-            'height=' + parseInt(height, 10),
+            'color='  + (options.color  || '000000').replace(/^#/, ''),
+            'width='  + toInt(options.width  || 1),
+            'height=' + toInt(options.height || 1),
+            'mode='   + (options.mode   || 'outbound')
         ];
 
-        if (mode) {
-            params.push('mode=' + mode);
+        return this.append('border:' + params.join(','));
+    },
+
+    canvas: function(options) {
+        options = options || {};
+
+        if (!options.width || !options.height) {
+            throw new Error('width and height must be specified');
         }
 
-        if (x) {
-            params.push('x=' + parseInt(x, 10));
+        var params = [
+            'width='  + toInt(options.width),
+            'height=' + toInt(options.height),
+        ];
+
+        if (options.mode) {
+            params.push('mode=' + options.mode);
         }
 
-        if (y) {
-            params.push('y=' + parseInt(y, 10));
+        if (options.x) {
+            params.push('x=' + toInt(options.x));
         }
 
-        if (bg) {
-            params.push('bg=' + bg.replace(/^#/, ''));
+        if (options.y) {
+            params.push('y=' + toInt(options.y));
+        }
+
+        if (options.bg) {
+            params.push('bg=' + options.bg.replace(/^#/, ''));
         }
 
         return this.append('canvas:' + params.join(','));
     },
 
-    compress: function(level) {
-        level = parseInt(level, 10);
-        return this.append('compress:level=' + (level ? level : 75));
+    compress: function(options) {
+        var level = (options || {}).level || options;
+        return this.append('compress:level=' + (isNumeric(level) ? level : 75));
     },
 
     convert: function(type) {
-        this.imageIdentifier  = this.imageIdentifier.substr(0, 32) + '.' + type;
+        this.imageIdentifier = this.imageIdentifier.substr(0, 32) + '.' + type;
         return this;
     },
 
-    crop: function(x, y, width, height, mode) {
+    crop: function(options) {
+        var opts   = options || {},
+            mode   = opts.mode,
+            x      = opts.x,
+            y      = opts.y,
+            width  = opts.width,
+            height = opts.height;
+
         if (!mode && (isNaN(x) || isNaN(y))) {
             throw new Error('x and y needs to be specified without a crop mode');
         }
@@ -1031,16 +1054,16 @@ extend(ImboUrl.prototype, {
         }
 
         var params = [
-            'width='  + parseInt(width,  10),
-            'height=' + parseInt(height, 10),
+            'width='  + toInt(width),
+            'height=' + toInt(height),
         ];
 
-        if (!isNaN(x)) {
-            params.push('x=' + parseInt(x, 10));
+        if (isNumeric(x)) {
+            params.push('x=' + toInt(x));
         }
 
-        if (!isNaN(y)) {
-            params.push('y=' + parseInt(y, 10));
+        if (isNumeric(y)) {
+            params.push('y=' + toInt(y));
         }
 
         if (mode) {
@@ -1062,33 +1085,43 @@ extend(ImboUrl.prototype, {
         return this.append('flipVertically');
     },
 
-    maxSize: function(width, height) {
-        var params = [];
+    maxSize: function(options) {
+        var params = [],
+            opts   = options || {};
 
-        if (width) {
-            params.push('width='  + parseInt(width,  10));
+        if (opts.width) {
+            params.push('width='  + toInt(opts.width));
         }
 
-        if (height) {
-            params.push('height=' + parseInt(height, 10));
+        if (opts.height) {
+            params.push('height=' + toInt(opts.height));
+        }
+
+        if (!params.length) {
+            throw new Error('width and/or height needs to be specified');
         }
 
         return this.append('maxSize:' + params.join(','));
     },
 
-    modulate: function(brightness, saturation, hue) {
-        var params = [];
+    modulate: function(options) {
+        var params = [],
+            opts   = options || {};
 
-        if (brightness !== null) {
-            params.push('b=' + brightness);
+        if (isNumeric(opts.brightness)) {
+            params.push('b=' + opts.brightness);
         }
 
-        if (saturation !== null && saturation !== undefined) {
-            params.push('s=' + saturation);
+        if (isNumeric(opts.saturation)) {
+            params.push('s=' + opts.saturation);
         }
 
-        if (hue !== null && hue !== undefined) {
-            params.push('h=' + hue);
+        if (isNumeric(opts.hue)) {
+            params.push('h=' + opts.hue);
+        }
+
+        if (!params.length) {
+            throw new Error('brightness, saturation or hue needs to be specified');
         }
 
         return this.append('modulate:' + params.join(','));
@@ -1098,15 +1131,16 @@ extend(ImboUrl.prototype, {
         return this.append('progressive');
     },
 
-    resize: function(width, height) {
-        var params = [];
+    resize: function(options) {
+        var params = [],
+            opts   = options || {};
 
-        if (width) {
-            params.push('width='  + parseInt(width,  10));
+        if (opts.width) {
+            params.push('width='  + toInt(opts.width));
         }
 
-        if (height) {
-            params.push('height=' + parseInt(height, 10));
+        if (opts.height) {
+            params.push('height=' + toInt(opts.height));
         }
 
         if (!params.length) {
@@ -1116,29 +1150,33 @@ extend(ImboUrl.prototype, {
         return this.append('resize:' + params.join(','));
     },
 
-    rotate: function(angle, bg) {
-        if (isNaN(angle)) {
+    rotate: function(options) {
+        var opts = options || {};
+
+        if (isNaN(opts.angle)) {
             throw new Error('angle needs to be specified');
         }
 
-        bg = (bg || '000000').replace(/^#/, '');
-        return this.append('rotate:angle=' + angle + ',bg=' + bg);
+        var bg = (opts.bg || '000000').replace(/^#/, '');
+        return this.append('rotate:angle=' + opts.angle + ',bg=' + bg);
     },
 
-    sepia: function(threshold) {
-        threshold = parseInt(threshold, 10);
-        return this.append('sepia:threshold=' + (threshold || 80));
+    sepia: function(options) {
+        var threshold = (options || {}).threshold || options;
+        return this.append('sepia:threshold=' + (isNumeric(threshold) ? threshold : 80));
     },
 
     strip: function() {
         return this.append('strip');
     },
 
-    thumbnail: function(width, height, fit) {
+    thumbnail: function(options) {
+        options = options || {};
+
         return this.append(
-            'thumbnail:width=' + (width || 50) +
-            ',height=' + (height || 50) +
-            ',fit=' + (fit || 'outbound')
+            'thumbnail:width=' + (options.width || 50) +
+            ',height=' + (options.height || 50) +
+            ',fit=' + (options.fit || 'outbound')
         );
     },
 
@@ -1150,23 +1188,25 @@ extend(ImboUrl.prototype, {
         return this.append('transverse');
     },
 
-    watermark: function(imageIdentifier, width, height, position, x, y) {
+    watermark: function(options) {
+        options = options || {};
+
         var params = [
-            'position=' + (position || 'top-left'),
-            'x=' + (x || 0),
-            'y=' + (y || 0)
+            'position=' + (options.position || 'top-left'),
+            'x=' + toInt(options.x || 0),
+            'y=' + toInt(options.y || 0)
         ];
 
-        if (imageIdentifier) {
-            params.push('img=' + imageIdentifier);
+        if (options.imageIdentifier) {
+            params.push('img=' + options.imageIdentifier);
         }
 
-        if (width > 0) {
-            params.push('width=' + width);
+        if (options.width > 0) {
+            params.push('width=' + toInt(options.width));
         }
 
-        if (height > 0) {
-            params.push('height=' + height);
+        if (options.height > 0) {
+            params.push('height=' + toInt(options.height));
         }
 
         return this.append('watermark:' + params.join(','));
@@ -1324,7 +1364,7 @@ process.chdir = function (dir) {
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.1.2",
+    "version": "2.2.0",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
