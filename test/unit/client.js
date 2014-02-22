@@ -356,7 +356,7 @@ describe('ImboClient', function() {
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
-                    'X-Imbo-Imageidentifier': catMd5,
+                    'X-Imbo-ImageIdentifier': catMd5,
                     'Content-Type': 'application/json'
                 });
 
@@ -376,7 +376,9 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
-                .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
+                .reply(400, 'Image already exists', {
+                    'X-Imbo-Imageidentifier': catMd5
+                });
 
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier) {
@@ -421,7 +423,9 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
-                .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
+                .reply(400, 'Image already exists', {
+                    'X-Imbo-Imageidentifier': catMd5
+                });
 
 
             client.addImageFromUrl(stcUrl + '/cat.jpg', function(err, imageIdentifier) {
@@ -436,7 +440,7 @@ describe('ImboClient', function() {
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
-                    'X-Imbo-Imageidentifier': catMd5,
+                    'X-Imbo-ImageIdentifier': catMd5,
                     'Content-Type': 'application/json'
                 });
 
