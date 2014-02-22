@@ -292,7 +292,7 @@ describe('ImboClient', function() {
 
         it('should return true if the image exists on disk and on server', function(done) {
             mock.filteringPath(signatureCleaner)
-                .get('/users/pub/images?page=1&limit=1&checksums[]=' + catMd5)
+                .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, { search: { hits: 1 } }, {
                     'Content-Type': 'application/json'
                 });
@@ -306,7 +306,7 @@ describe('ImboClient', function() {
 
         it('should return false if the image exists on disk but not on server', function(done) {
             mock.filteringPath(signatureCleaner)
-                .get('/users/pub/images?page=1&limit=1&checksums[]=' + catMd5)
+                .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, { search: { hits: 0 } }, {
                     'Content-Type': 'application/json'
                 });
