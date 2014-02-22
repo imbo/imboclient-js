@@ -434,12 +434,12 @@ exports.sha256hmac = function(key, data) {
  */
 'use strict';
 
-var ImboUrl   = _dereq_('./url')
-  , ImboQuery = _dereq_('./query')
-  , crypto    = _dereq_('./browser/crypto')
-  , request   = _dereq_('./browser/request')
-  , readers   = _dereq_('./browser/readers')
-  , features  = _dereq_('./browser/feature-support');
+var ImboUrl   = _dereq_('./url'),
+    ImboQuery = _dereq_('./query'),
+    crypto    = _dereq_('./browser/crypto'),
+    request   = _dereq_('./browser/request'),
+    readers   = _dereq_('./browser/readers'),
+    features  = _dereq_('./browser/feature-support');
 
 var ImboClient = function(serverUrls, publicKey, privateKey) {
     this.options = {
@@ -494,10 +494,10 @@ ImboClient.prototype.getResourceUrl = function(resourceIdentifier, path, query) 
 };
 
 ImboClient.prototype.getSignedResourceUrl = function(method, url, date) {
-    var timestamp = (date || new Date()).toISOString().replace(/\.\d+Z$/, 'Z');
-    var signature = this.generateSignature(method, url.toString(), timestamp);
+    var timestamp = (date || new Date()).toISOString().replace(/\.\d+Z$/, 'Z'),
+        signature = this.generateSignature(method, url.toString(), timestamp),
+        qs        = url.toString().indexOf('?') > -1 ? '&' : '?';
 
-    var qs = url.toString().indexOf('?') > -1 ? '&' : '?';
     qs += 'signature='  + encodeURIComponent(signature);
     qs += '&timestamp=' + encodeURIComponent(timestamp);
 
@@ -505,8 +505,9 @@ ImboClient.prototype.getSignedResourceUrl = function(method, url, date) {
 };
 
 ImboClient.prototype.generateSignature = function(method, url, timestamp) {
-    var data = [method, url, this.options.publicKey, timestamp].join('|');
-    var signature = crypto.sha256(this.options.privateKey, data);
+    var data = [method, url, this.options.publicKey, timestamp].join('|'),
+        signature = crypto.sha256(this.options.privateKey, data);
+
     return signature;
 };
 
@@ -581,7 +582,7 @@ ImboClient.prototype.imageExists = function(imgPath, callback) {
 };
 
 ImboClient.prototype.imageWithChecksumExists = function(checksum, callback) {
-    var query = (new ImboQuery()).checksums([checksum]).limit(1);
+    var query = (new ImboQuery()).originalChecksums([checksum]).limit(1);
     this.getImages(query, function(err, images, search) {
         if (err) {
             return callback(err);
@@ -592,26 +593,23 @@ ImboClient.prototype.imageWithChecksumExists = function(checksum, callback) {
 };
 
 ImboClient.prototype.addImageFromBuffer = function(source, callback) {
-    var url        = this.getSignedResourceUrl('POST', this.getImagesUrl())
-      , isFile     = typeof window !== 'undefined' && source instanceof window.File
-      , onComplete = callback.onComplete || callback
-      , onProgress = callback.onProgress || null;
+    var url        = this.getSignedResourceUrl('POST', this.getImagesUrl()),
+        isFile     = typeof window !== 'undefined' && source instanceof window.File,
+        onComplete = callback.onComplete || callback,
+        onProgress = callback.onProgress || null;
 
     request({
         method : 'POST',
         uri    : url,
         body   : source,
+        json   : true,
         headers: {
             'Accept': 'application/json',
             'User-Agent': 'imboclient-js',
             'Content-Length': isFile ? source.size : source.length
         },
-        onComplete: function(err, res) {
-            if (err) {
-                return onComplete(err, undefined, res);
-            }
-
-            onComplete(undefined, res.headers['x-imbo-imageidentifier'], res);
+        onComplete: function(err, res, body) {
+            onComplete(err, body ? body.imageIdentifier : undefined, res);
         },
         onProgress: onProgress
     });
@@ -641,17 +639,14 @@ ImboClient.prototype.addImage = function(file, callback) {
         readers.createReadStream(file).pipe(request({
             method: 'POST',
             uri: this.getSignedResourceUrl('POST', this.getImagesUrl()),
+            json: true,
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'imboclient-js',
                 'Content-Length': fileSize
             },
-            onComplete: function(err, res) {
-                if (err) {
-                    return callback(err, undefined, res);
-                }
-
-                callback(undefined, res.headers['x-imbo-imageidentifier'], res);
+            onComplete: function(err, res, body) {
+                callback(err, body ? body.imageIdentifier : undefined, res);
             }
         }));
     }.bind(this));
@@ -673,16 +668,13 @@ ImboClient.prototype.addImageFromUrl = function(url, callback) {
     request({ uri: url }).pipe(request({
         method: 'POST',
         uri: this.getSignedResourceUrl('POST', this.getImagesUrl()),
+        json: true,
         headers: {
             'Accept': 'application/json',
             'User-Agent': 'imboclient-js'
         },
-        onComplete: function(err, res) {
-            if (err) {
-                return callback(err, undefined, res);
-            }
-
-            callback(undefined, res.headers['x-imbo-imageidentifier'], res);
+        onComplete: function(err, res, body) {
+            callback(err, body ? body.imageIdentifier : undefined, res);
         }
     }));
 };
@@ -813,7 +805,8 @@ var ImboQuery = function() {
         ids      : [],
         checksums: [],
         fields   : [],
-        sort     : []
+        sort     : [],
+        originalChecksums: []
     };
 };
 
@@ -842,6 +835,10 @@ extend(ImboQuery.prototype, {
     checksums: function(sums) { return this.setOrGet('checksums', sums); },
     addChecksum: function(sum) { return this.appendValue('checksums', sum); },
     addChecksums: function(sums) { return this.addChecksum(sums); },
+
+    originalChecksums: function(sums) { return this.setOrGet('originalChecksums', sums); },
+    addOriginalChecksum: function(sum) { return this.appendValue('originalChecksums', sum); },
+    addOriginalChecksums: function(sums) { return this.addOriginalChecksum(sums); },
 
     fields: function(sums) { return this.setOrGet('fields', sums); },
     addField: function(sum) { return this.appendValue('fields', sum); },
@@ -925,7 +922,7 @@ extend(ImboQuery.prototype, {
         }
 
         // Get multi-value params
-        ['ids', 'checksums', 'fields', 'sort'].forEach(function(item) {
+        ['ids', 'checksums', 'originalChecksums', 'fields', 'sort'].forEach(function(item) {
             this[item].forEach(function(value) {
                 parts.push(item + '[]=' + encodeURIComponent(value));
             });
@@ -1364,7 +1361,7 @@ process.chdir = function (dir) {
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.2.0",
+    "version": "2.2.1",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
