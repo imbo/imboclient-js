@@ -174,6 +174,68 @@ describe('Imbo.Query', function() {
         });
     });
 
+    describe('#originalChecksums', function() {
+        it('should be able to set and get an array of originalChecksums', function() {
+            var values = ['some', 'values', 'to', 'return'];
+            assert.equal(query.originalChecksums(values), query, 'originalChecksums(val) should return query instance');
+            assert.equal(
+                query.originalChecksums().length,
+                values.length,
+                'originalChecksums() should contain the same number of values as the set value'
+            );
+
+            for (var i = 0; i < values.length; i++) {
+                assert.equal(
+                    query.originalChecksums().indexOf(values[i]),
+                    i,
+                    'originalChecksums() should contain the same values as the set value'
+                );
+            }
+        });
+
+        it('should create a copy of the array instead of referencing it', function() {
+            var values = ['foo', 'bar'];
+            assert.equal(query.originalChecksums(values), query, 'originalChecksums(val) should return query instance');
+            assert.notEqual(query.originalChecksums(), values);
+        });
+    });
+
+    describe('#addOriginalChecksum', function() {
+        it('should be able to append an original checksum', function() {
+            var values = ['some', 'values', 'to', 'return']
+              , added  = 'moo';
+
+            query.originalChecksums(values);
+
+            assert.equal(query.addOriginalChecksum(added), query, 'addOriginalChecksum(val) should return query instance');
+            assert.equal(
+                query.originalChecksums().indexOf(added),
+                values.length,
+                'addOriginalChecksums(id) should add the passed value to the end of the existing values'
+            );
+        });
+    });
+
+    describe('#addOriginalChecksums', function() {
+        it('should be able to append multiple originalChecksums', function() {
+            var values = ['some', 'values', 'to', 'return']
+              , added  = ['moo', 'tools'];
+
+            query.originalChecksums(values);
+
+            assert.equal(query.addOriginalChecksums(added), query, 'addOriginalChecksums(val) should return query instance');
+
+            var expected = values.concat(added);
+            for (var i = 0; i < expected.length; i++) {
+                assert.equal(
+                    query.originalChecksums().indexOf(expected[i]),
+                    i,
+                    'addOriginalChecksums() should add the passed values to the end of the existing values'
+                );
+            }
+        });
+    });
+
     describe('#fields', function() {
         it('should be able to set and get an array of fields', function() {
             var values = ['some', 'fields', 'to', 'return'];
@@ -336,6 +398,11 @@ describe('Imbo.Query', function() {
         it('should handle multiple checksums correctly', function() {
             query.checksums([123, 456]);
             assert.equal(query.toQueryString(), 'page=1&limit=20&checksums[]=123&checksums[]=456');
+        });
+
+        it('should handle multiple originalChecksums correctly', function() {
+            query.originalChecksums([123, 456]);
+            assert.equal(query.toQueryString(), 'page=1&limit=20&originalChecksums[]=123&originalChecksums[]=456');
         });
 
         it('should handle multiple sorts correctly', function() {
