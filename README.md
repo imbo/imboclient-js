@@ -179,12 +179,14 @@ var client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>')
     imageIdentifier = '61da9892205a0d5077a353eb3487e8c8';
 
 // Generate an image URL and add some transformations
-var imageUrl    = client.getImageUrl(imageIdentifier),
-    transformed = imageUrl.maxSize(320, 240).border('f00baa', 2, 2).png();
+var url = client.getImageUrl(imageIdentifier);
+url.maxSize({ width: 320, height: 240 })
+   .border({ color: 'f00baa', width: 2, height: 2 })
+   .png();
 
 // Add an img-element to the body with the transformed URL
 var img = document.createElement('img');
-img.setAttribute('src', imageUrl.toString());
+img.setAttribute('src', url.toString());
 document.body.appendChild(img);
 ```
 
