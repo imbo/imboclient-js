@@ -29,6 +29,13 @@ describe('Imbo.Query', function() {
         });
     });
 
+    describe('#metadataQuery', function() {
+        it('should be able to set and get a value', function() {
+            assert.equal(query.metadataQuery({ key: 'value' }), query, 'metadataQuery(val) should return query instance');
+            assert.equal(query.metadataQuery().key, 'value', 'metadataQuery() should return the set value');
+        });
+    });
+
     describe('#from', function() {
         it('should be able to set and get a date', function() {
             var now = new Date();
@@ -408,6 +415,17 @@ describe('Imbo.Query', function() {
         it('should handle multiple sorts correctly', function() {
             query.sort(['created:desc', 'awesomeness:asc']);
             assert.equal(query.toQueryString(), 'page=1&limit=20&sort[]=created%3Adesc&sort[]=awesomeness%3Aasc');
+        });
+
+        it('should translate "metadataQuery" into "q"', function() {
+            query.metadataQuery({ 'foo': 'bar' });
+            assert.equal(query.toQueryString().indexOf('&q=') > -1, true, '"q" param should be present');
+            assert.equal(query.toQueryString().indexOf('&metadataQuery=') === -1, true, '"metadataQuery" param should NOT be present');
+        });
+
+        it('should JSON-encode metadataQuery', function() {
+            query.metadataQuery({ 'awesomeness': { '$gte': 1337 } });
+            assert.equal(query.toQueryString(), 'page=1&limit=20&q=%7B%22awesomeness%22%3A%7B%22%24gte%22%3A1337%7D%7D');
         });
     });
 
