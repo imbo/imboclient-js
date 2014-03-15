@@ -10,10 +10,10 @@
 'use strict';
 
 // Include the essentials (we only use fs for checking for a config-file)
-var Imbo = require('../../')
-  , fs   = require('fs')
-  , md5  = '61da9892205a0d5077a353eb3487e8c8'
-  , config;
+var Imbo = require('../../'),
+    fs   = require('fs'),
+    md5  = '61da9892205a0d5077a353eb3487e8c8',
+    config;
 
 try {
     fs.statSync(__dirname + '/config.json');

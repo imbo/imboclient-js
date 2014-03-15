@@ -375,6 +375,37 @@ describe('Imbo.Query', function() {
         });
     });
 
+    describe('#reset', function() {
+        it('should reset all fields', function() {
+            query.page(5)
+                 .limit(10)
+                 .metadata(true)
+                 .from(new Date())
+                 .to(new Date())
+                 .ids(['such ids'])
+                 .checksums(['amaze'])
+                 .fields(['much fields'])
+                 .sort('wow', 'desc')
+                 .originalChecksums(['many check']);
+
+            // Sanity check
+            assert.equal(10, query.limit());
+
+            // Reset checks
+            query.reset();
+            assert.equal(1, query.page());
+            assert.equal(20, query.limit());
+            assert.equal(false, query.metadata());
+            assert.equal(null, query.from());
+            assert.equal(null, query.to());
+            assert.equal(0, query.ids().length);
+            assert.equal(0, query.checksums().length);
+            assert.equal(0, query.fields().length);
+            assert.equal(0, query.sort().length);
+            assert.equal(0, query.originalChecksums().length);
+        });
+    });
+
     describe('#toQueryString', function() {
         it('should include the defaults for page and limit', function() {
             assert.equal(query.toQueryString(), 'page=1&limit=20');
@@ -407,7 +438,7 @@ describe('Imbo.Query', function() {
 
         it('should handle multiple sorts correctly', function() {
             query.sort(['created:desc', 'awesomeness:asc']);
-            assert.equal(query.toQueryString(), 'page=1&limit=20&sort[]=created%3Adesc&sort[]=awesomeness%3Aasc');
+            assert.equal(query.toQueryString(), 'page=1&limit=20&sort[]=created:desc&sort[]=awesomeness:asc');
         });
     });
 

@@ -11,10 +11,10 @@
 'use strict';
 
 // Include the essentials (we only use fs for checking for a config-file)
-var Imbo = require('../../')
-  , fs   = require('fs')
-  , img  = __dirname + '/../../test/fixtures/cat.jpg'
-  , config;
+var Imbo = require('../../'),
+    fs   = require('fs'),
+    img  = __dirname + '/../../test/fixtures/cat.jpg',
+    config;
 
 try {
     fs.statSync(__dirname + '/config.json');
@@ -30,7 +30,7 @@ var client = new Imbo.Client(config.hosts, config.pubKey, config.privKey);
 
 // Check if the image exists on the server already
 console.log('Checking if the image already exists on server...');
-client.imageExists(img, function(err, exists) {
+client.imageExists(img, function(err, exists, imageIdentifier) {
     if (err) {
         return console.log('Oh ouch, something went wrong!', err);
     }
@@ -38,7 +38,7 @@ client.imageExists(img, function(err, exists) {
     if (exists) {
         console.log('The image already exists on server. Deleting it.');
 
-        client.deleteImage(img, function(err) {
+        client.deleteImage(imageIdentifier, function(err) {
             if (err) {
                 return console.log('Could not delete image :(', err);
             }

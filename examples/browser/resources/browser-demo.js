@@ -114,20 +114,24 @@
         var result = $('#result').removeClass('hidden');
         var url = client.getImageUrl(imageIdentifier);
         $('#image-identifier').text(imageIdentifier).attr('href', url.toString());
-        result.find('img').attr('src', url.maxSize(result.width()).toString());
+        result.find('img').attr('src', url.maxSize({ width: result.width() }).toString());
         updateUrl(url);
 
         if (!active) {
+            $('#controls [data-transformation="border"]').on('click', function() {
+                url.border({ color: 'bf1942', width: 5, height: 5 });
+            });
+
             $('#controls button').on('click', function() {
-                var el = $(this)
-                  , transformation = el.data('transformation')
-                  , args = el.data('args')
-                  , pass = args ? (args + '').split(',') : [];
+                var el = $(this),
+                    transformation = el.data('transformation'),
+                    args = el.data('args'),
+                    pass = args ? (args + '').split(',') : [];
 
                 url[transformation].apply(url, pass);
 
                 if (transformation === 'reset') {
-                    url.maxSize(result.width());
+                    url.maxSize({ width: result.width() });
                 }
 
                 updateUrl(url);
