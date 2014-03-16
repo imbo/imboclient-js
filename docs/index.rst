@@ -505,6 +505,7 @@ The available transformation methods are:
 * ``flipHorizontally()``
 * ``flipVertically()``
 * ``maxSize({ width: null, height: null })``
+* ``modulate({ brightness: 100, saturation: 100, hue: 100 })``
 * ``progressive()``
 * ``resize({ width: null, height: null })``
 * ``rotate({ angle: null, bg: '000000' })``
