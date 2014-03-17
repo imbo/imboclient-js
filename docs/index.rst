@@ -482,7 +482,7 @@ Imbo uses access tokens in the URLs to prevent `DoS attacks <http://en.wikipedia
 ``getMetadataUrl(imageIdentifier)``
     Fetch URL to the metadata of a specific image.
 
-``getShortUrl(imageUrl)``
+``getShortUrl(imageUrl, callback)``
     Fetch the short URL to an image (with optional image transformations added).
 
 All these methods return instances of different classes, and all can be used in string context to get the URL with the access token added. The instance returned from the ``getImageUrl`` is somewhat special since it will let you chain a set of transformations before generating the URL as a string:
@@ -544,9 +544,47 @@ There are also some other methods available:
     Proxies to ``convert('png')``.
 
 ``reset()``
-    Removes all transformations added to the URL instance.
+    Removes all transformations added to the ImageUrl instance.
+
+``clone()``
+    Creates a clone of the ImageUrl instance.
 
 The methods related to the image type (``convert`` and the proxy methods) can be added anywhere in the chain. Otherwise all transformations will be applied to the image in the same order as they appear in the chain.
+
+ShortUrls
++++++++++
+
+With the host, user, image identifier, transformations and access tokens all being part of an image URL, the URLs can become quite long. Imbo supports making shorter URLs, which follows this pattern: ``http://imbo.host/s/ShortId``.
+
+Instances of ``ShortUrl`` contains both the short URL (retrieved by calling ``shortUrl.toString()``) and the ID of the short URL (``shortUrl.getId()``). This ID can be used with ``deleteShortUrlForImage`` if you should wish to remove the short URL at a later time.
+
+The available methods related to short URLs are:
+
+``getShortUrl(imageUrl, callback)``
+    Generates a ``ShortUrl``. ``imageUrl`` is an instance of ``Imbo.ImageUrl``
+
+``deleteAllShortUrlsForImage(imageIdentifier, callback)``
+    Deletes every short URL that has been generated for the given image identifier.
+
+``deleteShortUrlForImage(imageIdentifier, shortUrl, callback)``
+    Deletes a specific short URL. ``shortUrl`` can be either a ``ShortUrl`` instance or the ID of a short URL.
+
+.. code-block:: js
+
+    var url = client.getImageUrl(imageIdentifier).thumbnail();
+    
+    client.getShortUrl(url, function(err, shortUrl) {
+        if (err) {
+            return console.error('An error occured: ' + err);
+        }
+
+        console.log('ShortUrl generated: ' + shortUrl.toString());
+
+        // To delete the short URL:
+        client.deleteShortUrlForImage(imageIdentifier, shortUrl, function(err) {
+            console.log(err ? ('An error occured: ' + err) : 'ShortUrl deleted');
+        });
+    });
 
 Get server status
 +++++++++++++++++

@@ -12,7 +12,8 @@
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.34.0"
+        "request": "~2.34.0",
+        "clone": "~0.1.11"
     },
     "devDependencies": {
         "grunt": "~0.4.2",
