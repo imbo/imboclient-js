@@ -1,6 +1,8 @@
 var assert    = require('assert'),
     fs        = require('fs'),
+    http      = require('http'),
     Imbo      = require('../../'),
+    request   = require('request'),
     errServer = require('../servers').createResetServer(),
     stcServer = require('../servers').createStaticServer(),
     fixtures  = __dirname + '/../fixtures',
@@ -151,8 +153,90 @@ describeIntegration('ImboClient (integration)', function() {
                 var url = client.getImageUrl(imageIdentifier).flipHorizontally();
                 client.getShortUrl(url, function(err, shortUrl) {
                     assert.ifError(err, 'getShortUrl should not give an error when getting short url');
-                    assert.ok(shortUrl.indexOf(imboHost) === 0, 'short url should contain imbo host');
+                    assert.ok(shortUrl.toString().indexOf(imboHost) === 0, 'short url should contain imbo host');
+                    assert.ok(shortUrl.toString().match(/\/s\/[a-zA-Z0-9]{7}$/));
                     done();
+                });
+            });
+        });
+
+        it('should be able to get a short url that works', function(done) {
+            client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                var url = client.getImageUrl(imageIdentifier).sepia().png();
+                client.getShortUrl(url, function(err, shortUrl) {
+                    request.head(shortUrl.toString(), function(err, res) {
+                        assert.equal(200, res.statusCode);
+                        assert.equal('image/png', res.headers['content-type']);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#deleteAllShortUrlsForImage()', function() {
+        it('should return error on backend failure', function(done) {
+            errClient.deleteAllShortUrlsForImage(catMd5, function(err) {
+                assert.ok(err, 'deleteAllShortUrlsForImage should give error if host is unreachable');
+                done();
+            });
+        });
+
+        it('should delete all short URLs currently present', function(done) {
+            client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                var url = client.getImageUrl(imageIdentifier).sepia().png();
+                client.getShortUrl(url, function(err, shortUrl) {
+                    request.head(shortUrl.toString(), function(err, res) {
+                        assert.equal(200, res.statusCode, 'After generating the ShortUrl, it should exist');
+                        assert.equal('image/png', res.headers['content-type']);
+
+                        client.deleteAllShortUrlsForImage(imageIdentifier, function(err) {
+                            assert.ifError(err, 'deleteAllShortUrlsForImage() should not give an error on success');
+
+                            request.head(shortUrl.toString(), function(err, secondRes) {
+                                var msg = 'After deleting all ShortUrls, it should no longer exist';
+                                msg    += '(expected 404, got ' + secondRes.statusCode + ') - ';
+                                msg    += 'HEAD ' + shortUrl.toString();
+
+                                assert.equal(404, secondRes.statusCode, msg);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+    describe('#deleteShortUrlForImage', function() {
+        it('should delete the provided ShortUrl', function(done) {
+            // Add the image
+            client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                var url = client.getImageUrl(imageIdentifier).desaturate().jpg();
+
+                // Generate a short-url
+                client.getShortUrl(url, function(err, shortUrl) {
+
+                    // Verify that the short-url works
+                    request.head(shortUrl.toString(), function(err, res) {
+                        assert.equal(200, res.statusCode, 'After generating the ShortUrl, it should exist');
+                        assert.equal('image/jpeg', res.headers['content-type']);
+
+                        // Delete the short-url
+                        client.deleteShortUrlForImage(imageIdentifier, shortUrl.getId(), function(err) {
+                            assert.ifError(err, 'deleteShortUrlForImage() should not give an error on success');
+
+                            // Verify that the short-url has been deleted
+                            request.head(shortUrl.toString(), function(err, secondRes) {
+                                var msg = 'After deleting the ShortUrl, it should no longer exist';
+                                msg    += '(expected 404, got ' + secondRes.statusCode + ') - ';
+                                msg    += 'HEAD ' + shortUrl.toString();
+
+                                assert.equal(404, secondRes.statusCode, msg);
+                                done();
+                            });
+                        });
+                    });
                 });
             });
         });

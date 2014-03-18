@@ -62,15 +62,21 @@ client.imageExists(img, function(err, exists, imageIdentifier) {
             console.log('URL: ' + url);
 
             // Bit more interesting, lets add some transformations:
-            url.thumbnail(200, 200).border('000', 5, 5);
+            url.thumbnail({ width: 200, height: 200 }).border({ color: '000', width: 5, height: 5 });
             console.log('Transformed URL: ' + url);
 
             // Maybe we just want to flip it, instead?
             url.reset().flipVertically();
             console.log('Vertically flipped: ' + url);
 
-            // And we're done
-            console.log('All done...');
+            // Or maybe we want a short URL to the image, with some transformations?
+            url.reset().maxSize({ width: 640 }).sepia().png();
+            client.getShortUrl(url, function(err, shortUrl) {
+                console.log('ShortURL: ' + shortUrl.toString());
+
+                // And we're done
+                console.log('All done...');
+            });
         });
 
     }

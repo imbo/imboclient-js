@@ -7,7 +7,8 @@
  * distributed with this source code.
  */
 exports.Client   = require('./lib/client');
-exports.Url      = require('./lib/url');
-exports.ImageUrl = require('./lib/imageurl');
+exports.Url      = require('./lib/url/url');
+exports.ImageUrl = require('./lib/url/imageurl');
+exports.ShortUrl = require('./lib/url/shorturl');
 exports.Query    = require('./lib/query');
 exports.Version  = require('./package.json').version;

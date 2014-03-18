@@ -389,6 +389,18 @@ describe('Imbo.ImageUrl', function() {
         });
     });
 
+    describe('#clone', function() {
+        it('should return a clone of itself', function() {
+            url.flipHorizontally().thumbnail();
+
+            var clone = url.clone();
+            assert.equal(url.toString(), clone.toString());
+
+            clone.border();
+            assert.notEqual(url.toString(), clone.toString());
+        });
+    });
+
     describe('#append', function() {
         it('should append to the transformations array', function() {
             url.append('custom:foo=bar').toString().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=custom%3Afoo%3Dbar');

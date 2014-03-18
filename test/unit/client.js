@@ -255,7 +255,7 @@ describe('ImboClient', function() {
             var imgUrl = client.getImageUrl(catMd5);
 
             mockImgUrl.filteringPath(signatureCleaner)
-                .head('/users/pub/images/' + catMd5)
+                .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(503);
 
             client.getShortUrl(imgUrl, function(err) {
@@ -264,12 +264,14 @@ describe('ImboClient', function() {
             });
         });
 
-        it('should return error if no shorturl header was found', function(done) {
+        it('should return error if no id was present in body', function(done) {
             var imgUrl = client.getImageUrl(catMd5);
 
             mockImgUrl.filteringPath(signatureCleaner)
-                .head('/users/pub/images/' + catMd5)
-                .reply(200, 'OK');
+                .post('/users/pub/images/' + catMd5 + '/shorturls')
+                .reply(200, JSON.stringify({
+                    'foo': 'bar'
+                }), { 'Content-Type': 'application/json' });
 
             client.getShortUrl(imgUrl, function(err) {
                 assert.ok(err);
@@ -278,20 +280,72 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            var imgUrl   = client.getImageUrl(catMd5),
-                shortUrl = 'http://imbo/s/axamoo';
+            var imgUrl   = client.getImageUrl(catMd5).thumbnail().png(),
+                expected = 'http://imbo1/s/imboF00';
 
             mockImgUrl.filteringPath(signatureCleaner)
-                .head('/users/pub/images/' + catMd5)
-                .reply(200, 'OK', { 'X-Imbo-ShortUrl': shortUrl });
+                .post('/users/pub/images/' + catMd5 + '/shorturls')
+                .reply(200, JSON.stringify({
+                    'id': 'imboF00'
+                }), { 'Content-Type': 'application/json' });
 
-            client.getShortUrl(imgUrl, function(err, returnedShortUrl) {
+            client.getShortUrl(imgUrl, function(err, shortUrl) {
                 assert.ifError(err, 'getShortUrl should not give an error on success');
-                assert.equal(shortUrl, returnedShortUrl);
+                assert.equal(shortUrl.toString(), expected);
                 done();
             });
         });
 
+    });
+
+    describe('#deleteAllShortUrlsForImage()', function() {
+        it('should return error on backend failure', function(done) {
+            mockImgUrl.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
+                .reply(503);
+
+            client.deleteAllShortUrlsForImage(catMd5, function(err) {
+                assert.equal(503, err);
+                done();
+            });
+        });
+
+        it('should not return an error on a 200-response', function(done) {
+            mockImgUrl.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
+                .reply(200, 'OK');
+
+            client.deleteAllShortUrlsForImage(catMd5, function(err) {
+                assert.ifError(err, 'deleteAllShortUrlsForImage should not give an error on success');
+                done();
+            });
+        });
+    });
+
+    describe('#deleteShortUrlForImage', function() {
+        var shortId = 'imboF00';
+
+        it('should return error on backend failure', function(done) {
+            mockImgUrl.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
+                .reply(503);
+
+            client.deleteShortUrlForImage(catMd5, shortId, function(err) {
+                assert.equal(503, err);
+                done();
+            });
+        });
+
+        it('should not return an error on a 200-response', function(done) {
+            mockImgUrl.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
+                .reply(200, 'OK');
+
+            client.deleteShortUrlForImage(catMd5, shortId, function(err) {
+                assert.ifError(err, 'deleteShortUrlForImage should not give an error on success');
+                done();
+            });
+        });
     });
 
     describe('#generateSignature', function() {
