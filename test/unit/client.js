@@ -172,15 +172,44 @@ describe('ImboClient', function() {
     });
 
     describe('#getImageUrl', function() {
-        it('should return a ImboUrl-instance', function() {
+        it('should return a ImageUrl-instance', function() {
             var url = client.getImageUrl(catMd5);
-            assert.equal(true, url instanceof Imbo.ImageUrl, 'getImageUrl did not return instance of ImboUrl');
+            assert.equal(true, url instanceof Imbo.ImageUrl, 'getImageUrl did not return instance of ImageUrl');
         });
 
         it('should return something containing the image identifier', function() {
             var url = client.getImageUrl(catMd5).toString();
             assert.equal(true, url.indexOf(catMd5) > 0, url + ' did not contain ' + catMd5);
         });
+    });
+
+    describe('#parseImageUrl', function() {
+        it('should return an ImageUrl-instance', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs  = '?t[]=flipHorizontally';
+
+            var imageUrl = client.parseImageUrl(url + qs);
+
+            assert.ok(imageUrl instanceof Imbo.ImageUrl, 'getImageUrl did not return instance of ImageUrl');
+        });
+
+        it('should allow passing a different private key', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg';
+
+            var original = client.parseImageUrl(url).toString().replace(/.*?accessToken=/, '');
+            var modified = client.parseImageUrl(url, 'foo').toString().replace(/.*?accessToken=/, '');
+
+            assert.notEqual(original, modified);
+        });
+
+        it('should correctly parse URLs with transformations', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs  = '?t[]=flipHorizontally';
+
+            client.parseImageUrl(url + qs).toString().should.include(url + '?t%5B%5D=flipHorizontally');
+        });
+
+        // More tests are defined in the ImageUrl test suite
     });
 
     describe('#getImagesUrl', function() {

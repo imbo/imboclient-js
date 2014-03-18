@@ -543,4 +543,68 @@ describe('Imbo.ImageUrl', function() {
         });
     });
 
+    describe('#parse', function() {
+        it('should correctly parse simple URLs', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5;
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '?accessToken=');
+        });
+
+        it('should correctly parse URLs with extensions', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg';
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '?accessToken=');
+        });
+
+        it('should correctly parse URLs with existing query string', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?custom=param';
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '&accessToken=');
+
+            url = 'http://imbo/users/pub/images/' + catMd5 + '?custom=param';
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '&accessToken=');
+        });
+
+        it('should correctly parse URLs with transformations', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs  = '?t[]=flipHorizontally';
+
+            Imbo.ImageUrl.parse(url + qs, 'foo').toString().should.include(url + '?t%5B%5D=flipHorizontally');
+        });
+
+        it('should decode and put transformations in transformations array', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs  = '?t[]=crop%3Ax%3D0%2Cy%3D0%2Cwidth%3D927%2Cheight%3D621&t%5B%5D=thumbnail%3Awidth%3D320%2Cheight%3D214%2Cfit%3Dinset&t[]=canvas%3Awidth%3D320%2Cheight%3D214%2Cmode%3Dcenter';
+
+            var imgUrl = Imbo.ImageUrl.parse(url + qs, 'foo'),
+                transformations = imgUrl.getTransformations(),
+                expected = [
+                    'crop:x=0,y=0,width=927,height=621',
+                    'thumbnail:width=320,height=214,fit=inset',
+                    'canvas:width=320,height=214,mode=center'
+                ];
+
+            assert.equal(transformations.length, expected.length);
+            for (var i = 0; i < transformations.length; i++) {
+                assert.equal(transformations[i], expected[i]);
+            }
+        });
+
+        it('should remove existing access token from query string', function() {
+            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?accessToken=foo';
+
+            Imbo.ImageUrl.parse(url, 'foo').getQueryString().should.equal('');
+        });
+
+        it('should generate the same accessToken as a manually constructed instance', function() {
+            var manual = new Imbo.ImageUrl({
+                'baseUrl': baseUrl,
+                'publicKey': pub,
+                'privateKey': priv,
+                'imageIdentifier': catMd5
+            }).sepia();
+
+            var parsed = Imbo.ImageUrl.parse(manual.toString(), priv);
+            assert.equal(manual.toString(), parsed.toString());
+            assert.equal(manual.flipVertically().toString(), parsed.flipVertically().toString());
+        });
+    });
+
 });
