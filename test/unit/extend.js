@@ -1,5 +1,5 @@
-var extend = require('../../lib/utils/extend')
-  , assert = require('assert');
+var extend = require('../../lib/utils/extend'),
+    assert = require('assert');
 
 describe('extend', function() {
 

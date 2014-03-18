@@ -1,12 +1,12 @@
 var assert    = require('assert'),
     fs        = require('fs'),
-    http      = require('http'),
     Imbo      = require('../../'),
     request   = require('request'),
-    errServer = require('../servers').createResetServer(),
-    stcServer = require('../servers').createStaticServer(),
     fixtures  = __dirname + '/../fixtures',
     catMd5    = '61da9892205a0d5077a353eb3487e8c8';
+
+require('../servers').createResetServer();
+require('../servers').createStaticServer();
 
 var stcUrl = 'http://127.0.0.1:6775',
     describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip),
@@ -17,6 +17,8 @@ var stcUrl = 'http://127.0.0.1:6775',
     errClient;
 
 describeIntegration('ImboClient (integration)', function() {
+    this.timeout(5000);
+
     before(function() {
         errClient = new Imbo.Client('http://127.0.0.1:6776', 'pub', 'priv');
     });

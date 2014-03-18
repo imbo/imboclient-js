@@ -1,5 +1,5 @@
-var features = require('../../lib/browser/feature-support')
-  , assert   = require('assert');
+var features = require('../../lib/browser/feature-support'),
+    assert   = require('assert');
 
 describe('feature-support', function() {
 

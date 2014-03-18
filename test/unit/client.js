@@ -1,12 +1,13 @@
 var assert    = require('assert'),
     nock      = require('nock'),
-    should    = require('should'),
     fs        = require('fs'),
     Imbo      = require('../../'),
-    errServer = require('../servers').createResetServer(),
-    stcServer = require('../servers').createStaticServer(),
     fixtures  = __dirname + '/../fixtures',
     catMd5    = '61da9892205a0d5077a353eb3487e8c8';
+
+require('should');
+require('../servers').createResetServer();
+require('../servers').createStaticServer();
 
 var signatureCleaner = function(path) {
     return path.replace(/timestamp=[^&]*&?/, '')
@@ -222,7 +223,7 @@ describe('ImboClient', function() {
 
     describe('#getMetadataUrl', function() {
         it('should return a URL with the first defined host as hostname', function() {
-            var url = client.getMetadataUrl(catMd5).toString()
+            var url = client.getMetadataUrl(catMd5).toString();
             assert.equal(
                 'http://imbo/users/pub/images/' + catMd5 + '/meta',
                 signatureCleaner(url)
@@ -591,7 +592,7 @@ describe('ImboClient', function() {
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(503, 'Internal Server Error');
 
-            client.imageWithChecksumExists(catMd5, function(err, exists) {
+            client.imageWithChecksumExists(catMd5, function(err) {
                 assert.ok(err, 'imageWithChecksumExists should not give error if the image does not exist on server');
                 done();
             });

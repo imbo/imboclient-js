@@ -1,5 +1,5 @@
-var Imbo   = require('../../')
-  , assert = require('assert');
+var Imbo   = require('../../'),
+    assert = require('assert');
 
 describe('Imbo.Query', function() {
 
@@ -78,8 +78,8 @@ describe('Imbo.Query', function() {
 
     describe('#addId', function() {
         it('should be able to append an id', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = 'moo';
+            var values = ['some', 'values', 'to', 'return'],
+                added  = 'moo';
 
             query.ids(values);
 
@@ -94,8 +94,8 @@ describe('Imbo.Query', function() {
 
     describe('#addIds', function() {
         it('should be able to append multiple ids', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = ['moo', 'tools'];
+            var values = ['some', 'values', 'to', 'return'],
+                added  = ['moo', 'tools'];
 
             query.ids(values);
 
@@ -140,8 +140,8 @@ describe('Imbo.Query', function() {
 
     describe('#addChecksum', function() {
         it('should be able to append a checksum', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = 'moo';
+            var values = ['some', 'values', 'to', 'return'],
+                added  = 'moo';
 
             query.checksums(values);
 
@@ -156,8 +156,8 @@ describe('Imbo.Query', function() {
 
     describe('#addChecksums', function() {
         it('should be able to append multiple checksums', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = ['moo', 'tools'];
+            var values = ['some', 'values', 'to', 'return'],
+                added  = ['moo', 'tools'];
 
             query.checksums(values);
 
@@ -202,8 +202,8 @@ describe('Imbo.Query', function() {
 
     describe('#addOriginalChecksum', function() {
         it('should be able to append an original checksum', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = 'moo';
+            var values = ['some', 'values', 'to', 'return'],
+                added  = 'moo';
 
             query.originalChecksums(values);
 
@@ -218,8 +218,8 @@ describe('Imbo.Query', function() {
 
     describe('#addOriginalChecksums', function() {
         it('should be able to append multiple originalChecksums', function() {
-            var values = ['some', 'values', 'to', 'return']
-              , added  = ['moo', 'tools'];
+            var values = ['some', 'values', 'to', 'return'],
+                added  = ['moo', 'tools'];
 
             query.originalChecksums(values);
 
@@ -264,8 +264,8 @@ describe('Imbo.Query', function() {
 
     describe('#addField', function() {
         it('should be able to append a field', function() {
-            var values = ['some', 'fields', 'to', 'return']
-              , added  = 'moo';
+            var values = ['some', 'fields', 'to', 'return'],
+                added  = 'moo';
 
             query.fields(values);
 
@@ -280,8 +280,8 @@ describe('Imbo.Query', function() {
 
     describe('#addFields', function() {
         it('should be able to append multiple fields', function() {
-            var values = ['some', 'fields', 'to', 'return']
-              , added  = ['moo', 'tools'];
+            var values = ['some', 'fields', 'to', 'return'],
+                added  = ['moo', 'tools'];
 
             query.fields(values);
 
@@ -357,8 +357,8 @@ describe('Imbo.Query', function() {
 
     describe('#addSorts', function() {
         it('should be able to append multiple sorts', function() {
-            var values = ['created:desc', 'size:asc']
-              , added  = ['awesomess:desc', 'epicness:asc'];
+            var values = ['created:desc', 'size:asc'],
+                added  = ['awesomess:desc', 'epicness:asc'];
 
             query.sort(values);
 

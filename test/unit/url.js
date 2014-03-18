@@ -1,6 +1,4 @@
-var Imbo   = require('../../'),
-    assert = require('assert'),
-    catMd5 = '61da9892205a0d5077a353eb3487e8c8';
+var Imbo   = require('../../');
 
 var signatureCleaner = function(path) {
     return path.replace(/timestamp=[^&]*&?/, '')
