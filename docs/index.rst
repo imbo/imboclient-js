@@ -551,6 +551,31 @@ There are also some other methods available:
 
 The methods related to the image type (``convert`` and the proxy methods) can be added anywhere in the chain. Otherwise all transformations will be applied to the image in the same order as they appear in the chain.
 
+Parsing image URLs
+++++++++++++++++++
+
+``ImageUrl``-instances can also be constructed from strings:
+
+.. code-block:: js
+
+    var url = 'http://imbo01.host.com/users/user/images/83b2931724639325abe.jpg?t[]=flipHorizontally&accessToken=01379d1861fb5b26';
+    
+    var imageUrl = client.parseImageUrl(url);
+    imageUrl.sepia().thumbnail({ width: 320 }).png();
+
+    console.log('Sepia thumbnail URL: ', imageUrl.toString());
+
+If the image is stored under a different user than the client has been instantiated with, you will need to pass the private key belonging to the user who owns the image:
+
+.. code-block:: js
+
+    var url = 'http://imbo01.host.com/users/some-other-user/images/8329f110695abe.jpg?t[]=crop%3Ax%3D0%2Cy%3D0%2Cwidth%3D927%2Cheight%3D621';
+    
+    var imageUrl = client.parseImageUrl(url, 'private key for "some-other-user"');
+    imageUrl.desaturate().thumbnail({ width: 320 }).png();
+
+    console.log('Desaturated thumbnail URL: ', imageUrl.toString());
+
 ShortUrls
 +++++++++
 
