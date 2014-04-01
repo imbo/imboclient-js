@@ -1,7 +1,7 @@
 {
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.3.0",
+    "version": "2.3.1-dev",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
@@ -12,23 +12,22 @@
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.34.0",
-        "clone": "~0.1.11"
+        "request": "~2.34.0"
     },
     "devDependencies": {
         "grunt": "~0.4.2",
         "grunt-browserify": "~2.0.0",
         "grunt-contrib-uglify": "~0.4.0",
-        "grunt-contrib-jshint": "~0.8.0",
-        "grunt-contrib-watch": "~0.5.3",
-        "grunt-mocha-test": "~0.9.0",
-        "grunt-mocha-cov": "~0.2.0",
-        "grunt-replace": "~0.6.2",
+        "grunt-contrib-jshint": "~0.9.2",
+        "grunt-contrib-watch": "~0.6.1",
+        "grunt-mocha-test": "~0.10.0",
+        "grunt-mocha-cov": "~0.2.1",
+        "grunt-replace": "~0.7.6",
         "through": "~2.3.4",
         "matchdep": "~0.3.0",
-        "mocha": "~1.17.1",
+        "mocha": "~1.18.2",
         "nock": "~0.27.2",
-        "should": "~3.1.2",
+        "should": "~3.2.0",
         "blanket": "~1.1.6",
         "workerify": "~0.2.3"
     },
