@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Imbo=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -7,13 +7,14 @@
  * For the full copyright and license information, please view the LICENSE file that was
  * distributed with this source code.
  */
-exports.Client   = _dereq_('./lib/client');
-exports.Url      = _dereq_('./lib/url');
-exports.ImageUrl = _dereq_('./lib/imageurl');
-exports.Query    = _dereq_('./lib/query');
-exports.Version  = _dereq_('./package.json').version;
+exports.Client   = require('./lib/client');
+exports.Url      = require('./lib/url/url');
+exports.ImageUrl = require('./lib/url/imageurl');
+exports.ShortUrl = require('./lib/url/shorturl');
+exports.Query    = require('./lib/query');
+exports.Version  = require('./package.json').version;
 
-},{"./lib/client":8,"./lib/imageurl":9,"./lib/query":10,"./lib/url":11,"./package.json":15}],2:[function(_dereq_,module,exports){
+},{"./lib/client":8,"./lib/query":9,"./lib/url/imageurl":10,"./lib/url/shorturl":11,"./lib/url/url":12,"./package.json":16}],2:[function(require,module,exports){
 (function (process){
 /**
  * This file is part of the imboclient-js package
@@ -46,9 +47,9 @@ var browserSupportsWebWorkers = function() {
     return true;
 };
 
-var sha     = _dereq_('./sha'),
-    md5     = _dereq_('./md5.min'),
-    readers = _dereq_('./readers');
+var sha     = require('./sha'),
+    md5     = require('./md5.min'),
+    readers = require('./readers');
 
 var supportsWorkers = browserSupportsWebWorkers(),
     workerQueue     = [],
@@ -142,8 +143,8 @@ module.exports = {
     }
 };
 
-}).call(this,_dereq_("/var/www/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./md5.min":4,"./readers":5,"./sha":7,"/var/www/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":14}],3:[function(_dereq_,module,exports){
+}).call(this,require("/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./md5.min":4,"./readers":5,"./sha":7,"/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":15}],3:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -194,9 +195,9 @@ exports.getUnsupported = function(context) {
     return unsupported;
 };
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],4:[function(require,module,exports){
 (function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});
-},{}],5:[function(_dereq_,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -239,7 +240,7 @@ exports.getContentsFromUrl = function(url, callback) {
     xhr.send(null);
 };
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -394,7 +395,7 @@ request.head = function(url, callback) {
 
 module.exports = request;
 
-},{}],7:[function(_dereq_,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * This is based on the following work:
  *
@@ -541,7 +542,7 @@ exports.sha256 = function(string) {
 exports.sha256hmac = function(key, data) {
     return binb2hex(core_hmac_sha256(key, data));
 };
-},{}],8:[function(_dereq_,module,exports){
+},{}],8:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -552,15 +553,16 @@ exports.sha256hmac = function(key, data) {
  */
 'use strict';
 
-var ImboUrl   = _dereq_('./url'),
-    ImageUrl  = _dereq_('./imageurl'),
-    ImboQuery = _dereq_('./query'),
-    extend    = _dereq_('./utils/extend'),
-    jsonparse = _dereq_('./utils/jsonparse'),
-    crypto    = _dereq_('./browser/crypto'),
-    request   = _dereq_('./browser/request'),
-    readers   = _dereq_('./browser/readers'),
-    features  = _dereq_('./browser/feature-support');
+var ImboUrl   = require('./url/url'),
+    ImageUrl  = require('./url/imageurl'),
+    ShortUrl  = require('./url/shorturl'),
+    ImboQuery = require('./query'),
+    extend    = require('./utils/extend'),
+    jsonparse = require('./utils/jsonparse'),
+    crypto    = require('./browser/crypto'),
+    request   = require('./browser/request'),
+    readers   = require('./browser/readers'),
+    features  = require('./browser/feature-support');
 
 /**
  * Constructs a new Imbo client
@@ -951,15 +953,65 @@ extend(ImboClient.prototype, {
      * @param {Function}      callback
      */
     getShortUrl: function(imageUrl, callback) {
-        request.head(imageUrl.toString(), function(err, res) {
-            if (err) {
-                return callback(err);
-            } else if (!res || !res.headers['x-imbo-shorturl']) {
-                return callback('No ShortUrl was returned from server');
-            }
+        var url       = imageUrl.clone(),
+            extension = url.getExtension(),
+            imageId   = url.getImageIdentifier(),
+            host      = this.getHostForImageIdentifier(imageId),
+            data      = {
+                'imageIdentifier': imageId,
+                'publicKey': url.getPublicKey(),
+                'query': url.getQueryString(),
+            };
 
-            callback(err, res.headers['x-imbo-shorturl']);
+        if (extension) {
+            data.extension = extension;
+        }
+
+        // Reset to remove transformations/query string
+        url.reset().setPath('/shorturls');
+
+        request({
+            method    : 'POST',
+            uri       : this.getSignedResourceUrl('POST', url.toString()),
+            json      : data,
+            onComplete: function(err, res, body) {
+                if (err) {
+                    return callback(err);
+                } else if (!body || !body.id) {
+                    return callback('No ShortUrl was returned from server');
+                }
+
+                callback(err, new ShortUrl({ 'baseUrl': host, 'id': body.id }));
+            }
         });
+    },
+
+    /**
+     * Delete all ShortUrls for a given imageIdentifier
+     *
+     * @param {String}   imageIdentifier
+     * @param {Function} callback
+     */
+    deleteAllShortUrlsForImage: function(imageIdentifier, callback) {
+        var url    = this.getImageUrl(imageIdentifier).setPath('/shorturls'),
+            signed = this.getSignedResourceUrl('DELETE', url);
+
+        request.del(signed, callback);
+    },
+
+    /**
+     * Delete a ShortUrl for a given imageIdentifier
+     *
+     * @param {String|Imbo.ShortUrl} shortUrl
+     * @param {String}               imageIdentifier
+     * @param {Function}             callback
+     */
+    deleteShortUrlForImage: function(imageIdentifier, shortUrl, callback) {
+        var id     = shortUrl instanceof ShortUrl ? shortUrl.getId() : shortUrl,
+            url    = this.getImageUrl(imageIdentifier).setPath('/shorturls/' + id),
+            signed = this.getSignedResourceUrl('DELETE', url);
+
+        request.del(signed, callback);
     },
 
     /**
@@ -1157,521 +1209,7 @@ extend(ImboClient.prototype, {
 
 module.exports = ImboClient;
 
-},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":5,"./browser/request":6,"./imageurl":9,"./query":10,"./url":11,"./utils/extend":12,"./utils/jsonparse":13}],9:[function(_dereq_,module,exports){
-/**
- * This file is part of the imboclient-js package
- *
- * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
- *
- * For the full copyright and license information, please view
- * the LICENSE file that was distributed with this source code.
- */
-'use strict';
-
-var ImboUrl = _dereq_('./url'),
-    extend  = _dereq_('./utils/extend');
-
-// Simple function wrappers for better readability and compression
-var toInt = function(num) { return parseInt(num, 10); },
-    isNumeric = function(num) { return !isNaN(num); };
-
-/**
- * ImageUrl constructor
- *
- * @param {Object} options
- */
-var ImageUrl = function(options) {
-    options = options || {};
-
-    this.transformations = [];
-    this.baseUrl = options.baseUrl;
-    this.publicKey = options.publicKey;
-    this.privateKey = options.privateKey;
-    this.imageIdentifier = options.imageIdentifier || '';
-    this.extension = '';
-    this.queryString = options.queryString;
-    this.path = options.path || '';
-
-    this.baseUrl += [
-        '/users', this.publicKey,
-        'images', this.imageIdentifier
-    ].join('/');
-};
-
-extend(ImageUrl.prototype, ImboUrl.prototype);
-extend(ImageUrl.prototype, {
-    /**
-     * Auto-rotate an image based on EXIF-data
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    autoRotate: function() {
-        return this.append('autoRotate');
-    },
-
-    /**
-     * Add a border to the image
-     *
-     * @param  {Object} [options={}]
-     * @param  {String} [options.color=000000]  Color of the border (in hex-format)
-     * @param  {Number} [options.width=1]       Width of the left and right borders
-     * @param  {Number} [options.height=1]      Height of the top and bottom borders
-     * @param  {String} [options.mode=outbound] Mode of the border, "inline" or "outbound"
-     * @return {Imbo.ImageUrl}
-     */
-    border: function(options) {
-        options = options || {};
-
-        var params = [
-            'color='  + (options.color  || '000000').replace(/^#/, ''),
-            'width='  + toInt(options.width  || 1),
-            'height=' + toInt(options.height || 1),
-            'mode='   + (options.mode   || 'outbound')
-        ];
-
-        return this.append('border:' + params.join(','));
-    },
-
-    /**
-     * Puts the image inside a canvas
-     *
-     * @param  {Object} options
-     * @param  {Number} options.width  Width of the canvas
-     * @param  {Number} options.height Height of the canvas
-     * @param  {String} [options.mode] Placement mode: "free", "center", "center-x" or "center-y"
-     * @param  {Number} [options.x]    X coordinate of the placement of the upper left corner of the existing image
-     * @param  {Number} [options.y]    Y coordinate of the placement of the upper left corner of the existing image
-     * @param  {String} [options.bg]   Background color of the canvas, in hex-format
-     * @return {Imbo.ImageUrl}
-     */
-    canvas: function(options) {
-        options = options || {};
-
-        if (!options.width || !options.height) {
-            throw new Error('width and height must be specified');
-        }
-
-        var params = [
-            'width='  + toInt(options.width),
-            'height=' + toInt(options.height),
-        ];
-
-        if (options.mode) {
-            params.push('mode=' + options.mode);
-        }
-
-        if (options.x) {
-            params.push('x=' + toInt(options.x));
-        }
-
-        if (options.y) {
-            params.push('y=' + toInt(options.y));
-        }
-
-        if (options.bg) {
-            params.push('bg=' + options.bg.replace(/^#/, ''));
-        }
-
-        return this.append('canvas:' + params.join(','));
-    },
-
-    /**
-     * Compress the image
-     *
-     * @param  {Object} [options={}]
-     * @param  {Number} [options.level=75] Compression level (0 - 100)
-     * @return {Imbo.ImageUrl}
-     */
-    compress: function(options) {
-        var level = (options || {}).level || options;
-        return this.append('compress:level=' + (isNumeric(level) ? level : 75));
-    },
-
-    /**
-     * Convert the image to the given file type
-     *
-     * @param  {String} type File extension ("jpg", "gif", "png")
-     * @return {Imbo.ImageUrl}
-     */
-    convert: function(type) {
-        this.extension = '.' + type;
-        return this;
-    },
-
-    /**
-     * Crops the image using specified parameters
-     *
-     * @param  {Object} options
-     * @param  {String} [options.mode] Crop mode: "center-x" or "center-y" (available in Imbo >= 1.1.0)
-     * @param  {Number} [options.x]    X coordinate of the top left corner of the crop
-     * @param  {Number} [options.y]    Y coordinate of the top left corner of the crop
-     * @param  {Number} options.width  Width of the crop
-     * @param  {Number} options.height Height of the crop
-     * @return {Imbo.ImageUrl}
-     */
-    crop: function(options) {
-        var opts   = options || {},
-            mode   = opts.mode,
-            x      = opts.x,
-            y      = opts.y,
-            width  = opts.width,
-            height = opts.height;
-
-        if (!mode && (isNaN(x) || isNaN(y))) {
-            throw new Error('x and y needs to be specified without a crop mode');
-        }
-
-        if (mode === 'center-x' && isNaN(y)) {
-            throw new Error('y needs to be specified when mode is center-x');
-        } else if (mode === 'center-y' && isNaN(x)) {
-            throw new Error('x needs to be specified when mode is center-y');
-        } else if (isNaN(width) || isNaN(height)) {
-            throw new Error('width and height needs to be specified');
-        }
-
-        var params = [
-            'width='  + toInt(width),
-            'height=' + toInt(height),
-        ];
-
-        if (isNumeric(x)) {
-            params.push('x=' + toInt(x));
-        }
-
-        if (isNumeric(y)) {
-            params.push('y=' + toInt(y));
-        }
-
-        if (mode) {
-            params.push('mode=' + mode);
-        }
-
-        return this.append('crop:' + params.join(','));
-    },
-
-    /**
-     * Desaturate the image
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    desaturate: function() {
-        return this.append('desaturate');
-    },
-
-    /**
-     * Flip the image horizontally
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    flipHorizontally: function() {
-        return this.append('flipHorizontally');
-    },
-
-    /**
-     * Flip the image vertically
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    flipVertically: function() {
-        return this.append('flipVertically');
-    },
-
-    /**
-     * Resize the image to be at most the size specified while still preserving
-     * the aspect ratio. If the image is smaller than the given size, the image
-     * remains unchanged
-     *
-     * @param  {Object} options
-     * @param  {Number} [options.width]  Max width of the image
-     * @param  {Number} [options.height] Max height of the image
-     * @return {Imbo.ImageUrl}
-     */
-    maxSize: function(options) {
-        var params = [],
-            opts   = options || {};
-
-        if (opts.width) {
-            params.push('width='  + toInt(opts.width));
-        }
-
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
-        }
-
-        if (!params.length) {
-            throw new Error('width and/or height needs to be specified');
-        }
-
-        return this.append('maxSize:' + params.join(','));
-    },
-
-    /**
-     * Modulate the image by altering the brightness, saturation and/or hue
-     *
-     * @param  {Object} options
-     * @param  {Number} [options.brightness=100] Brightness level
-     * @param  {Number} [options.saturation=100] Saturation level
-     * @param  {Number} [options.hue=100]        Hue level
-     * @return {Imbo.ImageUrl}
-     */
-    modulate: function(options) {
-        var params = [],
-            opts   = options || {};
-
-        if (isNumeric(opts.brightness)) {
-            params.push('b=' + opts.brightness);
-        }
-
-        if (isNumeric(opts.saturation)) {
-            params.push('s=' + opts.saturation);
-        }
-
-        if (isNumeric(opts.hue)) {
-            params.push('h=' + opts.hue);
-        }
-
-        if (!params.length) {
-            throw new Error('brightness, saturation or hue needs to be specified');
-        }
-
-        return this.append('modulate:' + params.join(','));
-    },
-
-    /**
-     * Set the progressive rendering flag on the image
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    progressive: function() {
-        return this.append('progressive');
-    },
-
-    /**
-     * Resize the image to the given size. If only one dimension is specified,
-     * the image will be resized while keeping it's aspect ratio
-     *
-     * @param  {Object} options
-     * @param  {Object} [options.width]  New width of the image
-     * @param  {Object} [options.height] new height of the image
-     * @return {Imbo.ImageUrl}
-     */
-    resize: function(options) {
-        var params = [],
-            opts   = options || {};
-
-        if (opts.width) {
-            params.push('width='  + toInt(opts.width));
-        }
-
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
-        }
-
-        if (!params.length) {
-            throw new Error('width and/or height needs to be specified');
-        }
-
-        return this.append('resize:' + params.join(','));
-    },
-
-    /**
-     * Rotate the image by the specified angle
-     *
-     * @param  {Object} options
-     * @param  {Number} options.angle Angle to rotate by
-     * @param  {String} [options.bg]  Background color of image, in hex-format
-     * @return {Imbo.ImageUrl}
-     */
-    rotate: function(options) {
-        var opts = options || {};
-
-        if (isNaN(opts.angle)) {
-            throw new Error('angle needs to be specified');
-        }
-
-        var bg = (opts.bg || '000000').replace(/^#/, '');
-        return this.append('rotate:angle=' + opts.angle + ',bg=' + bg);
-    },
-
-    /**
-     * Add a sepia effect to the image
-     *
-     * @param  {Object} [options]
-     * @param  {Number} [options.threshold=80] Extent of sepia toning
-     * @return {Imbo.ImageUrl}
-     */
-    sepia: function(options) {
-        var threshold = (options || {}).threshold || options;
-        return this.append('sepia:threshold=' + (isNumeric(threshold) ? threshold : 80));
-    },
-
-    /**
-     * Strip the image of all properties and comments (EXIF-data and such)
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    strip: function() {
-        return this.append('strip');
-    },
-
-    /**
-     * Create a thumbnailed version of the image
-     *
-     * @param  {Object} [options]
-     * @param  {Number} [options.width=50]     Width of the thumbnail
-     * @param  {Number} [options.height=50]    Height of the thumbnail
-     * @param  {String} [options.fit=outbound] Fit mode: "outbound" or "inset"
-     * @return {Imbo.ImageUrl}
-     */
-    thumbnail: function(options) {
-        options = options || {};
-
-        return this.append(
-            'thumbnail:width=' + (options.width || 50) +
-            ',height=' + (options.height || 50) +
-            ',fit=' + (options.fit || 'outbound')
-        );
-    },
-
-    /**
-     * Transposes the image
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    transpose: function() {
-        return this.append('transpose');
-    },
-
-    /**
-     * Transverse the image
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    transverse: function() {
-        return this.append('transverse');
-    },
-
-    /**
-     * Applies a watermark on top of the original image
-     *
-     * @param  {Object} [options]
-     * @param  {Number} [options.img] Image identifier of the image to apply as watermark
-     * @param  {Number} [options.width]  Width of the watermark, in pixels
-     * @param  {Number} [options.height] Height of the watermark, in pixels
-     * @param  {String} [options.position=top-left] Position of the watermark. Values: "top-left", "top-right", "bottom-left", "bottom-right" and "center"
-     * @param  {Number} [options.x] Number of pixels in the X-axis the watermark image should be offset from the original position
-     * @param  {Number} [options.y] Number of pixels in the Y-axis the watermark image should be offset from the original position
-     * @return {Imbo.ImageUrl}
-     */
-    watermark: function(options) {
-        options = options || {};
-
-        var params = [
-            'position=' + (options.position || 'top-left'),
-            'x=' + toInt(options.x || 0),
-            'y=' + toInt(options.y || 0)
-        ];
-
-        if (options.imageIdentifier) {
-            params.push('img=' + options.imageIdentifier);
-        }
-
-        if (options.width > 0) {
-            params.push('width=' + toInt(options.width));
-        }
-
-        if (options.height > 0) {
-            params.push('height=' + toInt(options.height));
-        }
-
-        return this.append('watermark:' + params.join(','));
-    },
-
-    /**
-     * Specifies the output format as gif
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    gif: function() {
-        return this.convert('gif');
-    },
-
-    /**
-     * Specifies the output format as jpg
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    jpg: function() {
-        return this.convert('jpg');
-    },
-
-    /**
-     * Specifies the output format as png
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    png: function() {
-        return this.convert('png');
-    },
-
-    /**
-     * Reset the image to original state by removing applied transformations
-     *
-     * @return {Imbo.ImageUrl}
-     */
-    reset: function() {
-        this.extension = '';
-        this.transformations = [];
-        return this;
-    },
-
-    /**
-     * Appends a transformation to the chain
-     *
-     * @param  {String} transformation A transformation to be applied
-     * @return {Imbo.ImageUrl}
-     */
-    append: function(transformation) {
-        this.transformations.push(transformation);
-        return this;
-    },
-
-    /**
-     * Get array of all applied transformations (in the order they were added)
-     *
-     * @return {Array}
-     */
-    getTransformations: function() {
-        return this.transformations;
-    },
-
-    /**
-     * Get the query string with all transformations applied
-     *
-     * @param  {Boolean} [encode=false]
-     * @return {String}
-     */
-    getQueryString: function(encode) {
-        var query             = this.queryString || '',
-            transformations   = this.transformations,
-            transformationKey = encode ? 't%5B%5D=' : 't[]=';
-
-        if (encode) {
-            transformations = transformations.map(encodeURIComponent);
-        }
-
-        if (this.transformations.length) {
-            query += query.length ? '&' : '';
-            query += transformationKey + transformations.join('&' + transformationKey);
-        }
-
-        return query;
-    }
-});
-
-module.exports = ImageUrl;
-
-},{"./url":11,"./utils/extend":12}],10:[function(_dereq_,module,exports){
+},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":5,"./browser/request":6,"./query":9,"./url/imageurl":10,"./url/shorturl":11,"./url/url":12,"./utils/extend":13,"./utils/jsonparse":14}],9:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1682,7 +1220,7 @@ module.exports = ImageUrl;
  */
 'use strict';
 
-var extend = _dereq_('./utils/extend');
+var extend = require('./utils/extend');
 
 /**
  * Constructs a new Imbo image query
@@ -2010,7 +1548,614 @@ extend(ImboQuery.prototype, {
 
 module.exports = ImboQuery;
 
-},{"./utils/extend":12}],11:[function(_dereq_,module,exports){
+},{"./utils/extend":13}],10:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ */
+'use strict';
+
+var ImboUrl = require('./url'),
+    extend  = require('../utils/extend');
+
+// Simple function wrappers for better readability and compression
+var toInt = function(num) { return parseInt(num, 10); },
+    isNumeric = function(num) { return !isNaN(num); };
+
+/**
+ * ImageUrl constructor
+ *
+ * @param {Object} options
+ */
+var ImageUrl = function(options) {
+    options = options || {};
+
+    this.transformations = [];
+    this.rootUrl = options.baseUrl;
+    this.baseUrl = options.baseUrl;
+    this.publicKey = options.publicKey;
+    this.privateKey = options.privateKey;
+    this.imageIdentifier = options.imageIdentifier || '';
+    this.extension = options.extension;
+    this.queryString = options.queryString;
+    this.path = options.path || '';
+
+    this.baseUrl += [
+        '/users', this.publicKey,
+        'images', this.imageIdentifier
+    ].join('/');
+};
+
+extend(ImageUrl.prototype, ImboUrl.prototype);
+extend(ImageUrl.prototype, {
+    /**
+     * Auto-rotate an image based on EXIF-data
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    autoRotate: function() {
+        return this.append('autoRotate');
+    },
+
+    /**
+     * Add a border to the image
+     *
+     * @param  {Object} [options={}]
+     * @param  {String} [options.color=000000]  Color of the border (in hex-format)
+     * @param  {Number} [options.width=1]       Width of the left and right borders
+     * @param  {Number} [options.height=1]      Height of the top and bottom borders
+     * @param  {String} [options.mode=outbound] Mode of the border, "inline" or "outbound"
+     * @return {Imbo.ImageUrl}
+     */
+    border: function(options) {
+        options = options || {};
+
+        var params = [
+            'color='  + (options.color  || '000000').replace(/^#/, ''),
+            'width='  + toInt(options.width  || 1),
+            'height=' + toInt(options.height || 1),
+            'mode='   + (options.mode   || 'outbound')
+        ];
+
+        return this.append('border:' + params.join(','));
+    },
+
+    /**
+     * Puts the image inside a canvas
+     *
+     * @param  {Object} options
+     * @param  {Number} options.width  Width of the canvas
+     * @param  {Number} options.height Height of the canvas
+     * @param  {String} [options.mode] Placement mode: "free", "center", "center-x" or "center-y"
+     * @param  {Number} [options.x]    X coordinate of the placement of the upper left corner of the existing image
+     * @param  {Number} [options.y]    Y coordinate of the placement of the upper left corner of the existing image
+     * @param  {String} [options.bg]   Background color of the canvas, in hex-format
+     * @return {Imbo.ImageUrl}
+     */
+    canvas: function(options) {
+        options = options || {};
+
+        if (!options.width || !options.height) {
+            throw new Error('width and height must be specified');
+        }
+
+        var params = [
+            'width='  + toInt(options.width),
+            'height=' + toInt(options.height),
+        ];
+
+        if (options.mode) {
+            params.push('mode=' + options.mode);
+        }
+
+        if (options.x) {
+            params.push('x=' + toInt(options.x));
+        }
+
+        if (options.y) {
+            params.push('y=' + toInt(options.y));
+        }
+
+        if (options.bg) {
+            params.push('bg=' + options.bg.replace(/^#/, ''));
+        }
+
+        return this.append('canvas:' + params.join(','));
+    },
+
+    /**
+     * Compress the image
+     *
+     * @param  {Object} [options={}]
+     * @param  {Number} [options.level=75] Compression level (0 - 100)
+     * @return {Imbo.ImageUrl}
+     */
+    compress: function(options) {
+        var level = (options || {}).level || options;
+        return this.append('compress:level=' + (isNumeric(level) ? level : 75));
+    },
+
+    /**
+     * Convert the image to the given file type
+     *
+     * @param  {String} type File extension ("jpg", "gif", "png")
+     * @return {Imbo.ImageUrl}
+     */
+    convert: function(type) {
+        this.extension = type;
+        return this;
+    },
+
+    /**
+     * Crops the image using specified parameters
+     *
+     * @param  {Object} options
+     * @param  {String} [options.mode] Crop mode: "center-x" or "center-y" (available in Imbo >= 1.1.0)
+     * @param  {Number} [options.x]    X coordinate of the top left corner of the crop
+     * @param  {Number} [options.y]    Y coordinate of the top left corner of the crop
+     * @param  {Number} options.width  Width of the crop
+     * @param  {Number} options.height Height of the crop
+     * @return {Imbo.ImageUrl}
+     */
+    crop: function(options) {
+        var opts   = options || {},
+            mode   = opts.mode,
+            x      = opts.x,
+            y      = opts.y,
+            width  = opts.width,
+            height = opts.height;
+
+        if (!mode && (isNaN(x) || isNaN(y))) {
+            throw new Error('x and y needs to be specified without a crop mode');
+        }
+
+        if (mode === 'center-x' && isNaN(y)) {
+            throw new Error('y needs to be specified when mode is center-x');
+        } else if (mode === 'center-y' && isNaN(x)) {
+            throw new Error('x needs to be specified when mode is center-y');
+        } else if (isNaN(width) || isNaN(height)) {
+            throw new Error('width and height needs to be specified');
+        }
+
+        var params = [
+            'width='  + toInt(width),
+            'height=' + toInt(height),
+        ];
+
+        if (isNumeric(x)) {
+            params.push('x=' + toInt(x));
+        }
+
+        if (isNumeric(y)) {
+            params.push('y=' + toInt(y));
+        }
+
+        if (mode) {
+            params.push('mode=' + mode);
+        }
+
+        return this.append('crop:' + params.join(','));
+    },
+
+    /**
+     * Desaturate the image
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    desaturate: function() {
+        return this.append('desaturate');
+    },
+
+    /**
+     * Flip the image horizontally
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    flipHorizontally: function() {
+        return this.append('flipHorizontally');
+    },
+
+    /**
+     * Flip the image vertically
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    flipVertically: function() {
+        return this.append('flipVertically');
+    },
+
+    /**
+     * Resize the image to be at most the size specified while still preserving
+     * the aspect ratio. If the image is smaller than the given size, the image
+     * remains unchanged
+     *
+     * @param  {Object} options
+     * @param  {Number} [options.width]  Max width of the image
+     * @param  {Number} [options.height] Max height of the image
+     * @return {Imbo.ImageUrl}
+     */
+    maxSize: function(options) {
+        var params = [],
+            opts   = options || {};
+
+        if (opts.width) {
+            params.push('width='  + toInt(opts.width));
+        }
+
+        if (opts.height) {
+            params.push('height=' + toInt(opts.height));
+        }
+
+        if (!params.length) {
+            throw new Error('width and/or height needs to be specified');
+        }
+
+        return this.append('maxSize:' + params.join(','));
+    },
+
+    /**
+     * Modulate the image by altering the brightness, saturation and/or hue
+     *
+     * @param  {Object} options
+     * @param  {Number} [options.brightness=100] Brightness level
+     * @param  {Number} [options.saturation=100] Saturation level
+     * @param  {Number} [options.hue=100]        Hue level
+     * @return {Imbo.ImageUrl}
+     */
+    modulate: function(options) {
+        var params = [],
+            opts   = options || {};
+
+        if (isNumeric(opts.brightness)) {
+            params.push('b=' + opts.brightness);
+        }
+
+        if (isNumeric(opts.saturation)) {
+            params.push('s=' + opts.saturation);
+        }
+
+        if (isNumeric(opts.hue)) {
+            params.push('h=' + opts.hue);
+        }
+
+        if (!params.length) {
+            throw new Error('brightness, saturation or hue needs to be specified');
+        }
+
+        return this.append('modulate:' + params.join(','));
+    },
+
+    /**
+     * Set the progressive rendering flag on the image
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    progressive: function() {
+        return this.append('progressive');
+    },
+
+    /**
+     * Resize the image to the given size. If only one dimension is specified,
+     * the image will be resized while keeping it's aspect ratio
+     *
+     * @param  {Object} options
+     * @param  {Object} [options.width]  New width of the image
+     * @param  {Object} [options.height] new height of the image
+     * @return {Imbo.ImageUrl}
+     */
+    resize: function(options) {
+        var params = [],
+            opts   = options || {};
+
+        if (opts.width) {
+            params.push('width='  + toInt(opts.width));
+        }
+
+        if (opts.height) {
+            params.push('height=' + toInt(opts.height));
+        }
+
+        if (!params.length) {
+            throw new Error('width and/or height needs to be specified');
+        }
+
+        return this.append('resize:' + params.join(','));
+    },
+
+    /**
+     * Rotate the image by the specified angle
+     *
+     * @param  {Object} options
+     * @param  {Number} options.angle Angle to rotate by
+     * @param  {String} [options.bg]  Background color of image, in hex-format
+     * @return {Imbo.ImageUrl}
+     */
+    rotate: function(options) {
+        var opts = options || {};
+
+        if (isNaN(opts.angle)) {
+            throw new Error('angle needs to be specified');
+        }
+
+        var bg = (opts.bg || '000000').replace(/^#/, '');
+        return this.append('rotate:angle=' + opts.angle + ',bg=' + bg);
+    },
+
+    /**
+     * Add a sepia effect to the image
+     *
+     * @param  {Object} [options]
+     * @param  {Number} [options.threshold=80] Extent of sepia toning
+     * @return {Imbo.ImageUrl}
+     */
+    sepia: function(options) {
+        var threshold = (options || {}).threshold || options;
+        return this.append('sepia:threshold=' + (isNumeric(threshold) ? threshold : 80));
+    },
+
+    /**
+     * Strip the image of all properties and comments (EXIF-data and such)
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    strip: function() {
+        return this.append('strip');
+    },
+
+    /**
+     * Create a thumbnailed version of the image
+     *
+     * @param  {Object} [options]
+     * @param  {Number} [options.width=50]     Width of the thumbnail
+     * @param  {Number} [options.height=50]    Height of the thumbnail
+     * @param  {String} [options.fit=outbound] Fit mode: "outbound" or "inset"
+     * @return {Imbo.ImageUrl}
+     */
+    thumbnail: function(options) {
+        options = options || {};
+
+        return this.append(
+            'thumbnail:width=' + (options.width || 50) +
+            ',height=' + (options.height || 50) +
+            ',fit=' + (options.fit || 'outbound')
+        );
+    },
+
+    /**
+     * Transposes the image
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    transpose: function() {
+        return this.append('transpose');
+    },
+
+    /**
+     * Transverse the image
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    transverse: function() {
+        return this.append('transverse');
+    },
+
+    /**
+     * Applies a watermark on top of the original image
+     *
+     * @param  {Object} [options]
+     * @param  {Number} [options.img] Image identifier of the image to apply as watermark
+     * @param  {Number} [options.width]  Width of the watermark, in pixels
+     * @param  {Number} [options.height] Height of the watermark, in pixels
+     * @param  {String} [options.position=top-left] Position of the watermark. Values: "top-left", "top-right", "bottom-left", "bottom-right" and "center"
+     * @param  {Number} [options.x] Number of pixels in the X-axis the watermark image should be offset from the original position
+     * @param  {Number} [options.y] Number of pixels in the Y-axis the watermark image should be offset from the original position
+     * @return {Imbo.ImageUrl}
+     */
+    watermark: function(options) {
+        options = options || {};
+
+        var params = [
+            'position=' + (options.position || 'top-left'),
+            'x=' + toInt(options.x || 0),
+            'y=' + toInt(options.y || 0)
+        ];
+
+        if (options.imageIdentifier) {
+            params.push('img=' + options.imageIdentifier);
+        }
+
+        if (options.width > 0) {
+            params.push('width=' + toInt(options.width));
+        }
+
+        if (options.height > 0) {
+            params.push('height=' + toInt(options.height));
+        }
+
+        return this.append('watermark:' + params.join(','));
+    },
+
+    /**
+     * Specifies the output format as gif
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    gif: function() {
+        return this.convert('gif');
+    },
+
+    /**
+     * Specifies the output format as jpg
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    jpg: function() {
+        return this.convert('jpg');
+    },
+
+    /**
+     * Specifies the output format as png
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    png: function() {
+        return this.convert('png');
+    },
+
+    /**
+     * Reset the image to original state by removing applied transformations
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    reset: function() {
+        this.extension = undefined;
+        this.transformations = [];
+        return this;
+    },
+
+    /**
+     * Clone this ImageUrl instance
+     *
+     * @return {Imbo.ImageUrl}
+     */
+    clone: function() {
+        return new ImageUrl({
+            transformations: (this.transformations || []).slice(0),
+            baseUrl: this.rootUrl,
+            publicKey: this.publicKey,
+            privateKey: this.privateKey,
+            imageIdentifier: this.imageIdentifier,
+            extension: this.extension,
+            queryString: this.queryString,
+            path: this.path
+        });
+    },
+
+    /**
+     * Appends a transformation to the chain
+     *
+     * @param  {String} transformation A transformation to be applied
+     * @return {Imbo.ImageUrl}
+     */
+    append: function(transformation) {
+        this.transformations.push(transformation);
+        return this;
+    },
+
+    /**
+     * Get array of all applied transformations (in the order they were added)
+     *
+     * @return {Array}
+     */
+    getTransformations: function() {
+        return this.transformations;
+    },
+
+    /**
+     * Get the specified extension of the image (if any)
+     *
+     * @return {String}
+     */
+    getExtension: function() {
+        return this.extension;
+    },
+
+    /**
+     * Return the image identifier for this ImageUrl instance
+     *
+     * @return {String}
+     */
+    getImageIdentifier: function() {
+        return this.imageIdentifier;
+    },
+
+    /**
+     * Get the query string with all transformations applied
+     *
+     * @param  {Boolean} [encode=false]
+     * @return {String}
+     */
+    getQueryString: function(encode) {
+        var query             = this.queryString || '',
+            transformations   = this.transformations,
+            transformationKey = encode ? 't%5B%5D=' : 't[]=';
+
+        if (encode) {
+            transformations = transformations.map(encodeURIComponent);
+        }
+
+        if (this.transformations.length) {
+            query += query.length ? '&' : '';
+            query += transformationKey + transformations.join('&' + transformationKey);
+        }
+
+        return query;
+    }
+});
+
+module.exports = ImageUrl;
+
+},{"../utils/extend":13,"./url":12}],11:[function(require,module,exports){
+/**
+ * This file is part of the imboclient-js package
+ *
+ * (c) Espen Hovlandsdal <espen@hovlandsdal.com>
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ */
+'use strict';
+
+var extend = require('../utils/extend');
+
+/**
+ * ShortUrl constructor
+ *
+ * @param {Object} options
+ */
+var ShortUrl = function(options) {
+    options = options || {};
+
+    this.baseUrl = options.baseUrl;
+    this.shortId = options.id;
+};
+
+extend(ShortUrl.prototype, {
+    /**
+     * Get the ID of the short URL
+     *
+     * @return {String}
+     */
+    getId: function() {
+        return this.shortId;
+    },
+
+    /**
+     * Get a string representation of the URL
+     *
+     * @return {String}
+     */
+    getUrl: function() {
+        return this.baseUrl + '/s/' + this.shortId;
+    },
+
+    /**
+     * Alias of getUrl()
+     *
+     * @return {String}
+     */
+    toString: function() {
+        return this.getUrl();
+    }
+});
+
+module.exports = ShortUrl;
+
+},{"../utils/extend":13}],12:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2021,8 +2166,8 @@ module.exports = ImboQuery;
  */
 'use strict';
 
-var crypto = _dereq_('./browser/crypto'),
-    extend = _dereq_('./utils/extend');
+var crypto = require('../browser/crypto'),
+    extend = require('../utils/extend');
 
 /**
  * ImboUrl constructor
@@ -2036,13 +2181,22 @@ var ImboUrl = function(options) {
     this.baseUrl = options.baseUrl;
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
-    this.extension = options.extension || '';
+    this.extension = options.extension;
     this.imageIdentifier = options.imageIdentifier || '';
     this.path = options.path || '';
     this.queryString = options.queryString;
 };
 
 extend(ImboUrl.prototype, {
+    /**
+     * Get the public key for this URL instance
+     *
+     * @return {String}
+     */
+    getPublicKey: function() {
+        return this.publicKey;
+    },
+
     /**
      * Get the path part of the URL
      *
@@ -2099,7 +2253,8 @@ extend(ImboUrl.prototype, {
      * @return {String}
      */
     getUrl: function() {
-        var url        = (this.baseUrl + this.extension + this.path),
+        var extension  = this.extension ? ('.' + this.extension) : '',
+            url        = (this.baseUrl + extension + this.path),
             encodedUrl = url,
             qs         = this.getQueryString();
 
@@ -2127,7 +2282,7 @@ extend(ImboUrl.prototype, {
 
 module.exports = ImboUrl;
 
-},{"./browser/crypto":2,"./utils/extend":12}],12:[function(_dereq_,module,exports){
+},{"../browser/crypto":2,"../utils/extend":13}],13:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2150,7 +2305,7 @@ module.exports = function(target, extension) {
     }
 };
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],14:[function(require,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2178,7 +2333,7 @@ module.exports = function(str) {
     return json;
 };
 
-},{}],14:[function(_dereq_,module,exports){
+},{}],15:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2223,6 +2378,13 @@ process.browser = true;
 process.env = {};
 process.argv = [];
 
+function noop() {}
+
+process.on = noop;
+process.once = noop;
+process.off = noop;
+process.emit = noop;
+
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
 }
@@ -2233,7 +2395,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
@@ -2248,7 +2410,8 @@ module.exports={
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.34.0"
+        "request": "~2.34.0",
+        "clone": "~0.1.11"
     },
     "devDependencies": {
         "grunt": "~0.4.2",
@@ -2281,6 +2444,4 @@ module.exports={
     "license": "MIT"
 }
 
-},{}]},{},[1])
-(1)
-});
+},{}]},{},[1]);
