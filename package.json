@@ -15,14 +15,18 @@
         "request": "~2.34.0"
     },
     "devDependencies": {
-        "grunt": "~0.4.2",
-        "grunt-browserify": "~2.0.0",
-        "grunt-contrib-uglify": "~0.4.0",
-        "grunt-contrib-jshint": "~0.9.2",
-        "grunt-contrib-watch": "~0.6.1",
-        "grunt-mocha-test": "~0.10.0",
-        "grunt-mocha-cov": "~0.2.1",
-        "grunt-replace": "~0.7.6",
+        "gulp": "~3.6.0",
+        "gulp-util": "~2.2.14",
+        "gulp-mocha": "~0.4.1",
+        "gulp-istanbul": "~0.1.1",
+        "gulp-browserify": "~0.5.0",
+        "gulp-clean": "~0.2.4",
+        "gulp-rename": "~1.2.0",
+        "gulp-uglify": "~0.2.1",
+        "gulp-insert": "~0.2.0",
+        "gulp-replace": "~0.2.0",
+        "gulp-jshint": "~1.5.3",
+        "coveralls": "~2.10.0",
         "through": "~2.3.4",
         "matchdep": "~0.3.0",
         "mocha": "~1.18.2",
@@ -32,11 +36,8 @@
         "workerify": "~0.2.3"
     },
     "scripts": {
-        "test": "grunt test",
-        "blanket": {
-            "pattern": "lib",
-            "data-cover-never": "node_modules"
-        }
+        "test": "gulp test",
+        "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
     },
     "main": "index",
     "engines": {

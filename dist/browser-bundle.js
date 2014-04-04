@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Imbo=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -7,14 +7,14 @@
  * For the full copyright and license information, please view the LICENSE file that was
  * distributed with this source code.
  */
-exports.Client   = require('./lib/client');
-exports.Url      = require('./lib/url/url');
-exports.ImageUrl = require('./lib/url/imageurl');
-exports.ShortUrl = require('./lib/url/shorturl');
-exports.Query    = require('./lib/query');
-exports.Version  = require('./package.json').version;
+exports.Client   = _dereq_('./lib/client');
+exports.Url      = _dereq_('./lib/url/url');
+exports.ImageUrl = _dereq_('./lib/url/imageurl');
+exports.ShortUrl = _dereq_('./lib/url/shorturl');
+exports.Query    = _dereq_('./lib/query');
+exports.Version  = _dereq_('./package.json').version;
 
-},{"./lib/client":8,"./lib/query":9,"./lib/url/imageurl":10,"./lib/url/shorturl":11,"./lib/url/url":12,"./package.json":16}],2:[function(require,module,exports){
+},{"./lib/client":8,"./lib/query":9,"./lib/url/imageurl":10,"./lib/url/shorturl":11,"./lib/url/url":12,"./package.json":16}],2:[function(_dereq_,module,exports){
 (function (process){
 /**
  * This file is part of the imboclient-js package
@@ -31,7 +31,7 @@ exports.Version  = require('./package.json').version;
  *
  * @return {Boolean}
  */
-var browserSupportsWebWorkers = function() {
+var supportsWebWorkers = function() {
     if (typeof window.Worker === 'undefined' || typeof window.URL === 'undefined') {
         return false;
     }
@@ -47,11 +47,12 @@ var browserSupportsWebWorkers = function() {
     return true;
 };
 
-var sha     = require('./sha'),
-    md5     = require('./md5.min'),
-    readers = require('./readers');
+var sha     = _dereq_('./sha'),
+    md5     = _dereq_('./md5.min'),
+    readers = _dereq_('./readers');
 
-var supportsWorkers = browserSupportsWebWorkers(),
+var isBrowser       = typeof window !== 'undefined',
+    supportsWorkers = isBrowser && supportsWebWorkers(),
     workerQueue     = [],
     md5Worker;
 
@@ -93,7 +94,7 @@ var addMd5Task = function(buffer, callback) {
 // Initialize the web worker for generating MD5 hashes if supported
 if (supportsWorkers) {
     // Set up the actual web worker
-    md5Worker = new Worker(window.URL.createObjectURL(new Blob([';(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module \'"+n+"\'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){\n(function(){/* global self */\n\'use strict\';\nvar md5 = require(\'./md5.min\');\nself.onmessage = function(e) {\n    self.postMessage(md5.ArrayBuffer.hash(e.data));\n};\n})()\n},{"./md5.min":2}],2:[function(require,module,exports){\n(function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});\n},{}]},{},[1])\n;'],{type:"text/javascript"})));
+    md5Worker = new Worker(window.URL.createObjectURL(new Blob([';(function(e,t,n){function i(n,s){if(!t[n]){if(!e[n]){var o=typeof require=="function"&&require;if(!s&&o)return o(n,!0);if(r)return r(n,!0);throw new Error("Cannot find module \'"+n+"\'")}var u=t[n]={exports:{}};e[n][0].call(u.exports,function(t){var r=e[n][1][t];return i(r?r:t)},u,u.exports)}return t[n].exports}var r=typeof require=="function"&&require;for(var s=0;s<n.length;s++)i(n[s]);return i})({1:[function(require,module,exports){\n(function(){/* global self */\n\'use strict\';\nvar md5 = require(\'./md5.min\');\nself.onmessage = function(e) {\n    self.postMessage(md5.ArrayBuffer.hash(e.data));\n};\n\n})()\n},{"./md5.min":2}],2:[function(require,module,exports){\n(function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});\n},{}]},{},[1])\n;'],{type:"text/javascript"})));
     md5Worker.addEventListener('message', function(e) {
         var item = workerQueue.shift();
         item.callback(undefined, e.data);
@@ -143,8 +144,8 @@ module.exports = {
     }
 };
 
-}).call(this,require("/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
-},{"./md5.min":4,"./readers":5,"./sha":7,"/home/espenh/webdev/imboclient-js/node_modules/grunt-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":15}],3:[function(require,module,exports){
+}).call(this,_dereq_("./node_modules/gulp-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
+},{"./md5.min":4,"./readers":5,"./sha":7,"./node_modules/gulp-browserify/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":15}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -195,9 +196,9 @@ exports.getUnsupported = function(context) {
     return unsupported;
 };
 
-},{}],4:[function(require,module,exports){
+},{}],4:[function(_dereq_,module,exports){
 (function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});
-},{}],5:[function(require,module,exports){
+},{}],5:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -240,7 +241,7 @@ exports.getContentsFromUrl = function(url, callback) {
     xhr.send(null);
 };
 
-},{}],6:[function(require,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -395,7 +396,7 @@ request.head = function(url, callback) {
 
 module.exports = request;
 
-},{}],7:[function(require,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 /**
  * This is based on the following work:
  *
@@ -542,7 +543,7 @@ exports.sha256 = function(string) {
 exports.sha256hmac = function(key, data) {
     return binb2hex(core_hmac_sha256(key, data));
 };
-},{}],8:[function(require,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -553,16 +554,16 @@ exports.sha256hmac = function(key, data) {
  */
 'use strict';
 
-var ImboUrl   = require('./url/url'),
-    ImageUrl  = require('./url/imageurl'),
-    ShortUrl  = require('./url/shorturl'),
-    ImboQuery = require('./query'),
-    extend    = require('./utils/extend'),
-    jsonparse = require('./utils/jsonparse'),
-    crypto    = require('./browser/crypto'),
-    request   = require('./browser/request'),
-    readers   = require('./browser/readers'),
-    features  = require('./browser/feature-support');
+var ImboUrl   = _dereq_('./url/url'),
+    ImageUrl  = _dereq_('./url/imageurl'),
+    ShortUrl  = _dereq_('./url/shorturl'),
+    ImboQuery = _dereq_('./query'),
+    extend    = _dereq_('./utils/extend'),
+    jsonparse = _dereq_('./utils/jsonparse'),
+    crypto    = _dereq_('./browser/crypto'),
+    request   = _dereq_('./browser/request'),
+    readers   = _dereq_('./browser/readers'),
+    features  = _dereq_('./browser/feature-support');
 
 /**
  * Constructs a new Imbo client
@@ -1209,7 +1210,7 @@ extend(ImboClient.prototype, {
 
 module.exports = ImboClient;
 
-},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":5,"./browser/request":6,"./query":9,"./url/imageurl":10,"./url/shorturl":11,"./url/url":12,"./utils/extend":13,"./utils/jsonparse":14}],9:[function(require,module,exports){
+},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":5,"./browser/request":6,"./query":9,"./url/imageurl":10,"./url/shorturl":11,"./url/url":12,"./utils/extend":13,"./utils/jsonparse":14}],9:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1220,7 +1221,7 @@ module.exports = ImboClient;
  */
 'use strict';
 
-var extend = require('./utils/extend');
+var extend = _dereq_('./utils/extend');
 
 /**
  * Constructs a new Imbo image query
@@ -1548,7 +1549,7 @@ extend(ImboQuery.prototype, {
 
 module.exports = ImboQuery;
 
-},{"./utils/extend":13}],10:[function(require,module,exports){
+},{"./utils/extend":13}],10:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1559,8 +1560,8 @@ module.exports = ImboQuery;
  */
 'use strict';
 
-var ImboUrl = require('./url'),
-    extend  = require('../utils/extend');
+var ImboUrl = _dereq_('./url'),
+    extend  = _dereq_('../utils/extend');
 
 // Simple function wrappers for better readability and compression
 var toInt = function(num) { return parseInt(num, 10); },
@@ -1574,7 +1575,7 @@ var toInt = function(num) { return parseInt(num, 10); },
 var ImageUrl = function(options) {
     options = options || {};
 
-    this.transformations = [];
+    this.transformations = options.transformations || [];
     this.rootUrl = options.baseUrl;
     this.baseUrl = options.baseUrl;
     this.publicKey = options.publicKey;
@@ -2099,7 +2100,7 @@ extend(ImageUrl.prototype, {
 
 module.exports = ImageUrl;
 
-},{"../utils/extend":13,"./url":12}],11:[function(require,module,exports){
+},{"../utils/extend":13,"./url":12}],11:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2110,7 +2111,7 @@ module.exports = ImageUrl;
  */
 'use strict';
 
-var extend = require('../utils/extend');
+var extend = _dereq_('../utils/extend');
 
 /**
  * ShortUrl constructor
@@ -2155,7 +2156,7 @@ extend(ShortUrl.prototype, {
 
 module.exports = ShortUrl;
 
-},{"../utils/extend":13}],12:[function(require,module,exports){
+},{"../utils/extend":13}],12:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2166,8 +2167,8 @@ module.exports = ShortUrl;
  */
 'use strict';
 
-var crypto = require('../browser/crypto'),
-    extend = require('../utils/extend');
+var crypto = _dereq_('../browser/crypto'),
+    extend = _dereq_('../utils/extend');
 
 /**
  * ImboUrl constructor
@@ -2282,7 +2283,7 @@ extend(ImboUrl.prototype, {
 
 module.exports = ImboUrl;
 
-},{"../browser/crypto":2,"../utils/extend":13}],13:[function(require,module,exports){
+},{"../browser/crypto":2,"../utils/extend":13}],13:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2305,7 +2306,7 @@ module.exports = function(target, extension) {
     }
 };
 
-},{}],14:[function(require,module,exports){
+},{}],14:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2333,7 +2334,7 @@ module.exports = function(str) {
     return json;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],15:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2395,11 +2396,11 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],16:[function(require,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 module.exports={
     "name": "imboclient",
     "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.3.0",
+    "version": "2.3.1-dev",
     "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
     "contributors": [],
     "repository": {
@@ -2410,32 +2411,31 @@ module.exports={
         "url": "http://github.com/imbo/imboclient-js/issues"
     },
     "dependencies": {
-        "request": "~2.34.0",
-        "clone": "~0.1.11"
+        "request": "~2.34.0"
     },
     "devDependencies": {
-        "grunt": "~0.4.2",
-        "grunt-browserify": "~2.0.0",
-        "grunt-contrib-uglify": "~0.4.0",
-        "grunt-contrib-jshint": "~0.8.0",
-        "grunt-contrib-watch": "~0.5.3",
-        "grunt-mocha-test": "~0.9.0",
-        "grunt-mocha-cov": "~0.2.0",
-        "grunt-replace": "~0.6.2",
+        "gulp": "~3.6.0",
+        "gulp-util": "~2.2.14",
+        "gulp-mocha": "~0.4.1",
+        "gulp-istanbul": "~0.1.1",
+        "gulp-browserify": "~0.5.0",
+        "gulp-clean": "~0.2.4",
+        "gulp-rename": "~1.2.0",
+        "gulp-uglify": "~0.2.1",
+        "gulp-insert": "~0.2.0",
+        "gulp-replace": "~0.2.0",
+        "coveralls": "~2.10.0",
         "through": "~2.3.4",
         "matchdep": "~0.3.0",
-        "mocha": "~1.17.1",
+        "mocha": "~1.18.2",
         "nock": "~0.27.2",
-        "should": "~3.1.2",
+        "should": "~3.2.0",
         "blanket": "~1.1.6",
         "workerify": "~0.2.3"
     },
     "scripts": {
-        "test": "grunt test",
-        "blanket": {
-            "pattern": "lib",
-            "data-cover-never": "node_modules"
-        }
+        "test": "gulp test",
+        "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
     },
     "main": "index",
     "engines": {
@@ -2444,4 +2444,6 @@ module.exports={
     "license": "MIT"
 }
 
-},{}]},{},[1]);
+},{}]},{},[1])
+(1)
+});
