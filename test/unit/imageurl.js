@@ -394,10 +394,10 @@ describe('Imbo.ImageUrl', function() {
             url.flipHorizontally().thumbnail();
 
             var clone = url.clone();
-            assert.equal(url.toString(), clone.toString());
+            assert.equal(url.toString(), clone.toString(), 'URLs should be equal after cloning');
 
             clone.border();
-            assert.notEqual(url.toString(), clone.toString());
+            assert.notEqual(url.toString(), clone.toString(), 'URLs should differ after modifying clone');
         });
     });
 

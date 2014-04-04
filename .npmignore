@@ -1,6 +1,8 @@
 .git*
+.DS_Store
+.jshint*
+.travis.yml
+gulpfile.js
 examples/
 test/
-.DS_Store
-coverage.html
-lib-cov
+coverage

@@ -1,1 +1,4 @@
 lib/browser/md5.min.js
+coverage
+node_modules
+dist
