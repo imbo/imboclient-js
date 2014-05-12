@@ -149,6 +149,21 @@ describeIntegration('ImboClient (integration)', function() {
         });
     });
 
+    describe('#parseImageUrl()', function() {
+        it('should be able to parse and modify existing url', function(done) {
+            client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                var url = client.getImageUrl(imageIdentifier).flipHorizontally();
+
+                var modUrl = client.parseImageUrl(url.toString()).sepia().png();
+                request.head(modUrl.toString(), function(err, res) {
+                    assert.equal(200, res.statusCode);
+                    assert.equal('image/png', res.headers['content-type']);
+                    done();
+                });
+            });
+        });
+    });
+
     describe('#getShortUrl()', function() {
         it('should be able to get a short url for a transformed image', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {

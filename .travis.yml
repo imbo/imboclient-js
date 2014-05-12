@@ -3,11 +3,11 @@ node_js:
   - "0.11"
   - "0.10"
 before_install:
-  - npm install -g grunt-cli
+  - npm install -g gulp
   - echo 'yes' | sudo add-apt-repository ppa:ondrej/php5-oldstable
   - sudo apt-get update -qq
   - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php5-dev php-pear
-  - sudo pecl install mongo
+  - yes '' | sudo pecl install mongo
   - echo "extension=mongo.so" | sudo tee /etc/php5/cli/php.ini
   - php -v
   - curl https://getcomposer.org/installer | php
@@ -19,3 +19,5 @@ script:
   - "$TRAVIS_BUILD_DIR/test/travis.sh"
 env:
   - IMBOCLIENT_RUN_INTEGRATION_TESTS=1
+after_success:
+  - npm run coveralls

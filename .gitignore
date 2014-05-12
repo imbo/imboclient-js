@@ -1,5 +1,5 @@
 node_modules
-coverage.html
+coverage
 lib-cov
 examples/node/config.json
 composer.phar
