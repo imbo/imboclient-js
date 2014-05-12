@@ -862,7 +862,7 @@ describe('ImboClient', function() {
 
             client.getImageData(catMd5, function(err, data) {
                 assert.ifError(err, 'getImageData() should not give an error on success');
-                assert.equal('str', data);
+                assert.equal(expectedBuffer.toString(), data.toString());
                 done();
             });
         });

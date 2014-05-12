@@ -562,6 +562,15 @@ describe('Imbo.ImageUrl', function() {
             Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '&accessToken=');
         });
 
+        it('should extract correct base URLs', function() {
+            var imgId = '701db186d4cfb7a0a3d83b5628f878ab',
+                url   = 'http://imbo-some.host.no/users/pubkey/images/' + imgId;
+
+            var imgUrl = Imbo.ImageUrl.parse(url, 'foo');
+
+            assert.equal(imgUrl.getBaseUrl(), 'http://imbo-some.host.no');
+        });
+
         it('should correctly parse URLs with transformations', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
                 qs  = '?t[]=flipHorizontally';
@@ -579,6 +588,26 @@ describe('Imbo.ImageUrl', function() {
                     'crop:x=0,y=0,width=927,height=621',
                     'thumbnail:width=320,height=214,fit=inset',
                     'canvas:width=320,height=214,mode=center'
+                ];
+
+            assert.equal(transformations.length, expected.length);
+            for (var i = 0; i < transformations.length; i++) {
+                assert.equal(transformations[i], expected[i]);
+            }
+        });
+
+        it('should decode and put transformations in transformations array (2)', function() {
+            var imgId = '701db186d4cfb7a0a3d83b5628f878ab',
+                url   = 'http://imbo-some.host.no/users/pubkey/images/' + imgId,
+                qs    = '?t%5B%5D=modulate%3As%3D127&t%5B%5D=crop%3Awidth%3D724%2Cheight%3D352%2Cx%3D25%2Cy%3D316&t%5B%5D=maxSize%3Awidth%3D552&t%5B%5D=maxSize%3Awidth%3D225%2Cheight%3D225&accessToken=something';
+
+            var imgUrl = Imbo.ImageUrl.parse(url + qs, 'foo'),
+                transformations = imgUrl.getTransformations(),
+                expected = [
+                    'modulate:s=127',
+                    'crop:width=724,height=352,x=25,y=316',
+                    'maxSize:width=552',
+                    'maxSize:width=225,height=225'
                 ];
 
             assert.equal(transformations.length, expected.length);

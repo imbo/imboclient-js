@@ -264,7 +264,7 @@ exports.getContentsFromUrl = function(url, callback) {
     xhr.responseType = 'arraybuffer';
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            callback(undefined, xhr.responseText);
+            callback(undefined, xhr.response || xhr.responseText);
         }
     };
     xhr.send(null);
@@ -690,7 +690,7 @@ extend(ImboClient.prototype, {
     addImageFromUrl: function(url, callback) {
         if (typeof window !== 'undefined') {
             // Browser environments can't pipe, so download the file and add it
-            return readers.getContentsFromUrl(url, function(err, res, data) {
+            return this.getImageDataFromUrl(url, function(err, data) {
                 if (err) {
                     return callback(err);
                 }
@@ -1135,7 +1135,7 @@ extend(ImboClient.prototype, {
      * @param {Function} callback
      */
     getImageDataFromUrl: function(imageUrl, callback) {
-        readers.getContentsFromUrl(imageUrl.toString(), function(err, res, data) {
+        readers.getContentsFromUrl(imageUrl.toString(), function(err, data) {
             callback(err, err ? undefined : data);
         });
     },
@@ -2136,6 +2136,15 @@ extend(ImageUrl.prototype, {
         }
 
         return query;
+    },
+
+    /**
+     * Get the base URL for the imageUrl instance
+     *
+     * @return {String}
+     */
+    getBaseUrl: function() {
+        return this.rootUrl;
     }
 });
 
