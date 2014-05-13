@@ -204,6 +204,7 @@ describeIntegration('ImboClient (integration)', function() {
                 var url = client.getImageUrl(imageIdentifier).sepia().png();
                 client.getShortUrl(url, function(err, shortUrl) {
                     request.head(shortUrl.toString(), function(err, res) {
+                        assert.ifError(err, 'HEAD-request against shortUrl should not give an error');
                         assert.equal(200, res.statusCode, 'After generating the ShortUrl, it should exist');
                         assert.equal('image/png', res.headers['content-type']);
 
