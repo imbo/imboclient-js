@@ -206,7 +206,7 @@ describe('ImboClient', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
                 qs  = '?t[]=flipHorizontally';
 
-            client.parseImageUrl(url + qs).toString().should.include(url + '?t%5B%5D=flipHorizontally');
+            client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
         });
 
         // More tests are defined in the ImageUrl test suite
@@ -276,7 +276,7 @@ describe('ImboClient', function() {
                 query: 'page=2&limit=3'
             }).toString();
 
-            url.should.include('http://imbo/some/path?page=2&limit=3&accessToken');
+            url.should.containEql('http://imbo/some/path?page=2&limit=3&accessToken');
         });
     });
 

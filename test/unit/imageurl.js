@@ -22,49 +22,49 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#autoRotate', function() {
         it('should return correct transformation', function() {
-            url.autoRotate().toString().should.include('?t%5B%5D=autoRotate');
+            url.autoRotate().toString().should.containEql('?t%5B%5D=autoRotate');
         });
     });
 
     describe('#border', function() {
         it('should return correct transformation', function() {
-            url.border({ color: 'c00c00', width: 13, height: 37 }).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37');
+            url.border({ color: 'c00c00', width: 13, height: 37 }).toString().should.containEql('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D13%2Cheight%3D37');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.border({ color: '#c00c00' }).toString().should.include('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1');
+            url.border({ color: '#c00c00' }).toString().should.containEql('?t%5B%5D=border%3Acolor%3Dc00c00%2Cwidth%3D1%2Cheight%3D1');
         });
 
         it('should add default parameters if missing', function() {
-            url.border().toString().should.include('?t%5B%5D=border%3Acolor%3D000000%2Cwidth%3D1%2Cheight%3D1');
+            url.border().toString().should.containEql('?t%5B%5D=border%3Acolor%3D000000%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border({ color: 'ffffff'}).toString().should.include('?t%5B%5D=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1');
+            url.border({ color: 'ffffff'}).toString().should.containEql('?t%5B%5D=border%3Acolor%3Dffffff%2Cwidth%3D1%2Cheight%3D1');
             url.reset();
 
-            url.border({ color: 'f00baa', width: 5 }).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1');
+            url.border({ color: 'f00baa', width: 5 }).toString().should.containEql('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D5%2Cheight%3D1');
             url.reset();
 
-            url.border({ color: 'f00baa', height: 5 }).toString().should.include('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D1%2Cheight%3D5');
+            url.border({ color: 'f00baa', height: 5 }).toString().should.containEql('?t%5B%5D=border%3Acolor%3Df00baa%2Cwidth%3D1%2Cheight%3D5');
             url.reset();
         });
     });
 
     describe('#canvas', function() {
         it('should return correct transformation', function() {
-            url.canvas({ width: 120, height: 130 }).toString().should.include('?t%5B%5D=canvas');
+            url.canvas({ width: 120, height: 130 }).toString().should.containEql('?t%5B%5D=canvas');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.canvas({ width: 120, height: 130, bg: '#c00c00' }).toString().should.include('bg%3Dc00c00');
+            url.canvas({ width: 120, height: 130, bg: '#c00c00' }).toString().should.containEql('bg%3Dc00c00');
         });
 
-        it('should include the mode, if passed', function() {
-            url.canvas({ width: 120, height: 130, mode: 'center' }).toString().should.include('mode%3Dcenter');
+        it('should containEql the mode, if passed', function() {
+            url.canvas({ width: 120, height: 130, mode: 'center' }).toString().should.containEql('mode%3Dcenter');
         });
 
-        it('should include the x and y positions, if passed', function() {
-            url.canvas({ width: 130, height: 130, x: 10, y: 20 }).toString().should.include('x%3D10%2Cy%3D20');
+        it('should containEql the x and y positions, if passed', function() {
+            url.canvas({ width: 130, height: 130, x: 10, y: 20 }).toString().should.containEql('x%3D10%2Cy%3D20');
         });
 
         it('should return correct transformation with all params present', function() {
@@ -72,7 +72,7 @@ describe('Imbo.ImageUrl', function() {
                 .canvas({ width: 130, height: 130, x: 10, y: 20, mode: 'free', bg: 'f00baa' })
                 .toString()
                 .should
-                .include('?t%5B%5D=canvas%3Awidth%3D130%2Cheight%3D130%2Cmode%3Dfree%2Cx%3D10%2Cy%3D20%2Cbg%3Df00baa');
+                .containEql('?t%5B%5D=canvas%3Awidth%3D130%2Cheight%3D130%2Cmode%3Dfree%2Cx%3D10%2Cy%3D20%2Cbg%3Df00baa');
         });
 
         it('should throw an error if width and height is not present', function() {
@@ -90,28 +90,28 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#compress', function() {
         it('should return correct transformation', function() {
-            url.compress({ level: 90 }).toString().should.include('?t%5B%5D=compress%3Alevel%3D90');
+            url.compress({ level: 90 }).toString().should.containEql('?t%5B%5D=compress%3Alevel%3D90');
         });
 
         it('should allow being passed an integer instead of an object', function() {
-            url.compress(85).toString().should.include('?t%5B%5D=compress%3Alevel%3D85');
+            url.compress(85).toString().should.containEql('?t%5B%5D=compress%3Alevel%3D85');
         });
 
         it('should handle non-integers correctly', function() {
-            url.compress('40').toString().should.include('?t%5B%5D=compress%3Alevel%3D40');
+            url.compress('40').toString().should.containEql('?t%5B%5D=compress%3Alevel%3D40');
         });
 
         it('should add default parameters if missing', function() {
-            url.compress().toString().should.include('t%5B%5D=compress%3Alevel%3D75');
+            url.compress().toString().should.containEql('t%5B%5D=compress%3Alevel%3D75');
             url.reset();
 
-            url.compress({}).toString().should.include('t%5B%5D=compress%3Alevel%3D75');
+            url.compress({}).toString().should.containEql('t%5B%5D=compress%3Alevel%3D75');
         });
     });
 
     describe('#convert', function() {
         it('should append the given filetype to the URL', function() {
-            url.convert('png').toString().should.include('.png');
+            url.convert('png').toString().should.containEql('.png');
         });
     });
 
@@ -145,39 +145,39 @@ describe('Imbo.ImageUrl', function() {
                 .crop({ x: 5, y: 6, mode: 'free', width: 50, height: 60 })
                 .toString()
                 .should
-                .include('?t%5B%5D=crop%3Awidth%3D50%2Cheight%3D60%2Cx%3D5%2Cy%3D6');
+                .containEql('?t%5B%5D=crop%3Awidth%3D50%2Cheight%3D60%2Cx%3D5%2Cy%3D6');
         });
     });
 
     describe('#desaturate', function() {
         it('should return correct transformation', function() {
-            url.desaturate().toString().should.include('?t%5B%5D=desaturate');
+            url.desaturate().toString().should.containEql('?t%5B%5D=desaturate');
         });
     });
 
     describe('#flipHorizontally', function() {
         it('should return correct transformation', function() {
-            url.flipHorizontally().toString().should.include('?t%5B%5D=flipHorizontally');
+            url.flipHorizontally().toString().should.containEql('?t%5B%5D=flipHorizontally');
         });
     });
 
     describe('#flipVertically', function() {
         it('should return correct transformation', function() {
-            url.flipVertically().toString().should.include('?t%5B%5D=flipVertically');
+            url.flipVertically().toString().should.containEql('?t%5B%5D=flipVertically');
         });
     });
 
     describe('#maxSize', function() {
         it('should return correct transformation if passed both width and height', function() {
-            url.maxSize({ width: 320, height: 240 }).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320%2Cheight%3D240');
+            url.maxSize({ width: 320, height: 240 }).toString().should.containEql('?t%5B%5D=maxSize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.maxSize({ width: 320 }).toString().should.include('?t%5B%5D=maxSize%3Awidth%3D320');
+            url.maxSize({ width: 320 }).toString().should.containEql('?t%5B%5D=maxSize%3Awidth%3D320');
         });
 
         it('should handle being passed only a height', function() {
-            url.maxSize({ height: 240 }).toString().should.include('?t%5B%5D=maxSize%3Aheight%3D240');
+            url.maxSize({ height: 240 }).toString().should.containEql('?t%5B%5D=maxSize%3Aheight%3D240');
         });
 
         it('should throw an error if neither width or height is provided', function() {
@@ -191,19 +191,19 @@ describe('Imbo.ImageUrl', function() {
                 .modulate({ brightness: 14, saturation: 23, hue: 88 })
                 .toString()
                 .should
-                .include('?t%5B%5D=modulate%3Ab%3D14%2Cs%3D23%2Ch%3D88');
+                .containEql('?t%5B%5D=modulate%3Ab%3D14%2Cs%3D23%2Ch%3D88');
         });
 
         it('should handle being passed only a brightness', function() {
-            url.modulate({ brightness: 320 }).toString().should.include('?t%5B%5D=modulate%3Ab%3D320&');
+            url.modulate({ brightness: 320 }).toString().should.containEql('?t%5B%5D=modulate%3Ab%3D320&');
         });
 
         it('should handle being passed only a saturation', function() {
-            url.modulate({ saturation: 240 }).toString().should.include('?t%5B%5D=modulate%3As%3D240&');
+            url.modulate({ saturation: 240 }).toString().should.containEql('?t%5B%5D=modulate%3As%3D240&');
         });
 
         it('should handle being passed only a hue', function() {
-            url.modulate({ hue: 777 }).toString().should.include('?t%5B%5D=modulate%3Ah%3D777&');
+            url.modulate({ hue: 777 }).toString().should.containEql('?t%5B%5D=modulate%3Ah%3D777&');
         });
 
         it('should throw an error if neither brightness, saturation or hue is specified', function() {
@@ -213,21 +213,21 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#progressive', function() {
         it('should return correct transformation', function() {
-            url.progressive().toString().should.include('?t%5B%5D=progressive');
+            url.progressive().toString().should.containEql('?t%5B%5D=progressive');
         });
     });
 
     describe('#resize', function() {
         it('should return correct transformation if passed both width and height', function() {
-            url.resize({ width: 320, height: 240 }).toString().should.include('?t%5B%5D=resize%3Awidth%3D320%2Cheight%3D240');
+            url.resize({ width: 320, height: 240 }).toString().should.containEql('?t%5B%5D=resize%3Awidth%3D320%2Cheight%3D240');
         });
 
         it('should handle being passed only a width', function() {
-            url.resize({ width: 320 }).toString().should.include('?t%5B%5D=resize%3Awidth%3D320&');
+            url.resize({ width: 320 }).toString().should.containEql('?t%5B%5D=resize%3Awidth%3D320&');
         });
 
         it('should handle being passed only a height', function() {
-            url.resize({ height: 240 }).toString().should.include('?t%5B%5D=resize%3Aheight%3D240&');
+            url.resize({ height: 240 }).toString().should.containEql('?t%5B%5D=resize%3Aheight%3D240&');
         });
 
         it('should throw an error if neither width or height is provided', function() {
@@ -241,109 +241,109 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should allow a custom background color', function() {
-            url.rotate({ angle: -45, bg: 'f00baa' }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D-45%2Cbg%3Df00baa');
+            url.rotate({ angle: -45, bg: 'f00baa' }).toString().should.containEql('?t%5B%5D=rotate%3Aangle%3D-45%2Cbg%3Df00baa');
         });
 
         it('should default to a black background color', function() {
-            url.rotate({ angle: 30 }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D30%2Cbg%3D000000');
+            url.rotate({ angle: 30 }).toString().should.containEql('?t%5B%5D=rotate%3Aangle%3D30%2Cbg%3D000000');
         });
 
         it('should handle angles with decimals', function() {
-            url.rotate({ angle: 13.37 }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D13.37%2Cbg%3D000000');
+            url.rotate({ angle: 13.37 }).toString().should.containEql('?t%5B%5D=rotate%3Aangle%3D13.37%2Cbg%3D000000');
         });
 
         it('should strip the hash-symbol from colors', function() {
-            url.rotate({ angle: 51, bg: '#c00c00' }).toString().should.include('?t%5B%5D=rotate%3Aangle%3D51%2Cbg%3Dc00c00');
+            url.rotate({ angle: 51, bg: '#c00c00' }).toString().should.containEql('?t%5B%5D=rotate%3Aangle%3D51%2Cbg%3Dc00c00');
         });
     });
 
     describe('#sepia', function() {
         it('should return correct transformation', function() {
-            url.sepia({ threshold: 90 }).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D90');
+            url.sepia({ threshold: 90 }).toString().should.containEql('?t%5B%5D=sepia%3Athreshold%3D90');
         });
 
         it('should handle being passed an integer instead of an object', function() {
-            url.sepia(36).toString().should.include('?t%5B%5D=sepia%3Athreshold%3D36');
+            url.sepia(36).toString().should.containEql('?t%5B%5D=sepia%3Athreshold%3D36');
         });
 
         it('should handle non-integers correctly', function() {
-            url.sepia('40').toString().should.include('?t%5B%5D=sepia%3Athreshold%3D40');
+            url.sepia('40').toString().should.containEql('?t%5B%5D=sepia%3Athreshold%3D40');
         });
 
         it('should add default parameters if missing', function() {
-            url.sepia().toString().should.include('t%5B%5D=sepia%3Athreshold%3D80');
+            url.sepia().toString().should.containEql('t%5B%5D=sepia%3Athreshold%3D80');
 
             url.reset();
 
-            url.sepia({}).toString().should.include('t%5B%5D=sepia%3Athreshold%3D80');
+            url.sepia({}).toString().should.containEql('t%5B%5D=sepia%3Athreshold%3D80');
         });
     });
 
     describe('#strip', function() {
         it('should return correct transformation', function() {
-            url.strip().toString().should.include('?t%5B%5D=strip');
+            url.strip().toString().should.containEql('?t%5B%5D=strip');
         });
     });
 
     describe('#thumbnail', function() {
         it('should use default arguments if none are given', function() {
-            url.thumbnail().toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
+            url.thumbnail().toString().should.containEql('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
 
             url.reset();
-            url.thumbnail({}).toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
+            url.thumbnail({}).toString().should.containEql('?t%5B%5D=thumbnail%3Awidth%3D50%2Cheight%3D50%2Cfit%3Doutbound');
         });
 
         it('should allow custom arguments', function() {
-            url.thumbnail({ width: 150, height: 100, fit: 'inset' }).toString().should.include('?t%5B%5D=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset');
+            url.thumbnail({ width: 150, height: 100, fit: 'inset' }).toString().should.containEql('?t%5B%5D=thumbnail%3Awidth%3D150%2Cheight%3D100%2Cfit%3Dinset');
         });
     });
 
     describe('#transpose', function() {
         it('should return correct transformation', function() {
-            url.transpose().toString().should.include('?t%5B%5D=transpose');
+            url.transpose().toString().should.containEql('?t%5B%5D=transpose');
         });
     });
 
     describe('#transverse', function() {
         it('should return correct transformation', function() {
-            url.transverse().toString().should.include('?t%5B%5D=transverse');
+            url.transverse().toString().should.containEql('?t%5B%5D=transverse');
         });
     });
 
     describe('#watermark', function() {
         it('should return correct transformation', function() {
-            url.watermark().toString().should.include(
+            url.watermark().toString().should.containEql(
                 '?t%5B%5D=watermark' + encodeURIComponent(':position=top-left,x=0,y=0')
             );
 
             url.reset();
 
-            url.watermark({}).toString().should.include(
+            url.watermark({}).toString().should.containEql(
                 '?t%5B%5D=watermark' + encodeURIComponent(':position=top-left,x=0,y=0')
             );
         });
 
-        it('should include imageIdentifier, if passed', function() {
-            url.watermark({ imageIdentifier: catMd5 }).toString().should.include('img%3D' + catMd5);
+        it('should containEql imageIdentifier, if passed', function() {
+            url.watermark({ imageIdentifier: catMd5 }).toString().should.containEql('img%3D' + catMd5);
         });
 
-        it('should include width, if passed', function() {
-            url.watermark({ width: 50 }).toString().should.include('width%3D50');
+        it('should containEql width, if passed', function() {
+            url.watermark({ width: 50 }).toString().should.containEql('width%3D50');
         });
 
-        it('should include height, if passed', function() {
-            url.watermark({ height: 120 }).toString().should.include('height%3D120');
+        it('should containEql height, if passed', function() {
+            url.watermark({ height: 120 }).toString().should.containEql('height%3D120');
         });
 
         it('should use the passed position mode', function() {
-            url.watermark({ position: 'bottom-left'}).toString().should.include('position%3Dbottom-left');
+            url.watermark({ position: 'bottom-left'}).toString().should.containEql('position%3Dbottom-left');
         });
 
         it('should use the passed x and y coordinates', function() {
             url.watermark({ x: 66, y: 77 })
                 .toString()
                 .should
-                .include('x%3D66%2Cy%3D77');
+                .containEql('x%3D66%2Cy%3D77');
         });
 
         it('should generate correct transformation with all arguments set', function() {
@@ -358,7 +358,7 @@ describe('Imbo.ImageUrl', function() {
                 })
                 .toString()
                 .should
-                .include('?t%5B%5D=watermark' + encodeURIComponent(
+                .containEql('?t%5B%5D=watermark' + encodeURIComponent(
                     ':position=center,x=55,y=66,img=' + catMd5 + ',width=33,height=44'
                 ));
         });
@@ -366,19 +366,19 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#gif', function() {
         it('should append .gif to the URL', function() {
-            url.gif().toString().should.include('.gif');
+            url.gif().toString().should.containEql('.gif');
         });
     });
 
     describe('#jpg', function() {
         it('should append .jpg to the URL', function() {
-            url.jpg().toString().should.include('.jpg');
+            url.jpg().toString().should.containEql('.jpg');
         });
     });
 
     describe('#png', function() {
         it('should append .png to the URL', function() {
-            url.png().toString().should.include('.png');
+            url.png().toString().should.containEql('.png');
         });
     });
 
@@ -403,7 +403,7 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#append', function() {
         it('should append to the transformations array', function() {
-            url.append('custom:foo=bar').toString().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=custom%3Afoo%3Dbar');
+            url.append('custom:foo=bar').toString().should.containEql('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=custom%3Afoo%3Dbar');
         });
     });
 
@@ -421,7 +421,7 @@ describe('Imbo.ImageUrl', function() {
             url.getTransformations().length.should.equal(3);
         });
 
-        it('should not include convert(), gif(), jpg() or png() transformations', function() {
+        it('should not containEql convert(), gif(), jpg() or png() transformations', function() {
             url
                 .convert('gif')
                 .flipHorizontally()
@@ -489,15 +489,15 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#getUrl', function() {
         it('should contain the base URL', function() {
-            url.getUrl().should.include(baseUrl);
+            url.getUrl().should.containEql(baseUrl);
         });
 
         it('should generate the correct URL with no transformations', function() {
-            url.getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8');
+            url.getUrl().should.containEql('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8');
         });
 
         it('should generate the correct URL with transformations', function() {
-            url.flipVertically().getUrl().should.include('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically');
+            url.flipVertically().getUrl().should.containEql('http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t%5B%5D=flipVertically');
         });
 
         it('should generate correct URL-encoded URLs for advanced combinations', function() {
@@ -505,8 +505,8 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should generate correct access tokens for various urls', function() {
-            url.flipVertically().maxSize({ width: 123, height: 456 }).border({ color: '#bf1942' }).getUrl().should.include('accessToken=9258d52a05c40a6ca82e69a435a510855506caf565845f2c7bed863e2bb3f25b');
-            url.reset().thumbnail({ width: 123, height: 456 }).flipHorizontally().canvas({ width: 150, height: 160, mode: 'inset', x: 17, y: 18, bg: 'c0ff83' }).getUrl().should.include('accessToken=0eabe01f6897360b5da05b9450b9e236fc6ff4e8408f541dc950cff5fdb97a3b');
+            url.flipVertically().maxSize({ width: 123, height: 456 }).border({ color: '#bf1942' }).getUrl().should.containEql('accessToken=9258d52a05c40a6ca82e69a435a510855506caf565845f2c7bed863e2bb3f25b');
+            url.reset().thumbnail({ width: 123, height: 456 }).flipHorizontally().canvas({ width: 150, height: 160, mode: 'inset', x: 17, y: 18, bg: 'c0ff83' }).getUrl().should.containEql('accessToken=0eabe01f6897360b5da05b9450b9e236fc6ff4e8408f541dc950cff5fdb97a3b');
 
             // Real stress-testing here...
             url
@@ -532,7 +532,7 @@ describe('Imbo.ImageUrl', function() {
                 .transverse()
                 .watermark({ imageIdentifier: catMd5, width: 44, height: 55, position: 'top-left', x: 11, y: 22 })
                 .getUrl()
-                .should.include('accessToken=71b10b6e437ff1750a32f290c7ea072299b35f0fb87a4c2dd629fbd66ff730fb');
+                .should.containEql('accessToken=71b10b6e437ff1750a32f290c7ea072299b35f0fb87a4c2dd629fbd66ff730fb');
         });
     });
 
@@ -546,20 +546,20 @@ describe('Imbo.ImageUrl', function() {
     describe('#parse', function() {
         it('should correctly parse simple URLs', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5;
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '?accessToken=');
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '?accessToken=');
         });
 
         it('should correctly parse URLs with extensions', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '?accessToken=');
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '?accessToken=');
         });
 
         it('should correctly parse URLs with existing query string', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?custom=param';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '&accessToken=');
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '&accessToken=');
 
             url = 'http://imbo/users/pub/images/' + catMd5 + '?custom=param';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.include(url + '&accessToken=');
+            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '&accessToken=');
         });
 
         it('should extract correct base URLs', function() {
@@ -575,7 +575,7 @@ describe('Imbo.ImageUrl', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
                 qs  = '?t[]=flipHorizontally';
 
-            Imbo.ImageUrl.parse(url + qs, 'foo').toString().should.include(url + '?t%5B%5D=flipHorizontally');
+            Imbo.ImageUrl.parse(url + qs, 'foo').toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
         });
 
         it('should decode and put transformations in transformations array', function() {

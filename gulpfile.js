@@ -5,7 +5,7 @@ var gulp       = require('gulp'),
     istanbul   = require('gulp-istanbul'),
     gutil      = require('gulp-util'),
     browserify = require('gulp-browserify'),
-    clean      = require('gulp-clean'),
+    rimraf     = require('gulp-rimraf'),
     rename     = require('gulp-rename'),
     uglify     = require('gulp-uglify'),
     replace    = require('gulp-replace'),
@@ -32,7 +32,7 @@ function browserSpecific() {
 
 gulp.task('clean', function() {
     gulp.src('./dist', { read: false })
-        .pipe(clean());
+        .pipe(rimraf());
 });
 
 gulp.task('watch', function() {
@@ -51,7 +51,7 @@ gulp.task('lint', function() {
 gulp.task('tests', function(cb) {
     gulp.src(['./lib/**/*.js'])
         .pipe(istanbul())
-        .on('end', function() {
+        .on('finish', function() {
             gulp.src(['./test/unit/*.js', './test/integration/*.js'], { read: false })
                 .pipe(mocha({ reporter: 'spec' }))
                 .pipe(istanbul.writeReports())
