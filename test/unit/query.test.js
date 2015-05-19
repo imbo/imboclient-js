@@ -1,8 +1,9 @@
-var Imbo   = require('../../'),
+'use strict';
+
+var Imbo = require('../../'),
     assert = require('assert');
 
 describe('Imbo.Query', function() {
-
     var query;
     beforeEach(function() {
         query = new Imbo.Query();
@@ -11,21 +12,21 @@ describe('Imbo.Query', function() {
     describe('#page', function() {
         it('should be able to set and get a value', function() {
             assert.equal(query.page(5), query, 'page(val) should return query instance');
-            assert.equal(query.page(),  5,     'page() should return the set value');
+            assert.equal(query.page(), 5, 'page() should return the set value');
         });
     });
 
     describe('#limit', function() {
         it('should be able to set and get a value', function() {
             assert.equal(query.limit(5), query, 'limit(val) should return query instance');
-            assert.equal(query.limit(),  5,     'limit() should return the set value');
+            assert.equal(query.limit(), 5, 'limit() should return the set value');
         });
     });
 
     describe('#metadata', function() {
         it('should be able to set and get a value', function() {
             assert.equal(query.metadata(true), query, 'metadata(val) should return query instance');
-            assert.equal(query.metadata(),  true,     'metadata() should return the set value');
+            assert.equal(query.metadata(), true, 'metadata() should return the set value');
         });
     });
 
@@ -33,7 +34,7 @@ describe('Imbo.Query', function() {
         it('should be able to set and get a date', function() {
             var now = new Date();
             assert.equal(query.from(now), query, 'from(val) should return query instance');
-            assert.equal(query.from(),    now,   'from() should return the set value');
+            assert.equal(query.from(), now, 'from() should return the set value');
         });
     });
 
@@ -41,7 +42,7 @@ describe('Imbo.Query', function() {
         it('should be able to set and get a date', function() {
             var to = new Date();
             assert.equal(query.to(to), query, 'to(val) should return query instance');
-            assert.equal(query.to(),   to,    'to() should return the set value');
+            assert.equal(query.to(), to, 'to() should return the set value');
         });
 
         it('should not set a value if the value is not a date', function() {
@@ -79,7 +80,7 @@ describe('Imbo.Query', function() {
     describe('#addId', function() {
         it('should be able to append an id', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = 'moo';
+                added = 'moo';
 
             query.ids(values);
 
@@ -95,7 +96,7 @@ describe('Imbo.Query', function() {
     describe('#addIds', function() {
         it('should be able to append multiple ids', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = ['moo', 'tools'];
+                added = ['moo', 'tools'];
 
             query.ids(values);
 
@@ -141,7 +142,7 @@ describe('Imbo.Query', function() {
     describe('#addChecksum', function() {
         it('should be able to append a checksum', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = 'moo';
+                added = 'moo';
 
             query.checksums(values);
 
@@ -157,7 +158,7 @@ describe('Imbo.Query', function() {
     describe('#addChecksums', function() {
         it('should be able to append multiple checksums', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = ['moo', 'tools'];
+                added = ['moo', 'tools'];
 
             query.checksums(values);
 
@@ -203,7 +204,7 @@ describe('Imbo.Query', function() {
     describe('#addOriginalChecksum', function() {
         it('should be able to append an original checksum', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = 'moo';
+                added = 'moo';
 
             query.originalChecksums(values);
 
@@ -219,7 +220,7 @@ describe('Imbo.Query', function() {
     describe('#addOriginalChecksums', function() {
         it('should be able to append multiple originalChecksums', function() {
             var values = ['some', 'values', 'to', 'return'],
-                added  = ['moo', 'tools'];
+                added = ['moo', 'tools'];
 
             query.originalChecksums(values);
 
@@ -265,7 +266,7 @@ describe('Imbo.Query', function() {
     describe('#addField', function() {
         it('should be able to append a field', function() {
             var values = ['some', 'fields', 'to', 'return'],
-                added  = 'moo';
+                added = 'moo';
 
             query.fields(values);
 
@@ -281,7 +282,7 @@ describe('Imbo.Query', function() {
     describe('#addFields', function() {
         it('should be able to append multiple fields', function() {
             var values = ['some', 'fields', 'to', 'return'],
-                added  = ['moo', 'tools'];
+                added = ['moo', 'tools'];
 
             query.fields(values);
 
@@ -358,7 +359,7 @@ describe('Imbo.Query', function() {
     describe('#addSorts', function() {
         it('should be able to append multiple sorts', function() {
             var values = ['created:desc', 'size:asc'],
-                added  = ['awesomess:desc', 'epicness:asc'];
+                added = ['awesomess:desc', 'epicness:asc'];
 
             query.sort(values);
 
@@ -451,5 +452,4 @@ describe('Imbo.Query', function() {
             );
         });
     });
-
 });

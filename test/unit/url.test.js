@@ -1,15 +1,18 @@
-var Imbo   = require('../../'),
+'use strict';
+
+var Imbo = require('../../'),
     assert = require('assert');
 
 var signatureCleaner = function(path) {
-    return path.replace(/timestamp=[^&]*&?/, '')
-               .replace(/signature=[^&]*&?/, '')
-               .replace(/accessToken=[^&]*&?/, '')
-               .replace(/[?&]$/g, '');
+    return (path
+        .replace(/timestamp=[^&]*&?/, '')
+        .replace(/signature=[^&]*&?/, '')
+        .replace(/accessToken=[^&]*&?/, '')
+        .replace(/[?&]$/g, '')
+    );
 };
 
 describe('Imbo.Url', function() {
-
     var baseUrl = 'http://imbo',
         pub = 'pub',
         priv = 'priv',
@@ -119,5 +122,4 @@ describe('Imbo.Url', function() {
             assert.equal(u.toString(), u.getUrl());
         });
     });
-
 });

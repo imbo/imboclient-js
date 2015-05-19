@@ -1,18 +1,22 @@
-var assert    = require('assert'),
-    fs        = require('fs'),
-    Imbo      = require('../../'),
-    request   = require('request'),
-    fixtures  = __dirname + '/../fixtures',
-    catMd5    = '61da9892205a0d5077a353eb3487e8c8';
+/* eslint max-nested-callbacks: 0 */
+'use strict';
 
-require('../servers').createResetServer();
-require('../servers').createStaticServer();
+var assert = require('assert'),
+    fs = require('fs'),
+    Imbo = require('../../'),
+    path = require('path'),
+    request = require('request');
+
+var fixtures = path.join(__dirname, '..', 'fixtures'),
+    catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 var stcUrl = 'http://127.0.0.1:6775',
     describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip),
-    imboHost    = process.env.IMBOCLIENT_INTEGRATION_HOST    || 'http://127.0.0.1:9012',
-    imboPubKey  = process.env.IMBOCLIENT_INTEGRATION_PUBKEY  || 'test',
+    imboHost = process.env.IMBOCLIENT_INTEGRATION_HOST || 'http://127.0.0.1:9012',
+    imboPubKey = process.env.IMBOCLIENT_INTEGRATION_PUBKEY || 'test',
     imboPrivKey = process.env.IMBOCLIENT_INTEGRATION_PRIVKEY || 'test',
+    stcServer,
+    errServer,
     client,
     errClient;
 
@@ -21,6 +25,8 @@ describeIntegration('ImboClient (integration)', function() {
 
     before(function() {
         errClient = new Imbo.Client('http://127.0.0.1:6776', 'pub', 'priv');
+        errServer = require('../servers').createResetServer();
+        stcServer = require('../servers').createStaticServer();
     });
 
     beforeEach(function(done) {
@@ -31,21 +37,25 @@ describeIntegration('ImboClient (integration)', function() {
         });
     });
 
+    after(function(done) {
+        stcServer.close(function() {
+            errServer.close(done);
+        });
+    });
+
     describe('#addImage', function() {
         it('should return error if the local image does not exist', function(done) {
             var filename = fixtures + '/does-not-exist.jpg';
-            client.addImage(filename, function(err, imageIdentifier) {
+            client.addImage(filename, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
                 assert.equal(err.code, 'ENOENT');
-                assert.equal(undefined, imageIdentifier);
                 done();
             });
         });
 
         it('should return an error if the image could not be added', function(done) {
-            client.addImage(fixtures + '/invalid.png', function(err, imageIdentifier) {
+            client.addImage(fixtures + '/invalid.png', function(err) {
                 assert.equal(415, err);
-                assert.equal(null, imageIdentifier);
                 done();
             });
         });
@@ -59,16 +69,15 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should return an image identifier and an http-response on success', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(catMd5, body.imageIdentifier);
-                assert.equal('jpg',  body.extension);
+                assert.equal('jpg', body.extension);
                 assert.equal(201, response.statusCode);
 
                 done();
             });
         });
-
     });
 
     describe('#addImageFromUrl', function() {
@@ -81,9 +90,9 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should return an image identifier and an http-response on success', function(done) {
             client.addImageFromUrl(stcUrl + '/cat.jpg', function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
-                assert.equal('jpg',  body.extension);
+                assert.equal('jpg', body.extension);
                 assert.equal(201, response.statusCode);
 
                 done();
@@ -103,9 +112,9 @@ describeIntegration('ImboClient (integration)', function() {
         it('should return an image identifier and an http-response on success', function(done) {
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
-                assert.equal('jpg',  body.extension);
+                assert.equal('jpg', body.extension);
                 assert.equal(201, response.statusCode);
 
                 done();
@@ -152,10 +161,12 @@ describeIntegration('ImboClient (integration)', function() {
     describe('#parseImageUrl()', function() {
         it('should be able to parse and modify existing url', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                assert.ifError(err);
                 var url = client.getImageUrl(imageIdentifier).flipHorizontally();
 
                 var modUrl = client.parseImageUrl(url.toString()).sepia().png();
-                request.head(modUrl.toString(), function(err, res) {
+                request.head(modUrl.toString(), function(headErr, res) {
+                    assert.ifError(headErr);
                     assert.equal(200, res.statusCode);
                     assert.equal('image/png', res.headers['content-type']);
                     done();
@@ -167,8 +178,10 @@ describeIntegration('ImboClient (integration)', function() {
     describe('#getShortUrl()', function() {
         it('should be able to get a short url for a transformed image', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                assert.ifError(err);
                 var url = client.getImageUrl(imageIdentifier).flipHorizontally();
-                client.getShortUrl(url, function(err, shortUrl) {
+                client.getShortUrl(url, function(shortUrlErr, shortUrl) {
+                    assert.ifError(shortUrlErr);
                     assert.ifError(err, 'getShortUrl should not give an error when getting short url');
                     assert.ok(shortUrl.toString().indexOf(imboHost) === 0, 'short url should contain imbo host');
                     assert.ok(shortUrl.toString().match(/\/s\/[a-zA-Z0-9]{7}$/));
@@ -179,9 +192,12 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should be able to get a short url that works', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                assert.ifError(err);
                 var url = client.getImageUrl(imageIdentifier).sepia().png();
-                client.getShortUrl(url, function(err, shortUrl) {
-                    request.head(shortUrl.toString(), function(err, res) {
+                client.getShortUrl(url, function(shortUrlErr, shortUrl) {
+                    assert.ifError(shortUrlErr);
+                    request.head(shortUrl.toString(), function(headErr, res) {
+                        assert.ifError(headErr);
                         assert.equal(200, res.statusCode);
                         assert.equal('image/png', res.headers['content-type']);
                         done();
@@ -201,20 +217,22 @@ describeIntegration('ImboClient (integration)', function() {
 
         it('should delete all short URLs currently present', function(done) {
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                assert.ifError(err);
                 var url = client.getImageUrl(imageIdentifier).sepia().png();
-                client.getShortUrl(url, function(err, shortUrl) {
-                    request.head(shortUrl.toString(), function(err, res) {
-                        assert.ifError(err, 'HEAD-request against shortUrl should not give an error');
+                client.getShortUrl(url, function(shortUrlErr, shortUrl) {
+                    assert.ifError(shortUrlErr);
+                    request.head(shortUrl.toString(), function(headErr, res) {
+                        assert.ifError(headErr, 'HEAD-request against shortUrl should not give an error');
                         assert.equal(200, res.statusCode, 'After generating the ShortUrl, it should exist');
                         assert.equal('image/png', res.headers['content-type']);
 
-                        client.deleteAllShortUrlsForImage(imageIdentifier, function(err) {
-                            assert.ifError(err, 'deleteAllShortUrlsForImage() should not give an error on success');
+                        client.deleteAllShortUrlsForImage(imageIdentifier, function(deleteErr) {
+                            assert.ifError(deleteErr, 'deleteAllShortUrlsForImage() should not give an error on success');
 
-                            request.head(shortUrl.toString(), function(err, secondRes) {
+                            request.head(shortUrl.toString(), function(headErr2, secondRes) {
                                 var msg = 'After deleting all ShortUrls, it should no longer exist';
-                                msg    += '(expected 404, got ' + secondRes.statusCode + ') - ';
-                                msg    += 'HEAD ' + shortUrl.toString();
+                                msg += '(expected 404, got ' + secondRes.statusCode + ') - ';
+                                msg += 'HEAD ' + shortUrl.toString();
 
                                 assert.equal(404, secondRes.statusCode, msg);
                                 done();
@@ -230,25 +248,27 @@ describeIntegration('ImboClient (integration)', function() {
         it('should delete the provided ShortUrl', function(done) {
             // Add the image
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
+                assert.ifError(err);
                 var url = client.getImageUrl(imageIdentifier).desaturate().jpg();
 
                 // Generate a short-url
-                client.getShortUrl(url, function(err, shortUrl) {
-
+                client.getShortUrl(url, function(shortUrlErr, shortUrl) {
+                    assert.ifError(shortUrlErr);
                     // Verify that the short-url works
-                    request.head(shortUrl.toString(), function(err, res) {
+                    request.head(shortUrl.toString(), function(headErr, res) {
+                        assert.ifError(headErr);
                         assert.equal(200, res.statusCode, 'After generating the ShortUrl, it should exist');
                         assert.equal('image/jpeg', res.headers['content-type']);
 
                         // Delete the short-url
-                        client.deleteShortUrlForImage(imageIdentifier, shortUrl.getId(), function(err) {
-                            assert.ifError(err, 'deleteShortUrlForImage() should not give an error on success');
+                        client.deleteShortUrlForImage(imageIdentifier, shortUrl.getId(), function(deleteErr) {
+                            assert.ifError(deleteErr, 'deleteShortUrlForImage() should not give an error on success');
 
                             // Verify that the short-url has been deleted
-                            request.head(shortUrl.toString(), function(err, secondRes) {
+                            request.head(shortUrl.toString(), function(headErr2, secondRes) {
                                 var msg = 'After deleting the ShortUrl, it should no longer exist';
-                                msg    += '(expected 404, got ' + secondRes.statusCode + ') - ';
-                                msg    += 'HEAD ' + shortUrl.toString();
+                                msg += '(expected 404, got ' + secondRes.statusCode + ') - ';
+                                msg += 'HEAD ' + shortUrl.toString();
 
                                 assert.equal(404, secondRes.statusCode, msg);
                                 done();
@@ -265,8 +285,9 @@ describeIntegration('ImboClient (integration)', function() {
             var expectedBuffer = fs.readFileSync(fixtures + '/cat.jpg');
 
             client.addImageFromBuffer(expectedBuffer, function(err, imageIdentifier) {
-                client.getImageData(imageIdentifier, function(err, data) {
-                    assert.ifError(err, 'getImageData() should not give an error on success');
+                assert.ifError(err);
+                client.getImageData(imageIdentifier, function(imgDataErr, data) {
+                    assert.ifError(imgDataErr, 'getImageData() should not give an error on success');
                     assert.equal(expectedBuffer.length, data.length);
                     done();
                 });
@@ -274,9 +295,8 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            client.getImageData('f00baa', function(err, data) {
+            client.getImageData('f00baa', function(err) {
                 assert.equal(404, err);
-                assert.equal(undefined, data);
                 done();
             });
         });
@@ -312,9 +332,13 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an http-response on success', function(done) {
-            client.headImage(catMd5, function(err, res) {
-                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
-                done();
+            client.addImage(fixtures + '/cat.jpg', function() {
+                client.headImage(catMd5, function(err, res) {
+                    assert.ifError(err);
+                    assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
+
+                    done();
+                });
             });
         });
 
@@ -325,7 +349,6 @@ describeIntegration('ImboClient (integration)', function() {
                 done();
             });
         });
-
     });
 
     describe('#getImageProperties', function() {
@@ -333,10 +356,10 @@ describeIntegration('ImboClient (integration)', function() {
             client.addImage(fixtures + '/cat.jpg', function() {
                 client.getImageProperties(catMd5, function(err, props) {
                     assert.ifError(err, 'getImageProperties() should not give an error on success');
-                    assert.equal(450,          props.width);
-                    assert.equal(320,          props.height);
-                    assert.equal(23861,        props.filesize);
-                    assert.equal('jpg',        props.extension);
+                    assert.equal(450, props.width);
+                    assert.equal(320, props.height);
+                    assert.equal(23861, props.filesize);
+                    assert.equal('jpg', props.extension);
                     assert.equal('image/jpeg', props.mimetype);
                     done();
                 });
@@ -344,9 +367,8 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            client.getImageProperties('non-existant', function(err, props) {
+            client.getImageProperties('non-existant', function(err) {
                 assert.equal(404, err);
-                assert.equal(undefined, props);
                 done();
             });
         });
@@ -356,6 +378,7 @@ describeIntegration('ImboClient (integration)', function() {
         it('should return an http-response on success', function(done) {
             client.addImage(fixtures + '/cat.jpg', function() {
                 client.deleteImage(catMd5, function(err, res) {
+                    assert.ifError(err);
                     assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                     done();
                 });
@@ -393,9 +416,8 @@ describeIntegration('ImboClient (integration)', function() {
     describe('#imageExists', function() {
         it('should return error if the local image does not exist', function(done) {
             var filename = fixtures + '/non-existant.jpg';
-            client.imageExists(filename, function(err, exists) {
+            client.imageExists(filename, function(err) {
                 assert.equal('File does not exist (' + filename + ')', err);
-                assert.equal(undefined, exists);
                 done();
             });
         });
@@ -461,7 +483,7 @@ describeIntegration('ImboClient (integration)', function() {
                     assert.equal(true, Array.isArray(images));
                     assert.equal(images[0].checksum, catMd5);
                     assert.equal(5, search.limit);
-                    assert.equal(1,  search.hits);
+                    assert.equal(1, search.hits);
                     assert.equal(200, res.statusCode);
                     done();
                 });
@@ -477,7 +499,7 @@ describeIntegration('ImboClient (integration)', function() {
                     assert.ifError(err, 'getImages should not give an error on success');
                     assert.equal(true, Array.isArray(images));
                     assert.equal(5, search.limit);
-                    assert.equal(0,  search.hits);
+                    assert.equal(0, search.hits);
                     assert.equal(200, res.statusCode);
                     done();
                 });
@@ -501,10 +523,10 @@ describeIntegration('ImboClient (integration)', function() {
 
                 client.getImages(query, function(err, images, search) {
                     assert.ifError(err, 'getImages should not give an error on success');
-                    assert.equal(undefined,       images[0].size);
-                    assert.equal(undefined,       images[0].metadata);
-                    assert.equal(undefined,       images[0].updated);
-                    assert.equal('image/jpeg',    images[0].mime);
+                    assert.equal('undefined', typeof images[0].size);
+                    assert.equal('undefined', typeof images[0].metadata);
+                    assert.equal('undefined', typeof images[0].updated);
+                    assert.equal('image/jpeg', images[0].mime);
                     assert.equal(imageIdentifier, images[0].imageIdentifier);
                     assert.equal(1, search.hits);
                     done();
@@ -612,5 +634,4 @@ describeIntegration('ImboClient (integration)', function() {
             });
         });
     });
-
 });

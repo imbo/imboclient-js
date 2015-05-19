@@ -1,11 +1,13 @@
-var Imbo   = require('../../'),
-    assert = require('assert'),
-    catMd5 = '61da9892205a0d5077a353eb3487e8c8';
+'use strict';
+
+var Imbo = require('../../'),
+    assert = require('assert');
+
+var catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 require('should');
 
 describe('Imbo.ImageUrl', function() {
-
     var baseUrl = 'http://imbo',
         pub = 'pub',
         priv = 'priv',
@@ -76,15 +78,21 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should throw an error if width and height is not present', function() {
-            assert.throws(function() { url.canvas(); }, Error);
+            assert.throws(function() {
+                url.canvas();
+            }, Error);
         });
 
         it('should throw an error if width is not present', function() {
-            assert.throws(function() { url.canvas({ height: 130 }); }, Error);
+            assert.throws(function() {
+                url.canvas({ height: 130 });
+            }, Error);
         });
 
         it('should throw an error if height is not present', function() {
-            assert.throws(function() { url.canvas({ width: 188 }); }, Error);
+            assert.throws(function() {
+                url.canvas({ width: 188 });
+            }, Error);
         });
     });
 
@@ -117,27 +125,39 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#crop', function() {
         it('should throw an error if no x/y is provided without a mode', function() {
-            assert.throws(function() { url.crop({  }); }, Error);
+            assert.throws(function() {
+                url.crop({});
+            }, Error);
         });
 
         it('should throw an error if no y is provided with mode set to center-x', function() {
-            assert.throws(function() { url.crop({ mode: 'center-x' }); }, Error);
+            assert.throws(function() {
+                url.crop({ mode: 'center-x' });
+            }, Error);
         });
 
         it('should throw an error if no x is provided with mode set to center-y', function() {
-            assert.throws(function() { url.crop({ mode: 'center-y' }); }, Error);
+            assert.throws(function() {
+                url.crop({ mode: 'center-y' });
+            }, Error);
         });
 
         it('should throw an error if width is not provided', function() {
-            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free', height: 50 }); }, Error);
+            assert.throws(function() {
+                url.crop({ y: 5, x: 5, mode: 'free', height: 50 });
+            }, Error);
         });
 
         it('should throw an error if height is not provided', function() {
-            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free', width: 50 }); }, Error);
+            assert.throws(function() {
+                url.crop({ y: 5, x: 5, mode: 'free', width: 50 });
+            }, Error);
         });
 
         it('should throw an error if neither width or height is provided', function() {
-            assert.throws(function() { url.crop({ y: 5, x: 5, mode: 'free' }); }, Error);
+            assert.throws(function() {
+                url.crop({ y: 5, x: 5, mode: 'free' });
+            }, Error);
         });
 
         it('should return correct transformation', function() {
@@ -181,7 +201,9 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should throw an error if neither width or height is provided', function() {
-            assert.throws(function() { url.maxSize({ }); }, Error);
+            assert.throws(function() {
+                url.maxSize({ });
+            }, Error);
         });
     });
 
@@ -199,7 +221,7 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should handle being passed only a saturation', function() {
-            url.modulate({ saturation: 240 }).toString().should.containEql('?t%5B%5D=modulate%3As%3D240&');
+            url.modulate({ saturation: 240 }).toString().should.containEql('?t%5B%5D=modulate%3As%3D240&');
         });
 
         it('should handle being passed only a hue', function() {
@@ -207,7 +229,9 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should throw an error if neither brightness, saturation or hue is specified', function() {
-            assert.throws(function() { url.modulate({ }); }, Error);
+            assert.throws(function() {
+                url.modulate({ });
+            }, Error);
         });
     });
 
@@ -231,13 +255,17 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should throw an error if neither width or height is provided', function() {
-            assert.throws(function() { url.resize({ }); }, Error);
+            assert.throws(function() {
+                url.resize({ });
+            }, Error);
         });
     });
 
     describe('#rotate', function() {
         it('should throw an error if angle is not a number', function() {
-            assert.throws(function() { url.rotate({ angle: 'foo' }); }, Error);
+            assert.throws(function() {
+                url.rotate({ angle: 'foo' });
+            }, Error);
         });
 
         it('should allow a custom background color', function() {
@@ -545,44 +573,44 @@ describe('Imbo.ImageUrl', function() {
 
     describe('#parse', function() {
         it('should correctly parse simple URLs', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5;
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '?accessToken=');
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5;
+            Imbo.ImageUrl.parse(testUrl, 'foo').toString().should.containEql(testUrl + '?accessToken=');
         });
 
         it('should correctly parse URLs with extensions', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '?accessToken=');
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg';
+            Imbo.ImageUrl.parse(testUrl, 'foo').toString().should.containEql(testUrl + '?accessToken=');
         });
 
         it('should correctly parse URLs with existing query string', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?custom=param';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '&accessToken=');
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?custom=param';
+            Imbo.ImageUrl.parse(testUrl, 'foo').toString().should.containEql(testUrl + '&accessToken=');
 
-            url = 'http://imbo/users/pub/images/' + catMd5 + '?custom=param';
-            Imbo.ImageUrl.parse(url, 'foo').toString().should.containEql(url + '&accessToken=');
+            testUrl = 'http://imbo/users/pub/images/' + catMd5 + '?custom=param';
+            Imbo.ImageUrl.parse(testUrl, 'foo').toString().should.containEql(testUrl + '&accessToken=');
         });
 
         it('should extract correct base URLs', function() {
             var imgId = '701db186d4cfb7a0a3d83b5628f878ab',
-                url   = 'http://imbo-some.host.no/users/pubkey/images/' + imgId;
+                testUrl = 'http://imbo-some.host.no/users/pubkey/images/' + imgId;
 
-            var imgUrl = Imbo.ImageUrl.parse(url, 'foo');
+            var imgUrl = Imbo.ImageUrl.parse(testUrl, 'foo');
 
             assert.equal(imgUrl.getBaseUrl(), 'http://imbo-some.host.no');
         });
 
         it('should correctly parse URLs with transformations', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
-                qs  = '?t[]=flipHorizontally';
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs = '?t[]=flipHorizontally';
 
-            Imbo.ImageUrl.parse(url + qs, 'foo').toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
+            Imbo.ImageUrl.parse(testUrl + qs, 'foo').toString().should.containEql(testUrl + '?t%5B%5D=flipHorizontally');
         });
 
         it('should decode and put transformations in transformations array', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
-                qs  = '?t[]=crop%3Ax%3D0%2Cy%3D0%2Cwidth%3D927%2Cheight%3D621&t%5B%5D=thumbnail%3Awidth%3D320%2Cheight%3D214%2Cfit%3Dinset&t[]=canvas%3Awidth%3D320%2Cheight%3D214%2Cmode%3Dcenter';
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
+                qs = '?t[]=crop%3Ax%3D0%2Cy%3D0%2Cwidth%3D927%2Cheight%3D621&t%5B%5D=thumbnail%3Awidth%3D320%2Cheight%3D214%2Cfit%3Dinset&t[]=canvas%3Awidth%3D320%2Cheight%3D214%2Cmode%3Dcenter';
 
-            var imgUrl = Imbo.ImageUrl.parse(url + qs, 'foo'),
+            var imgUrl = Imbo.ImageUrl.parse(testUrl + qs, 'foo'),
                 transformations = imgUrl.getTransformations(),
                 expected = [
                     'crop:x=0,y=0,width=927,height=621',
@@ -598,10 +626,10 @@ describe('Imbo.ImageUrl', function() {
 
         it('should decode and put transformations in transformations array (2)', function() {
             var imgId = '701db186d4cfb7a0a3d83b5628f878ab',
-                url   = 'http://imbo-some.host.no/users/pubkey/images/' + imgId,
-                qs    = '?t%5B%5D=modulate%3As%3D127&t%5B%5D=crop%3Awidth%3D724%2Cheight%3D352%2Cx%3D25%2Cy%3D316&t%5B%5D=maxSize%3Awidth%3D552&t%5B%5D=maxSize%3Awidth%3D225%2Cheight%3D225&accessToken=something';
+                testUrl = 'http://imbo-some.host.no/users/pubkey/images/' + imgId,
+                qs = '?t%5B%5D=modulate%3As%3D127&t%5B%5D=crop%3Awidth%3D724%2Cheight%3D352%2Cx%3D25%2Cy%3D316&t%5B%5D=maxSize%3Awidth%3D552&t%5B%5D=maxSize%3Awidth%3D225%2Cheight%3D225&accessToken=something';
 
-            var imgUrl = Imbo.ImageUrl.parse(url + qs, 'foo'),
+            var imgUrl = Imbo.ImageUrl.parse(testUrl + qs, 'foo'),
                 transformations = imgUrl.getTransformations(),
                 expected = [
                     'modulate:s=127',
@@ -617,9 +645,9 @@ describe('Imbo.ImageUrl', function() {
         });
 
         it('should remove existing access token from query string', function() {
-            var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?accessToken=foo';
+            var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?accessToken=foo';
 
-            Imbo.ImageUrl.parse(url, 'foo').getQueryString().should.equal('');
+            Imbo.ImageUrl.parse(testUrl, 'foo').getQueryString().should.equal('');
         });
 
         it('should generate the same accessToken as a manually constructed instance', function() {
@@ -635,5 +663,4 @@ describe('Imbo.ImageUrl', function() {
             assert.equal(manual.flipVertically().toString(), parsed.flipVertically().toString());
         });
     });
-
 });
