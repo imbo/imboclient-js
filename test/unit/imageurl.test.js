@@ -307,6 +307,32 @@ describe('Imbo.ImageUrl', function() {
         });
     });
 
+    describe('#sharpen', function() {
+        it('should return correct transformation', function() {
+            url.sharpen().toString().should.containEql('?t%5B%5D=sharpen');
+        });
+
+        it('should handle presets', function() {
+            url.sharpen({ preset: 'extreme' }).toString().should.containEql('?t%5B%5D=sharpen%3Apreset%3Dextreme');
+        });
+
+        it('should handle radius', function() {
+            url.sharpen({ radius: 3 }).toString().should.containEql('?t%5B%5D=sharpen%3Aradius%3D3');
+        });
+
+        it('should handle sigma', function() {
+            url.sharpen({ sigma: 2 }).toString().should.containEql('?t%5B%5D=sharpen%3Asigma%3D2');
+        });
+
+        it('should handle gain', function() {
+            url.sharpen({ gain: 1.5 }).toString().should.containEql('?t%5B%5D=sharpen%3Again%3D1.5');
+        });
+
+        it('should handle threshold', function() {
+            url.sharpen({ threshold: 0.07 }).toString().should.containEql('?t%5B%5D=sharpen%3Athreshold%3D0.07');
+        });
+    });
+
     describe('#strip', function() {
         it('should return correct transformation', function() {
             url.strip().toString().should.containEql('?t%5B%5D=strip');
