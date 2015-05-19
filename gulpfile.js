@@ -13,7 +13,7 @@ var eslint = require('gulp-eslint');
 var through = require('through');
 var pkgInfo = require('./package.json');
 
-var mochaOpts = { reporter: 'spec' };
+var mochaOpts = { reporter: 'spec', bail: true };
 var codePaths = ['lib/**/*.js', 'gulpfile.js', '!./lib/**/*.min.js'];
 var lintCodePaths = codePaths.concat(['test/**/*.js']);
 var banner = [
@@ -97,6 +97,6 @@ gulp.task('default', ['clean', 'lint', 'coverage', 'browserify'], function() {
 gulp.task('test', ['lint', 'mocha']);
 
 function getMochaStream() {
-    return gulp.src('test/**/*.test.js')
+    return gulp.src('test/**/*.test.js', { read: false })
        .pipe(mocha(mochaOpts));
 }
