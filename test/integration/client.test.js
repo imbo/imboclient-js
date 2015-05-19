@@ -37,9 +37,10 @@ describeIntegration('ImboClient (integration)', function() {
         });
     });
 
-    after(function() {
-        errServer.close();
-        stcServer.close();
+    after(function(done) {
+        stcServer.close(function() {
+            errServer.close(done);
+        });
     });
 
     describe('#addImage', function() {
@@ -331,10 +332,13 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an http-response on success', function(done) {
-            client.headImage(catMd5, function(err, res) {
-                assert.ifError(err);
-                assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
-                done();
+            client.addImage(fixtures + '/cat.jpg', function() {
+                client.headImage(catMd5, function(err, res) {
+                    assert.ifError(err);
+                    assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
+
+                    done();
+                });
             });
         });
 

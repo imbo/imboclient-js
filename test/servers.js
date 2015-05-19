@@ -9,6 +9,7 @@ exports.createResetServer = function(port) {
     var server = net.createServer(function(socket) {
         socket.on('error', function() {});
         socket.end();
+        socket.destroy();
     });
 
     server.on('error', function() {});
