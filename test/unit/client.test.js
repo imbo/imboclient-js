@@ -1,7 +1,6 @@
 'use strict';
 
 var assert = require('assert'),
-    nock = require('nock'),
     fs = require('fs'),
     path = require('path'),
     Imbo = require('../../');
@@ -33,8 +32,8 @@ describe('ImboClient', function() {
     });
 
     beforeEach(function() {
-        mock = nock('http://imbo');
-        mockImgUrl = nock('http://imbo1');
+        mock = getNock()('http://imbo');
+        mockImgUrl = getNock()('http://imbo1');
     });
 
     afterEach(function() {
@@ -1072,3 +1071,7 @@ describe('ImboClient', function() {
         });
     });
 });
+
+function getNock() {
+    return require('nock');
+}
