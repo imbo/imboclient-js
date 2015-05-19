@@ -1,12 +1,12 @@
+'use strict';
+
 var features = require('../../lib/browser/feature-support'),
-    assert   = require('assert');
+    assert = require('assert');
 
 describe('feature-support', function() {
-
     var unsupported;
 
     describe('#getUnsupported', function() {
-
         it('should check for FileReader', function() {
             unsupported = features.getUnsupported({});
             assert.notEqual(-1, unsupported.indexOf('FileReader'));
@@ -38,11 +38,9 @@ describe('feature-support', function() {
             unsupported = features.getUnsupported({ 'XMLHttpRequest': XMLHttpRequest });
             assert.equal(-1, unsupported.indexOf('XMLHttpRequest2'));
         });
-
     });
 
     describe('#checkFeatures', function() {
-
         it('should throw Error on unsupported features', function() {
             var shouldThrow = function() {
                 features.checkFeatures({
@@ -53,7 +51,5 @@ describe('feature-support', function() {
 
             assert.throws(shouldThrow, Error, 'Error thrown');
         });
-
     });
-
 });

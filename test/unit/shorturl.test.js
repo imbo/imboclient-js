@@ -1,9 +1,11 @@
-var Imbo    = require('../../'),
-    assert  = require('assert'),
-    shortId = 'imboF00';
+'use strict';
+
+var Imbo = require('../../'),
+    assert = require('assert');
+
+var shortId = 'imboF00';
 
 describe('Imbo.ShortUrl', function() {
-
     var baseUrl = 'http://imbo',
         url = new Imbo.ShortUrl({
             baseUrl: baseUrl,
@@ -27,5 +29,4 @@ describe('Imbo.ShortUrl', function() {
             assert.equal(url.toString(), url.getUrl());
         });
     });
-
 });

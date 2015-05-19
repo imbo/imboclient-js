@@ -37,8 +37,9 @@ var supportsWebWorkers = function() {
     }
 
     try {
+        /* eslint no-new: 0 */
         new Worker(window.URL.createObjectURL(
-            new Blob([''], { type:'text/javascript' })
+            new Blob([''], { type: 'text/javascript' })
         ));
     } catch (e) {
         return false;
@@ -47,13 +48,13 @@ var supportsWebWorkers = function() {
     return true;
 };
 
-var sha     = _dereq_('./sha'),
-    md5     = _dereq_('./md5.min'),
+var sha = _dereq_('./sha'),
+    md5 = _dereq_('./md5.min'),
     readers = _dereq_('./readers');
 
-var isBrowser       = typeof window !== 'undefined',
+var isBrowser = typeof window !== 'undefined',
     supportsWorkers = isBrowser && supportsWebWorkers(),
-    workerQueue     = [],
+    workerQueue = [],
     md5Worker;
 
 /**
@@ -86,7 +87,7 @@ var addMd5Task = function(buffer, callback) {
         // We don't have any Web Worker support,
         // queue an MD5 operation on the next tick
         process.nextTick(function() {
-            callback(undefined, md5.ArrayBuffer.hash(buffer));
+            callback(null, md5.ArrayBuffer.hash(buffer));
         });
     }
 };
@@ -97,7 +98,7 @@ if (supportsWorkers) {
     md5Worker = new Worker(window.URL.createObjectURL(new Blob(['(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module \'"+o+"\'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){\n/* global self */\n\'use strict\';\nvar md5 = require(\'./md5.min\');\nself.onmessage = function(e) {\n    self.postMessage(md5.ArrayBuffer.hash(e.data));\n};\n\n},{"./md5.min":2}],2:[function(require,module,exports){\n(function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});\n},{}]},{},[1])'],{type:"text/javascript"})));
     md5Worker.addEventListener('message', function(e) {
         var item = workerQueue.shift();
-        item.callback(undefined, e.data);
+        item.callback(null, e.data);
 
         nextMd5Task();
     }, false);
@@ -123,24 +124,28 @@ module.exports = {
      * @param  {Object}      [options]
      */
     md5: function(buffer, callback, options) {
-        // URL?
         if (options && options.type === 'url') {
-            return readers.getContentsFromUrl(buffer, function(err, data) {
+            readers.getContentsFromUrl(buffer, function(err, data) {
+                if (err) {
+                    return callback(err);
+                }
+
                 module.exports.md5(data, callback, { binary: true });
             });
-        }
+        } else if (buffer instanceof window.File) {
+            readers.getContentsFromFile(buffer, function(err, data) {
+                if (err) {
+                    return callback(err);
+                }
 
-        // File instance?
-        if (buffer instanceof window.File) {
-            return readers.getContentsFromFile(buffer, function(err, data) {
                 module.exports.md5(data, callback, { binary: true });
             });
+        } else {
+            // ArrayBuffer, then.
+            process.nextTick(function() {
+                addMd5Task(buffer, callback);
+            });
         }
-
-        // ArrayBuffer, then.
-        process.nextTick(function() {
-            addMd5Task(buffer, callback);
-        });
     }
 };
 
@@ -174,6 +179,7 @@ exports.checkFeatures = function(context) {
  * Returns an array of unsupported features for the browser
  *
  * @param {Window|Object} [context]
+ * @return {Array}
  */
 exports.getUnsupported = function(context) {
     var global = context || window,
@@ -247,7 +253,7 @@ module.exports = function(url) {
 exports.getContentsFromFile = function(file, callback) {
     var reader = new FileReader();
     reader.onload = function(e) {
-        return callback(undefined, e.target.result);
+        return callback(null, e.target.result);
     };
     reader.readAsArrayBuffer(file);
 };
@@ -264,7 +270,7 @@ exports.getContentsFromUrl = function(url, callback) {
     xhr.responseType = 'arraybuffer';
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
-            callback(undefined, xhr.response || xhr.responseText);
+            callback(null, xhr.response || xhr.responseText);
         }
     };
     xhr.send(null);
@@ -302,7 +308,7 @@ var normalizeResponse = function(xhr) {
     var headerPairs = xhr.getAllResponseHeaders().split('\u000d\u000a');
     for (var i = 0; i < headerPairs.length; i++) {
         var headerPair = headerPairs[i],
-            index      = headerPair.indexOf('\u003a\u0020');
+            index = headerPair.indexOf('\u003a\u0020');
 
         if (index > 0) {
             var key = headerPair.substring(0, index);
@@ -322,7 +328,7 @@ var normalizeResponse = function(xhr) {
 function request(options) {
     // Prepare options
     options.method = options.method.toUpperCase();
-    options.uri    = options.uri.toString();
+    options.uri = options.uri.toString();
 
     // Instantiate request
     var xhr = new XMLHttpRequest();
@@ -331,7 +337,7 @@ function request(options) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4 && xhr.status !== 0 && options.onComplete) {
             options.onComplete(
-                (xhr.status >= 400) ? (xhr.status + ' ' + xhr.statusText) : undefined,
+                (xhr.status >= 400) ? (xhr.status + ' ' + xhr.statusText) : null,
                 normalizeResponse(xhr),
                 options.json ? JSON.parse(xhr.responseText) : xhr.responseText
             );
@@ -436,22 +442,22 @@ module.exports = request;
  * Other contributors: Greg Holt, Andrew Kepert, Ydnar, Lostinet
  */
 
-/* jshint bitwise: false, newcap: false */
+/* eslint no-bitwise: 0 */
 'use strict';
 
 var chrsz = 8;
 
-var safe_add = function(x, y) {
+var safeAdd = function(x, y) {
     var lsw = (x & 0xFFFF) + (y & 0xFFFF);
     var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
     return (msw << 16) | (lsw & 0xFFFF);
 };
 
-var S = function(X, n) {
+var s = function(X, n) {
     return (X >>> n) | (X << (32 - n));
 };
 
-var R = function(X, n) {
+var r = function(X, n) {
     return (X >>> n);
 };
 
@@ -464,23 +470,23 @@ var maj = function(x, y, z) {
 };
 
 var sigma0256 = function(x) {
-    return (S(x, 2) ^ S(x, 13) ^ S(x, 22));
+    return (s(x, 2) ^ s(x, 13) ^ s(x, 22));
 };
 
 var sigma1256 = function(x) {
-    return (S(x, 6) ^ S(x, 11) ^ S(x, 25));
+    return (s(x, 6) ^ s(x, 11) ^ s(x, 25));
 };
 
 var gamma0256 = function(x) {
-    return (S(x, 7) ^ S(x, 18) ^ R(x, 3));
+    return (s(x, 7) ^ s(x, 18) ^ r(x, 3));
 };
 
-var gamma1256 = function (x) {
-    return (S(x, 17) ^ S(x, 19) ^ R(x, 10));
+var gamma1256 = function(x) {
+    return (s(x, 17) ^ s(x, 19) ^ r(x, 10));
 };
 
-var core_sha256 = function(m, l) {
-    var K = [0x428A2F98,0x71374491,0xB5C0FBCF,0xE9B5DBA5,0x3956C25B,0x59F111F1,0x923F82A4,0xAB1C5ED5,0xD807AA98,0x12835B01,0x243185BE,0x550C7DC3,0x72BE5D74,0x80DEB1FE,0x9BDC06A7,0xC19BF174,0xE49B69C1,0xEFBE4786,0xFC19DC6,0x240CA1CC,0x2DE92C6F,0x4A7484AA,0x5CB0A9DC,0x76F988DA,0x983E5152,0xA831C66D,0xB00327C8,0xBF597FC7,0xC6E00BF3,0xD5A79147,0x6CA6351,0x14292967,0x27B70A85,0x2E1B2138,0x4D2C6DFC,0x53380D13,0x650A7354,0x766A0ABB,0x81C2C92E,0x92722C85,0xA2BFE8A1,0xA81A664B,0xC24B8B70,0xC76C51A3,0xD192E819,0xD6990624,0xF40E3585,0x106AA070,0x19A4C116,0x1E376C08,0x2748774C,0x34B0BCB5,0x391C0CB3,0x4ED8AA4A,0x5B9CCA4F,0x682E6FF3,0x748F82EE,0x78A5636F,0x84C87814,0x8CC70208,0x90BEFFFA,0xA4506CEB,0xBEF9A3F7,0xC67178F2];
+var coreSha256 = function(m, l) {
+    var K = [0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2];
     var HASH = [0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19];
     var W = new Array(64);
     var a, b, c, d, e, f, g, h, i, j;
@@ -504,36 +510,36 @@ var core_sha256 = function(m, l) {
             if (j < 16) {
                 W[j] = m[j + i];
             } else {
-                W[j] = safe_add(safe_add(safe_add(gamma1256(W[j - 2]), W[j - 7]), gamma0256(W[j - 15])), W[j - 16]);
+                W[j] = safeAdd(safeAdd(safeAdd(gamma1256(W[j - 2]), W[j - 7]), gamma0256(W[j - 15])), W[j - 16]);
             }
-            T1 = safe_add(safe_add(safe_add(safe_add(h, sigma1256(e)), ch(e, f, g)), K[j]), W[j]);
-            T2 = safe_add(sigma0256(a), maj(a, b, c));
+            T1 = safeAdd(safeAdd(safeAdd(safeAdd(h, sigma1256(e)), ch(e, f, g)), K[j]), W[j]);
+            T2 = safeAdd(sigma0256(a), maj(a, b, c));
 
             h = g;
             g = f;
             f = e;
-            e = safe_add(d, T1);
+            e = safeAdd(d, T1);
             d = c;
             c = b;
             b = a;
-            a = safe_add(T1, T2);
+            a = safeAdd(T1, T2);
         }
 
-        HASH[0] = safe_add(a, HASH[0]);
-        HASH[1] = safe_add(b, HASH[1]);
-        HASH[2] = safe_add(c, HASH[2]);
-        HASH[3] = safe_add(d, HASH[3]);
-        HASH[4] = safe_add(e, HASH[4]);
-        HASH[5] = safe_add(f, HASH[5]);
-        HASH[6] = safe_add(g, HASH[6]);
-        HASH[7] = safe_add(h, HASH[7]);
+        HASH[0] = safeAdd(a, HASH[0]);
+        HASH[1] = safeAdd(b, HASH[1]);
+        HASH[2] = safeAdd(c, HASH[2]);
+        HASH[3] = safeAdd(d, HASH[3]);
+        HASH[4] = safeAdd(e, HASH[4]);
+        HASH[5] = safeAdd(f, HASH[5]);
+        HASH[6] = safeAdd(g, HASH[6]);
+        HASH[7] = safeAdd(h, HASH[7]);
     }
 
     return HASH;
 };
 
 var str2binb = function(str) {
-    var bin = Array();
+    var bin = [];
     var mask = (1 << chrsz) - 1;
     for (var i = 0; i < str.length * chrsz; i += chrsz) {
         bin[i >> 5] |= (str.charCodeAt(i / chrsz) & mask) << (24 - i % 32);
@@ -542,17 +548,17 @@ var str2binb = function(str) {
 };
 
 var binb2hex = function(binarray) {
-    var hex_tab = '0123456789abcdef', str = '';
+    var hexTab = '0123456789abcdef', str = '';
     for (var i = 0; i < binarray.length * 4; i++) {
-        str += hex_tab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) + hex_tab.charAt((binarray[i>>2] >> ((3 - i % 4) * 8  )) & 0xF);
+        str += hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) + hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF);
     }
     return str;
 };
 
-var core_hmac_sha256 = function(key, data) {
+var coreHmacSha256 = function(key, data) {
     var bkey = str2binb(key);
     if (bkey.length > 16) {
-        bkey = core_sha256(bkey, key.length * chrsz);
+        bkey = coreSha256(bkey, key.length * chrsz);
     }
 
     var ipad = new Array(16), opad = new Array(16);
@@ -561,17 +567,18 @@ var core_hmac_sha256 = function(key, data) {
         opad[i] = bkey[i] ^ 0x5C5C5C5C;
     }
 
-    var hash = core_sha256(ipad.concat(str2binb(data)), 512 + data.length * chrsz);
-    return core_sha256(opad.concat(hash), 512 + 256);
+    var hash = coreSha256(ipad.concat(str2binb(data)), 512 + data.length * chrsz);
+    return coreSha256(opad.concat(hash), 512 + 256);
 };
 
 exports.sha256 = function(string) {
-    return binb2hex(core_sha256(string, string.length * chrsz));
+    return binb2hex(coreSha256(string, string.length * chrsz));
 };
 
 exports.sha256hmac = function(key, data) {
-    return binb2hex(core_hmac_sha256(key, data));
+    return binb2hex(coreHmacSha256(key, data));
 };
+
 },{}],9:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
@@ -583,16 +590,16 @@ exports.sha256hmac = function(key, data) {
  */
 'use strict';
 
-var ImboUrl   = _dereq_('./url/url'),
-    ImageUrl  = _dereq_('./url/imageurl'),
-    ShortUrl  = _dereq_('./url/shorturl'),
+var ImboUrl = _dereq_('./url/url'),
+    ImageUrl = _dereq_('./url/imageurl'),
+    ShortUrl = _dereq_('./url/shorturl'),
     ImboQuery = _dereq_('./query'),
-    extend    = _dereq_('./utils/extend'),
+    extend = _dereq_('./utils/extend'),
     jsonparse = _dereq_('./utils/jsonparse'),
-    crypto    = _dereq_('./browser/crypto'),
-    request   = _dereq_('./browser/request'),
-    readers   = _dereq_('./browser/readers'),
-    features  = _dereq_('./browser/feature-support');
+    crypto = _dereq_('./browser/crypto'),
+    request = _dereq_('./browser/request'),
+    readers = _dereq_('./browser/readers'),
+    features = _dereq_('./browser/feature-support');
 
 /**
  * Constructs a new Imbo client
@@ -604,8 +611,8 @@ var ImboUrl   = _dereq_('./url/url'),
  */
 var ImboClient = function(serverUrls, publicKey, privateKey) {
     this.options = {
-        hosts:      this.parseUrls(serverUrls),
-        publicKey:  publicKey,
+        hosts: this.parseUrls(serverUrls),
+        publicKey: publicKey,
         privateKey: privateKey
     };
 
@@ -614,12 +621,12 @@ var ImboClient = function(serverUrls, publicKey, privateKey) {
 };
 
 extend(ImboClient.prototype, {
-
     /**
      * Add a new image to the server from a local file
      *
      * @param {String|File} file     - Path to the local image, or an instance of File
      * @param {Function}    callback - Function to call when image has been uploaded
+     * @return {ImboClient}
      */
     addImage: function(file, callback) {
         if (typeof window !== 'undefined' && file instanceof window.File) {
@@ -645,11 +652,13 @@ extend(ImboClient.prototype, {
                     'User-Agent': 'imboclient-js',
                     'Content-Length': fileSize
                 },
-                onComplete: function(err, res, body) {
-                    callback(err, body ? body.imageIdentifier : undefined, body, res);
+                onComplete: function(addErr, res, body) {
+                    callback(addErr, body ? body.imageIdentifier : null, body, res);
                 }
             }));
         }.bind(this));
+
+        return this;
     },
 
     /**
@@ -657,17 +666,18 @@ extend(ImboClient.prototype, {
      *
      * @param {Buffer|ArrayBuffer|String|File} source
      * @param {Function} callback
+     * @return {ImboClient}
      */
     addImageFromBuffer: function(source, callback) {
-        var url        = this.getSignedResourceUrl('POST', this.getImagesUrl()),
-            isFile     = typeof window !== 'undefined' && source instanceof window.File,
+        var url = this.getSignedResourceUrl('POST', this.getImagesUrl()),
+            isFile = typeof window !== 'undefined' && source instanceof window.File,
             onComplete = callback.onComplete || callback,
             onProgress = callback.onProgress || null;
 
         request({
-            method : 'POST',
-            uri    : url,
-            body   : source,
+            method: 'POST',
+            uri: url,
+            body: source,
             headers: {
                 'Accept': 'application/json',
                 'User-Agent': 'imboclient-js',
@@ -675,10 +685,12 @@ extend(ImboClient.prototype, {
             },
             onComplete: function(err, res, body) {
                 body = jsonparse(body);
-                onComplete(err, body ? body.imageIdentifier : undefined, body, res);
+                onComplete(err, body ? body.imageIdentifier : null, body, res);
             },
             onProgress: onProgress
         });
+
+        return this;
     },
 
     /**
@@ -686,6 +698,7 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   url
      * @param {Function} callback
+     * @return {ImboClient}
      */
     addImageFromUrl: function(url, callback) {
         if (typeof window !== 'undefined') {
@@ -700,7 +713,7 @@ extend(ImboClient.prototype, {
         }
 
         // Pipe the source URL into a POST-request
-        request({ uri: url }).pipe(request({
+        request({ uri: url }).pipe(request({
             method: 'POST',
             uri: this.getSignedResourceUrl('POST', this.getImagesUrl()),
             json: true,
@@ -709,26 +722,32 @@ extend(ImboClient.prototype, {
                 'User-Agent': 'imboclient-js'
             },
             onComplete: function(err, res, body) {
-                callback(err, body ? body.imageIdentifier : undefined, body, res);
+                callback(err, body ? body.imageIdentifier : null, body, res);
             }
         }));
+
+        return this;
     },
 
     /**
      * Get the server statistics
      *
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getServerStats: function(callback) {
         request.get(this.getStatsUrl(), function(err, res, body) {
             callback(err, body, res);
         });
+
+        return this;
     },
 
     /**
      * Get the server status
      *
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getServerStatus: function(callback) {
         request.get(this.getStatusUrl(), function(err, res, body) {
@@ -742,12 +761,15 @@ extend(ImboClient.prototype, {
 
             callback(err, body, res);
         });
+
+        return this;
     },
 
     /**
      * Fetch the user info of the current user
      *
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getUserInfo: function(callback) {
         request.get(this.getUserUrl(), function(err, res, body) {
@@ -757,6 +779,8 @@ extend(ImboClient.prototype, {
 
             callback(err, body, res);
         });
+
+        return this;
     },
 
     /**
@@ -764,12 +788,14 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     deleteImage: function(imageIdentifier, callback) {
-        var url       = this.getImageUrl(imageIdentifier, { usePrimaryHost: true }),
+        var url = this.getImageUrl(imageIdentifier, { usePrimaryHost: true }),
             signedUrl = this.getSignedResourceUrl('DELETE', url);
 
         request.del(signedUrl, callback);
+        return this;
     },
 
     /**
@@ -777,6 +803,7 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getImageProperties: function(imageIdentifier, callback) {
         this.headImage(imageIdentifier, function(err, res) {
@@ -785,16 +812,18 @@ extend(ImboClient.prototype, {
             }
 
             var headers = res.headers,
-                prefix  = 'x-imbo-original';
+                prefix = 'x-imbo-original';
 
             callback(err, {
-                'width'    : parseInt(headers[prefix + 'width'],    10),
-                'height'   : parseInt(headers[prefix + 'height'],   10),
-                'filesize' : parseInt(headers[prefix + 'filesize'], 10),
-                'extension': headers[prefix + 'extension'],
-                'mimetype' : headers[prefix + 'mimetype']
+                width: parseInt(headers[prefix + 'width'], 10),
+                height: parseInt(headers[prefix + 'height'], 10),
+                filesize: parseInt(headers[prefix + 'filesize'], 10),
+                extension: headers[prefix + 'extension'],
+                mimetype: headers[prefix + 'mimetype']
             });
         });
+
+        return this;
     },
 
     /**
@@ -803,19 +832,22 @@ extend(ImboClient.prototype, {
      * @param {String}   imageIdentifier
      * @param {Object}   data
      * @param {Function} callback
-     * @param {String}   [method=POST] HTTP method to use
+     * @param {String}   method HTTP method to use (POST/PUT)
+     * @return {ImboClient}
      */
     editMetadata: function(imageIdentifier, data, callback, method) {
         var url = this.getMetadataUrl(imageIdentifier);
 
         request({
-            method    : method || 'POST',
-            uri       : this.getSignedResourceUrl(method || 'POST', url),
-            json      : data,
+            method: method || 'POST',
+            uri: this.getSignedResourceUrl(method || 'POST', url),
+            json: data,
             onComplete: function(err, res, body) {
                 callback(err, body, res);
             }
         });
+
+        return this;
     },
 
     /**
@@ -824,9 +856,10 @@ extend(ImboClient.prototype, {
      * @param {String}   imageIdentifier
      * @param {Object}   data
      * @param {Function} callback
+     * @return {ImboClient}
      */
     replaceMetadata: function(imageIdentifier, data, callback) {
-        this.editMetadata(imageIdentifier, data, callback, 'PUT');
+        return this.editMetadata(imageIdentifier, data, callback, 'PUT');
     },
 
     /**
@@ -834,11 +867,14 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getMetadata: function(imageIdentifier, callback) {
         request.get(this.getMetadataUrl(imageIdentifier), function(err, res, body) {
             callback(err, body, res);
         });
+
+        return this;
     },
 
     /**
@@ -846,11 +882,13 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     deleteMetadata: function(imageIdentifier, callback) {
         var url = this.getMetadataUrl(imageIdentifier);
 
         request.del(this.getSignedResourceUrl('DELETE', url), callback);
+        return this;
     },
 
     /**
@@ -861,6 +899,7 @@ extend(ImboClient.prototype, {
      *                                 is passed, it will be used as the callback
      *                                 and the query will use default settings
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getImages: function(query, callback) {
         if (typeof query === 'function' && !callback) {
@@ -877,6 +916,8 @@ extend(ImboClient.prototype, {
                 res
             );
         });
+
+        return this;
     },
 
     /**
@@ -943,7 +984,7 @@ extend(ImboClient.prototype, {
             path: options.path,
             publicKey: this.options.publicKey,
             privateKey: this.options.privateKey,
-            imageIdentifier: imageIdentifier,
+            imageIdentifier: imageIdentifier
         });
     },
 
@@ -992,17 +1033,19 @@ extend(ImboClient.prototype, {
      *
      * @param {Imbo.ImageUrl} imageUrl
      * @param {Function}      callback
+     * @return {ImboClient}
      */
     getShortUrl: function(imageUrl, callback) {
-        var url       = imageUrl.clone(),
+        var url = imageUrl.clone(),
             extension = url.getExtension(),
-            imageId   = url.getImageIdentifier(),
-            host      = this.getHostForImageIdentifier(imageId),
-            data      = {
-                'imageIdentifier': imageId,
-                'publicKey': url.getPublicKey(),
-                'query': url.getQueryString(),
-            };
+            imageId = url.getImageIdentifier(),
+            host = this.getHostForImageIdentifier(imageId);
+
+        var data = {
+            'imageIdentifier': imageId,
+            'publicKey': url.getPublicKey(),
+            'query': url.getQueryString()
+        };
 
         if (extension) {
             data.extension = extension;
@@ -1012,9 +1055,9 @@ extend(ImboClient.prototype, {
         url.reset().setPath('/shorturls');
 
         request({
-            method    : 'POST',
-            uri       : this.getSignedResourceUrl('POST', url.toString()),
-            json      : data,
+            method: 'POST',
+            uri: this.getSignedResourceUrl('POST', url.toString()),
+            json: data,
             onComplete: function(err, res, body) {
                 if (err) {
                     return callback(err);
@@ -1025,6 +1068,8 @@ extend(ImboClient.prototype, {
                 callback(err, new ShortUrl({ 'baseUrl': host, 'id': body.id }));
             }
         });
+
+        return this;
     },
 
     /**
@@ -1032,38 +1077,45 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     deleteAllShortUrlsForImage: function(imageIdentifier, callback) {
-        var url    = this.getImageUrl(imageIdentifier).setPath('/shorturls'),
+        var url = this.getImageUrl(imageIdentifier).setPath('/shorturls'),
             signed = this.getSignedResourceUrl('DELETE', url);
 
         request.del(signed, callback);
+        return this;
     },
 
     /**
      * Delete a ShortUrl for a given imageIdentifier
      *
-     * @param {String|Imbo.ShortUrl} shortUrl
      * @param {String}               imageIdentifier
+     * @param {String|Imbo.ShortUrl} shortUrl
      * @param {Function}             callback
+     * @return {ImboClient}
      */
     deleteShortUrlForImage: function(imageIdentifier, shortUrl, callback) {
-        var id     = shortUrl instanceof ShortUrl ? shortUrl.getId() : shortUrl,
-            url    = this.getImageUrl(imageIdentifier).setPath('/shorturls/' + id),
+        var id = shortUrl instanceof ShortUrl ? shortUrl.getId() : shortUrl,
+            url = this.getImageUrl(imageIdentifier).setPath('/shorturls/' + id),
             signed = this.getSignedResourceUrl('DELETE', url);
 
         request.del(signed, callback);
+        return this;
     },
 
     /**
      * Get number of images currently stored for the user
      *
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getNumImages: function(callback) {
         this.getUserInfo(function(err, info) {
-            callback(err, info ? info.numImages : undefined);
+            callback(err, info ? info.numImages : null);
         });
+
+        return this;
     },
 
     /**
@@ -1071,6 +1123,7 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imgPath
      * @param {Function} callback
+     * @return {ImboClient}
      */
     imageExists: function(imgPath, callback) {
         this.getImageChecksum(imgPath, function(err, checksum) {
@@ -1080,6 +1133,8 @@ extend(ImboClient.prototype, {
 
             this.imageWithChecksumExists(checksum, callback);
         }.bind(this));
+
+        return this;
     },
 
     /**
@@ -1087,16 +1142,19 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     imageIdentifierExists: function(imageIdentifier, callback) {
         this.headImage(imageIdentifier, function(err, res) {
             // If we encounter an error from the server, we might not have
             // statusCode available - in this case, fall back to undefined
-            var statusCode = res && res.statusCode ? res.statusCode : undefined;
+            var statusCode = res && res.statusCode ? res.statusCode : null;
 
             // Requester returns error on 404, we expect this to happen
-            callback(isNaN(err) ? err : undefined, statusCode === 200);
+            callback(isNaN(err) ? err : null, statusCode === 200);
         });
+
+        return this;
     },
 
     /**
@@ -1104,6 +1162,7 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   checksum
      * @param {Function} callback
+     * @return {ImboClient}
      */
     imageWithChecksumExists: function(checksum, callback) {
         var query = (new ImboQuery()).originalChecksums([checksum]).limit(1);
@@ -1115,6 +1174,8 @@ extend(ImboClient.prototype, {
             var exists = search.hits > 0;
             callback(err, exists, exists ? images[0].imageIdentifier : err);
         });
+
+        return this;
     },
 
     /**
@@ -1122,10 +1183,12 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getImageData: function(imageIdentifier, callback) {
         var url = this.getImageUrl(imageIdentifier);
         this.getImageDataFromUrl(url, callback);
+        return this;
     },
 
     /**
@@ -1133,11 +1196,14 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageUrl
      * @param {Function} callback
+     * @return {ImboClient}
      */
     getImageDataFromUrl: function(imageUrl, callback) {
         readers.getContentsFromUrl(imageUrl.toString(), function(err, data) {
-            callback(err, err ? undefined : data);
+            callback(err, err ? null : data);
         });
+
+        return this;
     },
 
     /**
@@ -1161,9 +1227,11 @@ extend(ImboClient.prototype, {
      *
      * @param {String|File} image
      * @param {Function}    callback
+     * @return {ImboClient}
      */
     getImageChecksum: function(image, callback) {
         crypto.md5(image, callback);
+        return this;
     },
 
     /**
@@ -1171,12 +1239,15 @@ extend(ImboClient.prototype, {
      *
      * @param {Buffer|String} buffer
      * @param {Function}      callback
+     * @return {ImboClient}
      */
     getImageChecksumFromBuffer: function(buffer, callback) {
         crypto.md5(buffer, callback, {
             binary: true,
             type: 'string'
         });
+
+        return this;
     },
 
     /**
@@ -1226,9 +1297,9 @@ extend(ImboClient.prototype, {
     getSignedResourceUrl: function(method, url, date) {
         var timestamp = (date || new Date()).toISOString().replace(/\.\d+Z$/, 'Z'),
             signature = this.generateSignature(method, url.toString(), timestamp),
-            qs        = url.toString().indexOf('?') > -1 ? '&' : '?';
+            qs = url.toString().indexOf('?') > -1 ? '&' : '?';
 
-        qs += 'signature='  + encodeURIComponent(signature);
+        qs += 'signature=' + encodeURIComponent(signature);
         qs += '&timestamp=' + encodeURIComponent(timestamp);
 
         return url + qs;
@@ -1239,12 +1310,15 @@ extend(ImboClient.prototype, {
      *
      * @param {String}   imageIdentifier
      * @param {Function} callback
+     * @return {ImboClient}
      */
     headImage: function(imageIdentifier, callback) {
         request.head(
             this.getImageUrl(imageIdentifier, { usePrimaryHost: true }),
             callback
         );
+
+        return this;
     }
 });
 
@@ -1284,7 +1358,7 @@ ImboQuery.SORT_DESC = 'desc';
  *
  * @type {String}
  */
-ImboQuery.SORT_ASC  = 'asc';
+ImboQuery.SORT_ASC = 'asc';
 
 extend(ImboQuery.prototype, {
 
@@ -1308,7 +1382,7 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     setOrGet: function(key, value) {
-        if (value === undefined) {
+        if (typeof value === 'undefined') {
             return this.values[key];
         }
 
@@ -1322,7 +1396,9 @@ extend(ImboQuery.prototype, {
      * @param  {Array} [ids]
      * @return {Imbo.Query}
      */
-    ids: function(ids) { return this.setOrGet('ids', ids); },
+    ids: function(ids) {
+        return this.setOrGet('ids', ids);
+    },
 
     /**
      * Add an ID to the list of IDs to fetch.
@@ -1330,7 +1406,9 @@ extend(ImboQuery.prototype, {
      * @param  {String} id
      * @return {Imbo.Query}
      */
-    addId: function(id) { return this.appendValue('ids', id); },
+    addId: function(id) {
+        return this.appendValue('ids', id);
+    },
 
     /**
      * Adds one or more IDs to the list of existing values.
@@ -1338,7 +1416,9 @@ extend(ImboQuery.prototype, {
      * @param  {String|Array} ids
      * @return {Imbo.Query}
      */
-    addIds: function(ids) { return this.addId(ids); },
+    addIds: function(ids) {
+        return this.addId(ids);
+    },
 
     /**
      * Set the checksums of the images you want returned. If no value is specified, the current value is returned.
@@ -1346,7 +1426,9 @@ extend(ImboQuery.prototype, {
      * @param  {Array} [sums]
      * @return {Imbo.Query}
      */
-    checksums: function(sums) { return this.setOrGet('checksums', sums); },
+    checksums: function(sums) {
+        return this.setOrGet('checksums', sums);
+    },
 
     /**
      * Adds a checksum to the list of existing values.
@@ -1354,7 +1436,9 @@ extend(ImboQuery.prototype, {
      * @param  {String} sum
      * @return {Imbo.Query}
      */
-    addChecksum: function(sum) { return this.appendValue('checksums', sum); },
+    addChecksum: function(sum) {
+        return this.appendValue('checksums', sum);
+    },
 
     /**
      * Adds one or more checksums to the list of existing values.
@@ -1362,7 +1446,9 @@ extend(ImboQuery.prototype, {
      * @param  {String|Array} sums
      * @return {Imbo.Query}
      */
-    addChecksums: function(sums) { return this.addChecksum(sums); },
+    addChecksums: function(sums) {
+        return this.addChecksum(sums);
+    },
 
     /**
      * Set the original checksums of the images you want returned. If no value is specified, the current value is returned.
@@ -1370,7 +1456,9 @@ extend(ImboQuery.prototype, {
      * @param  {Array} [sums]
      * @return {Imbo.Query}
      */
-    originalChecksums: function(sums) { return this.setOrGet('originalChecksums', sums); },
+    originalChecksums: function(sums) {
+        return this.setOrGet('originalChecksums', sums);
+    },
 
     /**
      * Adds an original checksum to the list of existing values.
@@ -1378,7 +1466,9 @@ extend(ImboQuery.prototype, {
      * @param  {String} sum
      * @return {Imbo.Query}
      */
-    addOriginalChecksum: function(sum) { return this.appendValue('originalChecksums', sum); },
+    addOriginalChecksum: function(sum) {
+        return this.appendValue('originalChecksums', sum);
+    },
 
     /**
      * Adds one or more original checksums to the list of existing values.
@@ -1386,7 +1476,9 @@ extend(ImboQuery.prototype, {
      * @param  {String|Array} sums
      * @return {Imbo.Query}
      */
-    addOriginalChecksums: function(sums) { return this.addOriginalChecksum(sums); },
+    addOriginalChecksums: function(sums) {
+        return this.addOriginalChecksum(sums);
+    },
 
     /**
      * Set the fields to return from the images resource. If no value is specified, the current value is returned.
@@ -1394,7 +1486,9 @@ extend(ImboQuery.prototype, {
      * @param  {Array} [fields]
      * @return {Imbo.Query}
      */
-    fields: function(fields) { return this.setOrGet('fields', fields); },
+    fields: function(fields) {
+        return this.setOrGet('fields', fields);
+    },
 
     /**
      * Adds a field to the list of current fields to return.
@@ -1402,7 +1496,9 @@ extend(ImboQuery.prototype, {
      * @param  {String} field
      * @return {Imbo.Query}
      */
-    addField: function(field) { return this.appendValue('fields', field); },
+    addField: function(field) {
+        return this.appendValue('fields', field);
+    },
 
     /**
      * Adds one or more fields to the list of current fields to return.
@@ -1410,7 +1506,9 @@ extend(ImboQuery.prototype, {
      * @param  {String|Array} fields
      * @return {Imbo.Query}
      */
-    addFields: function(fields) { return this.addField(fields); },
+    addFields: function(fields) {
+        return this.addField(fields);
+    },
 
     /**
      * Sets the field and direction to sort. If not values are specified, the current value is returned.
@@ -1421,7 +1519,7 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query|Array}
      */
     sort: function(field, direction, append) {
-        if (Array.isArray(field) || field === undefined) {
+        if (Array.isArray(field) || typeof field === 'undefined') {
             return this.setOrGet('sort', field);
         }
 
@@ -1464,7 +1562,10 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     page: function(val) {
-        if (!val) { return this.values.page; }
+        if (!val) {
+            return this.values.page;
+        }
+
         this.values.page = parseInt(val, 10);
         return this;
     },
@@ -1476,7 +1577,10 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     limit: function(val) {
-        if (!val) { return this.values.limit; }
+        if (!val) {
+            return this.values.limit;
+        }
+
         this.values.limit = val;
         return this;
     },
@@ -1488,7 +1592,10 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     metadata: function(val) {
-        if (typeof val === 'undefined') { return this.values.metadata; }
+        if (typeof val === 'undefined') {
+            return this.values.metadata;
+        }
+
         this.values.metadata = !!val;
         return this;
     },
@@ -1500,7 +1607,10 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     from: function(val) {
-        if (!val) { return this.values.from; }
+        if (!val) {
+            return this.values.from;
+        }
+
         this.values.from = val instanceof Date ? val : this.values.from;
         return this;
     },
@@ -1512,7 +1622,10 @@ extend(ImboQuery.prototype, {
      * @return {Imbo.Query}
      */
     to: function(val) {
-        if (!val) { return this.values.to; }
+        if (!val) {
+            return this.values.to;
+        }
+
         this.values.to = val instanceof Date ? val : this.values.to;
         return this;
     },
@@ -1600,13 +1713,18 @@ module.exports = ImboQuery;
  */
 'use strict';
 
-var ImboUrl  = _dereq_('./url'),
-    extend   = _dereq_('../utils/extend'),
+var ImboUrl = _dereq_('./url'),
+    extend = _dereq_('../utils/extend'),
     parseUrl = _dereq_('../browser/parseurl');
 
 // Simple function wrappers for better readability and compression
-var toInt = function(num) { return parseInt(num, 10); },
-    isNumeric = function(num) { return !isNaN(num); };
+var toInt = function(num) {
+    return parseInt(num, 10);
+};
+
+var isNumeric = function(num) {
+    return !isNaN(num);
+};
 
 /**
  * ImageUrl constructor
@@ -1657,10 +1775,10 @@ extend(ImageUrl.prototype, {
         options = options || {};
 
         var params = [
-            'color='  + (options.color  || '000000').replace(/^#/, ''),
-            'width='  + toInt(options.width  || 1),
+            'color=' + (options.color || '000000').replace(/^#/, ''),
+            'width=' + toInt(options.width || 1),
             'height=' + toInt(options.height || 1),
-            'mode='   + (options.mode   || 'outbound')
+            'mode=' + (options.mode || 'outbound')
         ];
 
         return this.append('border:' + params.join(','));
@@ -1686,8 +1804,8 @@ extend(ImageUrl.prototype, {
         }
 
         var params = [
-            'width='  + toInt(options.width),
-            'height=' + toInt(options.height),
+            'width=' + toInt(options.width),
+            'height=' + toInt(options.height)
         ];
 
         if (options.mode) {
@@ -1744,11 +1862,11 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     crop: function(options) {
-        var opts   = options || {},
-            mode   = opts.mode,
-            x      = opts.x,
-            y      = opts.y,
-            width  = opts.width,
+        var opts = options || {},
+            mode = opts.mode,
+            x = opts.x,
+            y = opts.y,
+            width = opts.width,
             height = opts.height;
 
         if (!mode && (isNaN(x) || isNaN(y))) {
@@ -1764,8 +1882,8 @@ extend(ImageUrl.prototype, {
         }
 
         var params = [
-            'width='  + toInt(width),
-            'height=' + toInt(height),
+            'width=' + toInt(width),
+            'height=' + toInt(height)
         ];
 
         if (isNumeric(x)) {
@@ -1822,10 +1940,10 @@ extend(ImageUrl.prototype, {
      */
     maxSize: function(options) {
         var params = [],
-            opts   = options || {};
+            opts = options || {};
 
         if (opts.width) {
-            params.push('width='  + toInt(opts.width));
+            params.push('width=' + toInt(opts.width));
         }
 
         if (opts.height) {
@@ -1850,7 +1968,7 @@ extend(ImageUrl.prototype, {
      */
     modulate: function(options) {
         var params = [],
-            opts   = options || {};
+            opts = options || {};
 
         if (isNumeric(opts.brightness) || isNumeric(opts.b)) {
             params.push('b=' + (opts.brightness || opts.b));
@@ -1891,10 +2009,10 @@ extend(ImageUrl.prototype, {
      */
     resize: function(options) {
         var params = [],
-            opts   = options || {};
+            opts = options || {};
 
         if (opts.width) {
-            params.push('width='  + toInt(opts.width));
+            params.push('width=' + toInt(opts.width));
         }
 
         if (opts.height) {
@@ -2054,7 +2172,7 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     reset: function() {
-        this.extension = undefined;
+        this.extension = null;
         this.transformations = [];
         return this;
     },
@@ -2122,8 +2240,8 @@ extend(ImageUrl.prototype, {
      * @return {String}
      */
     getQueryString: function(encode) {
-        var query             = this.queryString || '',
-            transformations   = this.transformations,
+        var query = this.queryString || '',
+            transformations = this.transformations,
             transformationKey = encode ? 't%5B%5D=' : 't[]=';
 
         if (encode) {
@@ -2156,10 +2274,10 @@ extend(ImageUrl.prototype, {
  * @return {Imbo.ImageUrl}
  */
 ImageUrl.parse = function(url, privateKey) {
-    var parts    = parseUrl(url),
-        path     = parts.pathname,
+    var parts = parseUrl(url),
+        path = parts.pathname,
         basePath = path.replace(/(.*)\/users\/.*/, '$1'),
-        query    = (parts.query || '').split('&').map(decodeURIComponent);
+        query = (parts.query || '').split('&').map(decodeURIComponent);
 
     var transformations = query.filter(function(param) {
         return param.indexOf('t[]=') === 0;
@@ -2348,14 +2466,14 @@ extend(ImboUrl.prototype, {
      * @return {String}
      */
     getUrl: function() {
-        var extension  = this.extension ? ('.' + this.extension) : '',
-            url        = (this.baseUrl + extension + this.path),
+        var extension = this.extension ? ('.' + this.extension) : '',
+            url = (this.baseUrl + extension + this.path),
             encodedUrl = url,
-            qs         = this.getQueryString();
+            qs = this.getQueryString();
 
         if (qs.length) {
             encodedUrl += '?' + this.getQueryString(true);
-            url        += '?' + qs;
+            url += '?' + qs;
         }
 
         return [
@@ -2495,51 +2613,49 @@ process.chdir = function (dir) {
 
 },{}],17:[function(_dereq_,module,exports){
 module.exports={
-    "name": "imboclient",
-    "description": "An Imbo client for node.js and modern browsers",
-    "version": "2.3.1-dev",
-    "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
-    "contributors": [],
-    "repository": {
-        "type": "git",
-        "url": "http://github.com/imbo/imboclient-js"
-    },
-    "bugs": {
-        "url": "http://github.com/imbo/imboclient-js/issues"
-    },
-    "dependencies": {
-        "request": "~2.34.0"
-    },
-    "devDependencies": {
-        "gulp": "~3.6.0",
-        "gulp-util": "~2.2.14",
-        "gulp-mocha": "~0.4.1",
-        "gulp-istanbul": "~0.1.1",
-        "gulp-browserify": "~0.5.0",
-        "gulp-clean": "~0.2.4",
-        "gulp-rename": "~1.2.0",
-        "gulp-uglify": "~0.3.0",
-        "gulp-insert": "~0.3.0",
-        "gulp-replace": "~0.3.0",
-        "gulp-jshint": "~1.5.3",
-        "coveralls": "~2.10.0",
-        "through": "~2.3.4",
-        "matchdep": "~0.3.0",
-        "mocha": "~1.18.2",
-        "nock": "~0.28.0",
-        "should": "~3.3.1",
-        "blanket": "~1.1.6",
-        "workerify": "~0.3.0"
-    },
-    "scripts": {
-        "test": "gulp test",
-        "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
-    },
-    "main": "index",
-    "engines": {
-        "node": ">=0.10.0"
-    },
-    "license": "MIT"
+  "name": "imboclient",
+  "description": "An Imbo client for node.js and modern browsers",
+  "version": "2.3.3",
+  "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/imbo/imboclient-js"
+  },
+  "bugs": {
+    "url": "http://github.com/imbo/imboclient-js/issues"
+  },
+  "dependencies": {
+    "request": "^2.55.0"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.2",
+    "eslint-config-vaffel": "^1.0.0",
+    "gulp": "^3.8.11",
+    "gulp-browserify": "^0.5.1",
+    "gulp-eslint": "^0.12.0",
+    "gulp-insert": "^0.4.0",
+    "gulp-istanbul": "^0.9.0",
+    "gulp-mocha": "^2.0.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-replace": "^0.5.3",
+    "gulp-rimraf": "^0.1.1",
+    "gulp-uglify": "^1.2.0",
+    "gulp-util": "^3.0.4",
+    "nock": "^2.0.1",
+    "should": "^6.0.3",
+    "through": "^2.3.7",
+    "workerify": "^0.3.0"
+  },
+  "scripts": {
+    "test": "gulp test",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+  },
+  "main": "index",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "license": "MIT"
 }
 
 },{}]},{},[1])

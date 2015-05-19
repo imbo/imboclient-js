@@ -1,8 +1,9 @@
+'use strict';
+
 var extend = require('../../lib/utils/extend'),
     assert = require('assert');
 
 describe('extend', function() {
-
     describe('#extend', function() {
         it('should extend an object', function() {
             var original = { 'foo': 'bar' };
@@ -19,5 +20,4 @@ describe('extend', function() {
             assert.equal(original.foo, 'newvalue');
         });
     });
-
 });

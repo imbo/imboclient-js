@@ -1,8 +1,9 @@
 'use strict';
 
-var net  = require('net'),
+var net = require('net'),
     http = require('http'),
-    fs   = require('fs');
+    path = require('path'),
+    fs = require('fs');
 
 exports.createResetServer = function(port) {
     var server = net.createServer(function(socket) {
@@ -19,7 +20,7 @@ exports.createResetServer = function(port) {
 exports.createStaticServer = function(port) {
     var server = http.createServer(function(req, res) {
         if (req.url === '/cat.jpg') {
-            var file = __dirname + '/fixtures/cat.jpg',
+            var file = path.join(__dirname, 'fixtures', 'cat.jpg'),
                 stat = fs.statSync(file);
 
             res.writeHead(200, {

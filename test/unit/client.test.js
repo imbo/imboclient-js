@@ -1,26 +1,30 @@
-var assert    = require('assert'),
-    nock      = require('nock'),
-    fs        = require('fs'),
-    Imbo      = require('../../'),
-    fixtures  = __dirname + '/../fixtures',
-    catMd5    = '61da9892205a0d5077a353eb3487e8c8';
+'use strict';
+
+var assert = require('assert'),
+    nock = require('nock'),
+    fs = require('fs'),
+    path = require('path'),
+    Imbo = require('../../');
+
+var fixtures = path.join(__dirname, '..', 'fixtures'),
+    catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 require('should');
-require('../servers').createResetServer();
-require('../servers').createStaticServer();
 
-var signatureCleaner = function(path) {
-    return path.replace(/timestamp=[^&]*&?/, '')
-               .replace(/signature=[^&]*&?/, '')
-               .replace(/accessToken=[^&]*&?/, '')
-               .replace(/[?&]$/g, '');
+var signatureCleaner = function(urlPath) {
+    return (urlPath
+        .replace(/timestamp=[^&]*&?/, '')
+        .replace(/signature=[^&]*&?/, '')
+        .replace(/accessToken=[^&]*&?/, '')
+        .replace(/[?&]$/g, '')
+    );
 };
 
 var bodyCleaner = function() {
     return '*';
 };
 
-var client, errClient, mock, mockImgUrl, stcUrl = 'http://localhost:6775';
+var client, errClient, mock, mockImgUrl;
 
 describe('ImboClient', function() {
     before(function() {
@@ -37,7 +41,6 @@ describe('ImboClient', function() {
         mock.done();
         mockImgUrl.done();
     });
-
 
     describe('#getServerStatus()', function() {
         it('should return error on a 503-response', function(done) {
@@ -90,7 +93,6 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#getServerStats()', function() {
@@ -131,12 +133,11 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#getImageChecksum', function() {
         it('should return an error if file does not exist', function(done) {
-            var filename = __dirname + '/does-not-exist.jpg';
+            var filename = path.join(__dirname, '/does-not-exist.jpg');
             client.getImageChecksum(filename, function(err) {
                 assert.equal('File does not exist (' + filename + ')', err);
                 done();
@@ -186,7 +187,7 @@ describe('ImboClient', function() {
     describe('#parseImageUrl', function() {
         it('should return an ImageUrl-instance', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
-                qs  = '?t[]=flipHorizontally';
+                qs = '?t[]=flipHorizontally';
 
             var imageUrl = client.parseImageUrl(url + qs);
 
@@ -204,7 +205,7 @@ describe('ImboClient', function() {
 
         it('should correctly parse URLs with transformations', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
-                qs  = '?t[]=flipHorizontally';
+                qs = '?t[]=flipHorizontally';
 
             client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
         });
@@ -310,7 +311,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            var imgUrl   = client.getImageUrl(catMd5).thumbnail().png(),
+            var imgUrl = client.getImageUrl(catMd5).thumbnail().png(),
                 expected = 'http://imbo1/s/imboF00';
 
             mockImgUrl.filteringPath(signatureCleaner)
@@ -325,7 +326,6 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#deleteAllShortUrlsForImage()', function() {
@@ -401,8 +401,8 @@ describe('ImboClient', function() {
             for (var i = 0; i < 10; i++) {
                 assert.equal('http://imbo1', client.getHostForImageIdentifier('61ca9892205a0d5077a353eb3487e8c8'));
                 assert.equal('http://imbo2', client.getHostForImageIdentifier('3b71c51547c3aa1ae81a5e9c57dfef67'));
-                assert.equal('http://imbo',  client.getHostForImageIdentifier('3faab4bb128b56bd7d7e977164b3cc7f'));
                 assert.equal('http://imbo1', client.getHostForImageIdentifier('61ca9892205a0d5077a353eb3487e8c8'));
+                assert.equal('http://imbo', client.getHostForImageIdentifier('3faab4bb128b56bd7d7e977164b3cc7f'));
             }
         });
     });
@@ -475,6 +475,7 @@ describe('ImboClient', function() {
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
             client.headImage(catMd5, function(err, res) {
+                assert.ifError(err);
                 assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                 done();
             });
@@ -487,7 +488,6 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#deleteImage', function() {
@@ -497,6 +497,7 @@ describe('ImboClient', function() {
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
             client.deleteImage(catMd5, function(err, res) {
+                assert.ifError(err);
                 assert.equal(res.headers['x-imbo-imageidentifier'], catMd5);
                 done();
             });
@@ -539,9 +540,8 @@ describe('ImboClient', function() {
     describe('#imageExists', function() {
         it('should return error if the local image does not exist', function(done) {
             var filename = fixtures + '/non-existant.jpg';
-            client.imageExists(filename, function(err, exists) {
+            client.imageExists(filename, function(err) {
                 assert.equal('File does not exist (' + filename + ')', err);
-                assert.equal(undefined, exists);
                 done();
             });
         });
@@ -631,10 +631,9 @@ describe('ImboClient', function() {
     describe('#addImage', function() {
         it('should return error if the local image does not exist', function(done) {
             var filename = fixtures + '/does-not-exist.jpg';
-            client.addImage(filename, function(err, response) {
+            client.addImage(filename, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
                 assert.equal(err.code, 'ENOENT');
-                assert.equal(undefined, response);
                 done();
             });
         });
@@ -670,7 +669,7 @@ describe('ImboClient', function() {
                 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(catMd5, body.imageIdentifier);
                 assert.equal(201, response.statusCode);
@@ -678,7 +677,6 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#addImageFromBuffer', function() {
@@ -709,7 +707,7 @@ describe('ImboClient', function() {
 
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(catMd5, body.imageIdentifier);
                 assert.equal(201, response.statusCode);
@@ -721,11 +719,18 @@ describe('ImboClient', function() {
 
     describe('#addImageFromUrl', function() {
         it('should return error if the remote image does not exist', function(done) {
-            var url = stcUrl + '/some-404-image.jpg';
-            client.addImageFromUrl(url, function(err, response) {
+            mock.get('/some-404-image.jpg')
+                .reply(404);
+
+            mock.filteringPath(signatureCleaner)
+                .filteringRequestBody(bodyCleaner)
+                .post('/users/pub/images', '*')
+                .reply(404);
+
+            var url = 'http://imbo/some-404-image.jpg';
+            client.addImageFromUrl(url, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
                 assert.equal(404, err);
-                assert.equal(undefined, response);
                 done();
             });
         });
@@ -738,8 +743,10 @@ describe('ImboClient', function() {
                     'X-Imbo-Imageidentifier': catMd5
                 });
 
+            mock.get('/cat.jpg')
+                .reply(200, fs.readFileSync(path.join(fixtures, 'cat.jpg')));
 
-            client.addImageFromUrl(stcUrl + '/cat.jpg', function(err, imageIdentifier) {
+            client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier) {
                 assert.equal(400, err);
                 assert.equal(null, imageIdentifier);
                 done();
@@ -762,7 +769,7 @@ describe('ImboClient', function() {
                 });
 
             client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier, body, response) {
-                assert.equal(undefined, err);
+                assert.ifError(err);
                 assert.equal(catMd5, imageIdentifier);
                 assert.equal(catMd5, body.imageIdentifier);
                 assert.equal(201, response.statusCode);
@@ -770,7 +777,6 @@ describe('ImboClient', function() {
                 done();
             });
         });
-
     });
 
     describe('#getUserInfo', function() {
@@ -821,19 +827,19 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK', {
-                    'X-Imbo-OriginalWidth'    : 123,
-                    'X-Imbo-OriginalHeight'   : 456,
-                    'X-Imbo-OriginalFilesize' : 123456,
+                    'X-Imbo-OriginalWidth': 123,
+                    'X-Imbo-OriginalHeight': 456,
+                    'X-Imbo-OriginalFilesize': 123456,
                     'X-Imbo-OriginalExtension': 'png',
-                    'X-Imbo-OriginalMimeType' : 'image/png'
+                    'X-Imbo-OriginalMimeType': 'image/png'
                 });
 
             client.getImageProperties(catMd5, function(err, props) {
                 assert.ifError(err, 'getImageProperties() should not give an error on success');
-                assert.equal(123,         props.width);
-                assert.equal(456,         props.height);
-                assert.equal(123456,      props.filesize);
-                assert.equal('png',       props.extension);
+                assert.equal(123, props.width);
+                assert.equal(456, props.height);
+                assert.equal(123456, props.filesize);
+                assert.equal('png', props.extension);
                 assert.equal('image/png', props.mimetype);
                 done();
             });
@@ -844,9 +850,8 @@ describe('ImboClient', function() {
                 .head('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
-            client.getImageProperties('f00baa', function(err, props) {
+            client.getImageProperties('f00baa', function(err) {
                 assert.equal(404, err);
-                assert.equal(undefined, props);
                 done();
             });
         });
@@ -872,9 +877,8 @@ describe('ImboClient', function() {
                 .get('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
-            client.getImageData('f00baa', function(err, data) {
+            client.getImageData('f00baa', function(err) {
                 assert.equal(404, err);
-                assert.equal(undefined, data);
                 done();
             });
         });
@@ -898,9 +902,8 @@ describe('ImboClient', function() {
                 .get('/users/pub')
                 .reply(404, 'Not Found');
 
-            client.getNumImages(function(err, numImages) {
+            client.getNumImages(function(err) {
                 assert.equal(404, err);
-                assert.equal(undefined, numImages);
                 done();
             });
         });
@@ -944,7 +947,7 @@ describe('ImboClient', function() {
             var query = new Imbo.Query().limit(5).ids(['blah']);
             client.getImages(query, function(err, images, search, res) {
                 assert.ifError(err, 'getImages should not give an error on success');
-                assert.equal(0,   search.hits);
+                assert.equal(0, search.hits);
                 assert.equal(200, res.statusCode);
                 done();
             });
@@ -1046,7 +1049,7 @@ describe('ImboClient', function() {
 
         it('should not return any error on success', function(done) {
             var responseBody = { foo: 'bar', some: 'key' },
-                sentData     = { some: 'key', foo: 'bar' };
+                sentData = { some: 'key', foo: 'bar' };
 
             mock.filteringPath(signatureCleaner)
                 .put('/users/pub/images/' + catMd5 + '/meta', sentData)
@@ -1068,5 +1071,4 @@ describe('ImboClient', function() {
             });
         });
     });
-
 });
