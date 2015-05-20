@@ -1,3 +1,5 @@
+/* eslint no-console: 0 */
+
 /**
  * This very simple example does the following:
  *
@@ -12,12 +14,14 @@
 
 // Include the essentials (we only use fs for checking for a config-file)
 var Imbo = require('../../'),
-    fs   = require('fs'),
-    img  = __dirname + '/../../test/fixtures/cat.jpg',
+    path = require('path'),
+    fs = require('fs');
+
+var img = path.join(__dirname, '..', '..', 'test', 'fixtures', 'cat.jpg'),
     config;
 
 try {
-    fs.statSync(__dirname + '/config.json');
+    fs.statSync(path.join(__dirname, '/config.json'));
     config = require('./config.json');
 } catch (e) {
     return console.log('Could not load config file (config.json) - have you copied and customized config.json.dist?');
@@ -38,27 +42,26 @@ client.imageExists(img, function(err, exists, imageIdentifier) {
     if (exists) {
         console.log('The image already exists on server. Deleting it.');
 
-        client.deleteImage(imageIdentifier, function(err) {
-            if (err) {
-                return console.log('Could not delete image :(', err);
+        client.deleteImage(imageIdentifier, function(deleteErr) {
+            if (deleteErr) {
+                return console.log('Could not delete image :(', deleteErr);
             }
 
             console.log('Image deleted! Run me again to re-add it.');
         });
     } else {
-
         // Lets add an image to the server
         console.log('Adding image to server...');
-        client.addImage(img, function(err, imageIdentifier, response) {
+        client.addImage(img, function(addImgErr, imgId, response) {
             // Remember to check for any errors
-            if (err) {
-                return console.log('Oh no! Something went horribly wrong!', err, response);
+            if (addImgErr) {
+                return console.log('Oh no! Something went horribly wrong!', addImgErr, response);
             }
 
             console.log('Hooray! We added the image to the server!');
 
             // Lets get the URL for our image!
-            var url = client.getImageUrl(imageIdentifier);
+            var url = client.getImageUrl(imgId);
             console.log('URL: ' + url);
 
             // Bit more interesting, lets add some transformations:
@@ -71,13 +74,17 @@ client.imageExists(img, function(err, exists, imageIdentifier) {
 
             // Or maybe we want a short URL to the image, with some transformations?
             url.reset().maxSize({ width: 640 }).sepia().png();
-            client.getShortUrl(url, function(err, shortUrl) {
+            client.getShortUrl(url, function(shortUrlErr, shortUrl) {
+                if (shortUrlErr) {
+                    console.error('An error occured: ', shortUrlErr);
+                    return;
+                }
+
                 console.log('ShortURL: ' + shortUrl.toString());
 
                 // And we're done
                 console.log('All done...');
             });
         });
-
     }
 });

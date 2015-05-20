@@ -7,12 +7,14 @@
  * For the full copyright and license information, please view the LICENSE file that was
  * distributed with this source code.
  */
-exports.Client   = _dereq_('./lib/client');
-exports.Url      = _dereq_('./lib/url/url');
+'use strict';
+
+exports.Client = _dereq_('./lib/client');
+exports.Url = _dereq_('./lib/url/url');
 exports.ImageUrl = _dereq_('./lib/url/imageurl');
 exports.ShortUrl = _dereq_('./lib/url/shorturl');
-exports.Query    = _dereq_('./lib/query');
-exports.Version  = _dereq_('./package.json').version;
+exports.Query = _dereq_('./lib/query');
+exports.Version = _dereq_('./package.json').version;
 
 },{"./lib/client":9,"./lib/query":10,"./lib/url/imageurl":11,"./lib/url/shorturl":12,"./lib/url/url":13,"./package.json":17}],2:[function(_dereq_,module,exports){
 (function (process){
@@ -2058,6 +2060,49 @@ extend(ImageUrl.prototype, {
     },
 
     /**
+     * Sharpen the image
+     *
+     * @param  {Object} [options]
+     * @param  {String} [options.preset]         Name of a defined preset to use
+     * @param  {Number} [options.radius=2]       Radius of the Gaussian operator in pixels
+     * @param  {Number} [options.sigma=1]        Standard deviation of the Gaussian, in pixels
+     * @param  {Number} [options.gain=1]         Percentage of difference between original and blurred image that is added back into the original
+     * @param  {Number} [options.threshold=0.05] Threshold in pixels needed to apply the difference gain
+     * @return {Imbo.ImageUrl}
+     */
+    sharpen: function(options) {
+        var params = [],
+            opts = options || {},
+            transform = 'sharpen';
+
+        if (opts.preset) {
+            params.push('preset=' + opts.preset);
+        }
+
+        if (typeof opts.radius !== 'undefined') {
+            params.push('radius=' + opts.radius);
+        }
+
+        if (typeof opts.sigma !== 'undefined') {
+            params.push('sigma=' + opts.sigma);
+        }
+
+        if (typeof opts.gain !== 'undefined') {
+            params.push('gain=' + opts.gain);
+        }
+
+        if (typeof opts.threshold !== 'undefined') {
+            params.push('threshold=' + opts.threshold);
+        }
+
+        if (params.length) {
+            transform += ':' + params.join(',');
+        }
+
+        return this.append(transform);
+    },
+
+    /**
      * Strip the image of all properties and comments (EXIF-data and such)
      *
      * @return {Imbo.ImageUrl}
@@ -2615,7 +2660,7 @@ process.chdir = function (dir) {
 module.exports={
   "name": "imboclient",
   "description": "An Imbo client for node.js and modern browsers",
-  "version": "2.3.3",
+  "version": "2.3.4",
   "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "contributors": [],
   "repository": {
@@ -2652,6 +2697,7 @@ module.exports={
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "main": "index",
+  "browser": "./dist/browser-bundle.js",
   "engines": {
     "node": ">=0.10.0"
   },

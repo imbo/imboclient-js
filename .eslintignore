@@ -1,0 +1,4 @@
+dist/**/*.js
+coverage/**
+examples/**/jquery*
+lib/**/*.min.js

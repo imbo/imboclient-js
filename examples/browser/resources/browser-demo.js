@@ -1,12 +1,12 @@
+'use strict';
+
 /* global Imbo */
 (function($) {
-    'use strict';
-
     $('.host').text(window.location.hostname);
 
     var form = $('#imbo-setup'), client;
     try {
-        new Imbo.Client('', '', '');
+        client = new Imbo.Client('', '', '');
     } catch (e) {
         return form.html('<h2>Sorry! ' + e.message + ' :-(</h2>');
     }
@@ -27,8 +27,8 @@
     form.on('submit', function(e) {
         e.preventDefault();
 
-        var url     = this.url.value;
-        var pubkey  = this.pubkey.value;
+        var url = this.url.value;
+        var pubkey = this.pubkey.value;
         var privkey = this.privkey.value;
 
         // Save the settings to localstorage (if user has agreed)
@@ -62,7 +62,7 @@
         url = url.replace(/.*?\/users\//g, '/users/');
         url = url.replace(/Token=(.{10}).*/g, 'Token=$1...');
 
-        var parts  = url.split('?'), param;
+        var parts = url.split('?'), param;
         var params = parts[1].replace(/t\[\]=maxSize.*?&/g, '').split('&');
 
         // Base url
@@ -77,12 +77,15 @@
                 param = prefix + 't[]=<span class="transformation">' + trans[0] + '</span>';
 
                 if (trans.length > 1) {
-                    trans[1].split(',').forEach(function(item) {
-                        var c = item.split('='), x = '';
+                    var items = trans[1].split(',');
+
+                    for (var t = 0; t < items.length; t++) {
+                        var c = items[t].split('='), x = '';
                         x += '<span class="param">' + c[0] + '</span>=';
                         x += '<span class="value">' + c[1] + '</span>';
                         args.push(x);
-                    });
+                    }
+
                     param += ':' + args.join(',');
                 }
             }
@@ -98,7 +101,9 @@
         bar.css('width', '100%');
         progress.animate({ opacity: 0}, {
             duration: 1000,
-            complete: function() { $(this).remove(); }
+            complete: function() {
+                $(this).remove();
+            }
         });
 
         // Check for any XHR errors (200 means image already exists)
@@ -107,6 +112,7 @@
                 err += ' (probably incorrect private key)';
             }
 
+            /* eslint no-alert: 0 */
             return window.alert(err);
         }
 
@@ -123,9 +129,9 @@
             });
 
             $('#controls button').on('click', function() {
-                var el = $(this),
-                    transformation = el.data('transformation'),
-                    args = el.data('args'),
+                var btn = $(this),
+                    transformation = btn.data('transformation'),
+                    args = btn.data('args'),
                     pass = args ? (args + '').split(',') : [];
 
                 url[transformation].apply(url, pass);
@@ -169,5 +175,4 @@
     $('button.back').on('click', function() {
         $('#imbo-setup, #imbo-demo').toggleClass('hidden');
     });
-
-})(window.Zepto || window.jQuery);
+}(window.Zepto || window.jQuery));
