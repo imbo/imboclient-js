@@ -151,8 +151,8 @@ module.exports = {
     }
 };
 
-}).call(this,_dereq_("IrXUsu"))
-},{"./md5.min":4,"./readers":6,"./sha":8,"IrXUsu":16}],3:[function(_dereq_,module,exports){
+}).call(this,_dereq_("g5I+bs"))
+},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":16}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -488,7 +488,16 @@ var gamma1256 = function(x) {
 };
 
 var coreSha256 = function(m, l) {
-    var K = [0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786, 0xFC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13, 0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2];
+    var K = [
+        0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5, 0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5, 0xD807AA98,
+        0x12835B01, 0x243185BE, 0x550C7DC3, 0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174, 0xE49B69C1, 0xEFBE4786,
+        0xFC19DC6, 0x240CA1CC, 0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA, 0x983E5152, 0xA831C66D, 0xB00327C8,
+        0xBF597FC7, 0xC6E00BF3, 0xD5A79147, 0x6CA6351, 0x14292967, 0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
+        0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85, 0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3, 0xD192E819,
+        0xD6990624, 0xF40E3585, 0x106AA070, 0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5, 0x391C0CB3, 0x4ED8AA4A,
+        0x5B9CCA4F, 0x682E6FF3, 0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208, 0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7,
+        0xC67178F2
+    ];
     var HASH = [0x6A09E667, 0xBB67AE85, 0x3C6EF372, 0xA54FF53A, 0x510E527F, 0x9B05688C, 0x1F83D9AB, 0x5BE0CD19];
     var W = new Array(64);
     var a, b, c, d, e, f, g, h, i, j;
@@ -552,7 +561,10 @@ var str2binb = function(str) {
 var binb2hex = function(binarray) {
     var hexTab = '0123456789abcdef', str = '';
     for (var i = 0; i < binarray.length * 4; i++) {
-        str += hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) + hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF);
+        str += hexTab.charAt(
+            ((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
+            hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF)
+        );
     }
     return str;
 };
@@ -1044,9 +1056,9 @@ extend(ImboClient.prototype, {
             host = this.getHostForImageIdentifier(imageId);
 
         var data = {
-            'imageIdentifier': imageId,
-            'publicKey': url.getPublicKey(),
-            'query': url.getQueryString()
+            imageIdentifier: imageId,
+            publicKey: url.getPublicKey(),
+            query: url.getQueryString()
         };
 
         if (extension) {
@@ -1067,7 +1079,7 @@ extend(ImboClient.prototype, {
                     return callback('No ShortUrl was returned from server');
                 }
 
-                callback(err, new ShortUrl({ 'baseUrl': host, 'id': body.id }));
+                callback(err, new ShortUrl({ baseUrl: host, id: body.id }));
             }
         });
 
@@ -1453,7 +1465,8 @@ extend(ImboQuery.prototype, {
     },
 
     /**
-     * Set the original checksums of the images you want returned. If no value is specified, the current value is returned.
+     * Set the original checksums of the images you want returned.
+     * If no value is specified, the current value is returned.
      *
      * @param  {Array} [sums]
      * @return {Imbo.Query}
@@ -1588,7 +1601,8 @@ extend(ImboQuery.prototype, {
     },
 
     /**
-     * Sets whether to return the metadata associated with the images or not. If no value is specified, the current value is returned.
+     * Sets whether to return the metadata associated with the images or not.
+     * If no value is specified, the current value is returned.
      *
      * @param  {Boolean} val
      * @return {Imbo.Query}
@@ -2066,7 +2080,8 @@ extend(ImageUrl.prototype, {
      * @param  {String} [options.preset]         Name of a defined preset to use
      * @param  {Number} [options.radius=2]       Radius of the Gaussian operator in pixels
      * @param  {Number} [options.sigma=1]        Standard deviation of the Gaussian, in pixels
-     * @param  {Number} [options.gain=1]         Percentage of difference between original and blurred image that is added back into the original
+     * @param  {Number} [options.gain=1]         Percentage of difference between original and blurred image
+     *                                           that is added back into the original
      * @param  {Number} [options.threshold=0.05] Threshold in pixels needed to apply the difference gain
      * @return {Imbo.ImageUrl}
      */
@@ -2155,9 +2170,12 @@ extend(ImageUrl.prototype, {
      * @param  {Number} [options.img] Image identifier of the image to apply as watermark
      * @param  {Number} [options.width]  Width of the watermark, in pixels
      * @param  {Number} [options.height] Height of the watermark, in pixels
-     * @param  {String} [options.position=top-left] Position of the watermark. Values: "top-left", "top-right", "bottom-left", "bottom-right" and "center"
-     * @param  {Number} [options.x] Number of pixels in the X-axis the watermark image should be offset from the original position
-     * @param  {Number} [options.y] Number of pixels in the Y-axis the watermark image should be offset from the original position
+     * @param  {String} [options.position=top-left] Position of the watermark. Values:
+     *                                              "top-left", "top-right", "bottom-left", "bottom-right" and "center"
+     * @param  {Number} [options.x] Number of pixels in the X-axis the watermark image
+     *                              should be offset from the original position
+     * @param  {Number} [options.y] Number of pixels in the Y-axis the watermark image
+     *                              should be offset from the original position
      * @return {Imbo.ImageUrl}
      */
     watermark: function(options) {
@@ -2331,14 +2349,14 @@ ImageUrl.parse = function(url, privateKey) {
     });
 
     return new ImageUrl({
-        'baseUrl': parts.protocol + '//' + parts.host + basePath,
-        'path': path.replace(/.*\/images\/[^\/]*/, ''),
-        'publicKey': path.replace(/.*\/users\/(.+?)\/.*/, '$1'),
-        'privateKey': privateKey,
-        'transformations': transformations,
-        'extension': path.replace(/.*\/images\/.*?(?:\.|$)(.*)/, '$1') || null,
-        'imageIdentifier': path.replace(/.*\/images\/(.+?)(\..*|$)/, '$1'),
-        'queryString': query.filter(function(item) {
+        baseUrl: parts.protocol + '//' + parts.host + basePath,
+        path: path.replace(/.*\/images\/[^\/]*/, ''),
+        publicKey: path.replace(/.*\/users\/(.+?)\/.*/, '$1'),
+        privateKey: privateKey,
+        transformations: transformations,
+        extension: path.replace(/.*\/images\/.*?(?:\.|$)(.*)/, '$1') || null,
+        imageIdentifier: path.replace(/.*\/images\/(.+?)(\..*|$)/, '$1'),
+        queryString: query.filter(function(item) {
             return item.indexOf('t[]=') === -1 && item.indexOf('accessToken=') === -1;
         }).join('&')
     });
@@ -2674,27 +2692,29 @@ module.exports={
     "request": "^2.55.0"
   },
   "devDependencies": {
-    "coveralls": "^2.11.2",
-    "eslint-config-vaffel": "^1.0.0",
-    "gulp": "^3.8.11",
+    "coveralls": "^2.11.4",
+    "del": "^2.0.2",
+    "eslint": "^1.5.1",
+    "eslint-config-vaffel": "^2.0.0",
+    "gulp": "^3.9.0",
     "gulp-browserify": "^0.5.1",
-    "gulp-eslint": "^0.12.0",
-    "gulp-insert": "^0.4.0",
-    "gulp-istanbul": "^0.9.0",
-    "gulp-mocha": "^2.0.1",
+    "gulp-insert": "^0.5.0",
+    "gulp-istanbul": "^0.10.1",
+    "gulp-mocha": "^2.1.3",
     "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.5.3",
-    "gulp-rimraf": "^0.1.1",
-    "gulp-uglify": "^1.2.0",
-    "gulp-util": "^3.0.4",
-    "nock": "^2.0.1",
-    "should": "^6.0.3",
-    "through": "^2.3.7",
+    "gulp-replace": "^0.5.4",
+    "gulp-uglify": "^1.4.1",
+    "gulp-util": "^3.0.6",
+    "nock": "^2.13.0",
+    "should": "^7.1.0",
+    "through": "^2.3.8",
     "workerify": "^0.3.0"
   },
   "scripts": {
-    "test": "gulp test",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "gulp test"
   },
   "main": "index",
   "browser": "./dist/browser-bundle.js",

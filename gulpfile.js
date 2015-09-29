@@ -1,10 +1,10 @@
 'use strict';
 
+var del = require('del');
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
 var browserify = require('gulp-browserify');
-var rimraf = require('gulp-rimraf');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var replace = require('gulp-replace');
@@ -34,8 +34,7 @@ function browserSpecific() {
 }
 
 gulp.task('clean', function() {
-    gulp.src('./dist', { read: false })
-        .pipe(rimraf());
+    return del(['dist']);
 });
 
 gulp.task('watch', function() {
