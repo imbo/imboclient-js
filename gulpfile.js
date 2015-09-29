@@ -69,8 +69,8 @@ gulp.task('mocha', getMochaStream);
 gulp.task('browserify', function(cb) {
     gulp.src('./index.js')
         .pipe(browserify({
-            'standalone': 'Imbo',
-            'transform': [
+            standalone: 'Imbo',
+            transform: [
                 browserSpecific,
                 'workerify'
             ]

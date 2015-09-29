@@ -68,7 +68,7 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
-                    'date': 'Fri, 14 Mar 2014 07:43:49 GMT'
+                    date: 'Fri, 14 Mar 2014 07:43:49 GMT'
                 }), { 'Content-Type': 'application/json' });
 
             client.getServerStatus(function(err, info, res) {
@@ -83,7 +83,7 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
-                    'date': 'Fri, 14 Mar 2014 07:43:49 GMT'
+                    date: 'Fri, 14 Mar 2014 07:43:49 GMT'
                 }), { 'Content-Type': 'application/json' });
 
             client.getServerStatus(function(err, info) {
@@ -121,8 +121,8 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .get('/stats')
                 .reply(200, JSON.stringify({
-                    'foo': 'bar',
-                    'number': 1337
+                    foo: 'bar',
+                    number: 1337
                 }), { 'Content-Type': 'application/json' });
 
             client.getServerStats(function(err, info) {
@@ -300,7 +300,7 @@ describe('ImboClient', function() {
             mockImgUrl.filteringPath(signatureCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
-                    'foo': 'bar'
+                    foo: 'bar'
                 }), { 'Content-Type': 'application/json' });
 
             client.getShortUrl(imgUrl, function(err) {
@@ -316,7 +316,7 @@ describe('ImboClient', function() {
             mockImgUrl.filteringPath(signatureCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
-                    'id': 'imboF00'
+                    id: 'imboF00'
                 }), { 'Content-Type': 'application/json' });
 
             client.getShortUrl(imgUrl, function(err, shortUrl) {
@@ -643,7 +643,6 @@ describe('ImboClient', function() {
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
-
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
                 assert.equal(400, err);
                 assert.equal(null, imageIdentifier);
@@ -782,7 +781,7 @@ describe('ImboClient', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub')
-                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
+                .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
             client.getUserInfo(function(err, info, res) {
                 assert.ifError(err, 'getUserInfo should not give an error on success');
@@ -809,7 +808,7 @@ describe('ImboClient', function() {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({
-                    'lastModified': 'Fri, 14 Mar 2014 07:43:49 GMT'
+                    lastModified: 'Fri, 14 Mar 2014 07:43:49 GMT'
                 }), { 'Content-Type': 'application/json' });
 
             client.getUserInfo(function(err, info, res) {
@@ -887,7 +886,7 @@ describe('ImboClient', function() {
         it('should return a number on success', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub')
-                .reply(200, JSON.stringify({ 'numImages': 50 }), { 'Content-Type': 'application/json' });
+                .reply(200, JSON.stringify({ numImages: 50 }), { 'Content-Type': 'application/json' });
 
             client.getNumImages(function(err, numImages) {
                 assert.ifError(err, 'getNumImages() should not give an error on success');
@@ -912,7 +911,7 @@ describe('ImboClient', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images')
-                .reply(200, JSON.stringify({ 'images': [], 'search': { 'hits': 3 } }), {
+                .reply(200, JSON.stringify({ images: [], search: { hits: 3 } }), {
                     'Content-Type': 'application/json'
                 });
 
@@ -939,7 +938,7 @@ describe('ImboClient', function() {
         it('should allow an optional query', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images?page=1&limit=5&ids[]=blah')
-                .reply(200, JSON.stringify({ 'images': [], 'search': { 'hits': 0 } }), {
+                .reply(200, JSON.stringify({ images: [], search: { hits: 0 } }), {
                     'Content-Type': 'application/json'
                 });
 
@@ -957,7 +956,7 @@ describe('ImboClient', function() {
         it('should return an object of key => value data', function(done) {
             mock.filteringPath(signatureCleaner)
                 .get('/users/pub/images/' + catMd5 + '/meta')
-                .reply(200, JSON.stringify({ 'foo': 'bar' }), { 'Content-Type': 'application/json' });
+                .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
             client.getMetadata(catMd5, function(err, meta, res) {
                 assert.ifError(err, 'getMetadata should not give error on success');
