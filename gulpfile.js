@@ -9,13 +9,11 @@ var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
 var replace = require('gulp-replace');
 var insert = require('gulp-insert');
-var eslint = require('gulp-eslint');
 var through = require('through');
 var pkgInfo = require('./package.json');
 
 var mochaOpts = { reporter: 'spec', bail: true };
 var codePaths = ['lib/**/*.js', 'gulpfile.js', '!./lib/**/*.min.js'];
-var lintCodePaths = codePaths.concat(['test/**/*.js']);
 var banner = [
     '/*!', pkgInfo.name, 'v', pkgInfo.version,
     new Date().toISOString().substr(0, 10), '*/\n'
@@ -45,13 +43,6 @@ gulp.task('watch', function() {
         ['./lib/**/*.js', './test/**/*.test.js'],
         ['test']
     );
-});
-
-gulp.task('lint', function() {
-    return gulp.src(lintCodePaths)
-        .pipe(eslint())
-        .pipe(eslint.format())
-        .pipe(eslint.failOnError());
 });
 
 gulp.task('coveragePrepare', function() {
@@ -90,11 +81,11 @@ gulp.task('uglify', function(cb) {
         .on('end', cb);
 });
 
-gulp.task('default', ['clean', 'lint', 'coverage', 'browserify'], function() {
+gulp.task('default', ['clean', 'coverage', 'browserify'], function() {
     gulp.start('uglify');
 });
 
-gulp.task('test', ['lint', 'mocha']);
+gulp.task('test', ['mocha']);
 
 function getMochaStream() {
     return gulp.src('test/**/*.test.js', { read: false })
