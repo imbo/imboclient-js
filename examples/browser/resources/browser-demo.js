@@ -6,7 +6,7 @@
 
     var form = $('#imbo-setup'), client;
     try {
-        client = new Imbo.Client('', '', '');
+        client = new Imbo.Client('host', 'pub', 'priv');
     } catch (e) {
         return form.html('<h2>Sorry! ' + e.message + ' :-(</h2>');
     }
@@ -28,17 +28,25 @@
         e.preventDefault();
 
         var url = this.url.value;
+        var user = this.user.value;
         var pubkey = this.pubkey.value;
         var privkey = this.privkey.value;
 
         // Save the settings to localstorage (if user has agreed)
         if (this.remember.checked && supportsLocalStorage()) {
             localStorage.url = url || window.location.protocol + '//';
+            localStorage.user = user;
             localStorage.pubkey = pubkey;
             localStorage.privkey = privkey;
         }
 
-        client = new Imbo.Client(url, pubkey, privkey);
+        client = new Imbo.Client({
+            hosts: url,
+            user: user,
+            publicKey: pubkey,
+            privateKey: privkey
+        });
+
         form.addClass('hidden');
         $('#imbo-demo').removeClass('hidden');
     });
@@ -47,6 +55,7 @@
     if (supportsLocalStorage()) {
         var el = form.get(0);
         el.url.value = localStorage.url || window.location.protocol + '//';
+        el.user.value = localStorage.user || '';
         el.pubkey.value = localStorage.pubkey || '';
         el.privkey.value = localStorage.privkey || '';
     }
@@ -107,12 +116,14 @@
         });
 
         // Check for any XHR errors (200 means image already exists)
-        if (err && res && res.headers['X-Imbo-Error-Internalcode'] !== 200) {
+        if (err && res && res.headers && res.headers['X-Imbo-Error-Internalcode'] !== 200) {
             if (err === 'Signature mismatch') {
                 err += ' (probably incorrect private key)';
             }
 
             /* eslint no-alert: 0 */
+            return window.alert(err);
+        } else if (err) {
             return window.alert(err);
         }
 
