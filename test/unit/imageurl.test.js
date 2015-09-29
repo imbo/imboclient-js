@@ -678,10 +678,10 @@ describe('Imbo.ImageUrl', function() {
 
         it('should generate the same accessToken as a manually constructed instance', function() {
             var manual = new Imbo.ImageUrl({
-                'baseUrl': baseUrl,
-                'publicKey': pub,
-                'privateKey': priv,
-                'imageIdentifier': catMd5
+                baseUrl: baseUrl,
+                publicKey: pub,
+                privateKey: priv,
+                imageIdentifier: catMd5
             }).sepia();
 
             var parsed = Imbo.ImageUrl.parse(manual.toString(), priv);

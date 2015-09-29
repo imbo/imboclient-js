@@ -29,13 +29,13 @@ describe('feature-support', function() {
         });
 
         it('should check for XMLHttpRequest2', function() {
-            unsupported = features.getUnsupported({ 'XMLHttpRequest': function() {} });
+            unsupported = features.getUnsupported({ XMLHttpRequest: function() {} });
             assert.notEqual(-1, unsupported.indexOf('XMLHttpRequest2'));
 
             var XMLHttpRequest = function() {};
             XMLHttpRequest.prototype.upload = {};
 
-            unsupported = features.getUnsupported({ 'XMLHttpRequest': XMLHttpRequest });
+            unsupported = features.getUnsupported({ XMLHttpRequest: XMLHttpRequest });
             assert.equal(-1, unsupported.indexOf('XMLHttpRequest2'));
         });
     });

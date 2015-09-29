@@ -1,4 +1,4 @@
-[![Build Status][1]][2] [![dependency status][3]][4] [![dev dependency status][5]][6]
+[![npm version][1]][2] [![Build Status][2]][3] [![dependency status][4]][5]
 
 # Javascript client for Imbo
 A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
@@ -58,13 +58,13 @@ Documentation is available at http://imboclient-js.readthedocs.org/.
 Check out the `examples` folder for a few intros on how to use the client.
 
 ## License
-Copyright (c) 2011-2014, Espen Hovlandsdal <espen@hovlandsdal.com>
+Copyright (c) 2011-2015, Espen Hovlandsdal <espen@hovlandsdal.com>
 
 Licensed under the MIT License
 
-[1]: https://travis-ci.org/imbo/imboclient-js.png
-[2]: https://travis-ci.org/imbo/imboclient-js
-[3]: https://david-dm.org/imbo/imboclient-js.png
-[4]: https://david-dm.org/imbo/imboclient-js
-[5]: https://david-dm.org/imbo/imboclient-js/dev-status.png
-[6]: https://david-dm.org/imbo/imboclient-js#info=devDependencies
+[1]: https://img.shields.io/npm/v/imboclient.svg?style=flat-square
+[2]: http://browsenpm.org/package/imboclient
+[3]: https://img.shields.io/travis/imbo/imboclient-js/master.svg?style=flat-square
+[4]: https://travis-ci.org/imbo/imboclient-js
+[5]: https://img.shields.io/david/imbo/imboclient-js.svg
+[6]: https://david-dm.org/imbo/imboclient-js
