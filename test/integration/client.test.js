@@ -26,20 +26,31 @@ var stcUrl = 'http://127.0.0.1:6775',
 describeIntegration('ImboClient (integration)', function() {
     this.timeout(5000);
 
-    before(function() {
+    before(function(done) {
         errClient = new Imbo.Client('http://127.0.0.1:6776', 'pub', 'priv');
         errServer = require('../servers').createResetServer();
         stcServer = require('../servers').createStaticServer();
-    });
 
-    beforeEach(function() {
-        client = new Imbo.Client({
+        var options = {
             hosts: [imboHost],
             user: imboUser,
             publicKey: imboPubKey,
             privateKey: imboPrivKey
-        });
+        };
 
+        client = new Imbo.Client(options);
+        client.getUserInfo(function(err, info) {
+            if (err) {
+                console.error('\nDouble check host, user and public/private keys:');
+                console.error(options);
+                throw err;
+            }
+
+            done();
+        });
+    });
+
+    beforeEach(function() {
         imageIdentifiers = [];
     });
 
@@ -498,8 +509,8 @@ describeIntegration('ImboClient (integration)', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            client = new Imbo.Client([imboHost], 'AngLAmgALNFAGLKdmgdAGmkl', 'test');
-            client.getUserInfo(function(err, body, res) {
+            var someClient = new Imbo.Client([imboHost], 'AngLAmgALNFAGLKdmgdAGmkl', 'test');
+            someClient.getUserInfo(function(err, body, res) {
                 assert(err);
                 assert(err.message.match(/\b404\b/));
                 assert.equal(404, res.statusCode);
