@@ -26,12 +26,10 @@ var bodyCleaner = function() {
 var client, errClient, mock, mockImgUrl;
 
 describe('ImboClient', function() {
-    before(function() {
+    beforeEach(function() {
         client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv');
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
-    });
 
-    beforeEach(function() {
         mock = getNock()('http://imbo');
         mockImgUrl = getNock()('http://imbo1');
     });
@@ -219,6 +217,12 @@ describe('ImboClient', function() {
             var url = client.getImageUrl(catMd5).toString();
             assert.equal(true, url.indexOf(catMd5) > 0, url + ' did not contain ' + catMd5);
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#parseImageUrl', function() {
@@ -247,6 +251,12 @@ describe('ImboClient', function() {
             client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
         });
 
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            client.parseImageUrl(url, 'bar').toString().should.equal(url);
+        });
+
         // More tests are defined in the ImageUrl test suite
     });
 
@@ -260,6 +270,12 @@ describe('ImboClient', function() {
             var url = client.getImagesUrl().toString();
             assert.equal('http://imbo/users/pub/images', signatureCleaner(url));
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImagesUrl().toString();
+            assert.equal('http://imbo/users/someuser/images?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getUserUrl', function() {
@@ -271,6 +287,12 @@ describe('ImboClient', function() {
         it('should return the expected URL-string', function() {
             var url = client.getUserUrl().toString();
             assert.equal('http://imbo/users/pub', signatureCleaner(url));
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/someuser?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -286,6 +308,12 @@ describe('ImboClient', function() {
             var url = client.getStatsUrl().toString();
             assert.equal('http://imbo/stats', signatureCleaner(url));
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getStatsUrl().toString();
+            assert.equal('http://imbo/stats?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getMetadataUrl', function() {
@@ -295,6 +323,12 @@ describe('ImboClient', function() {
                 'http://imbo/users/pub/images/' + catMd5 + '/meta',
                 signatureCleaner(url)
             );
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getMetadataUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '/meta?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -315,6 +349,16 @@ describe('ImboClient', function() {
             }).toString();
 
             url.should.containEql('http://imbo/some/path?page=2&limit=3&accessToken');
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getResourceUrl({
+                path: '/some/path',
+                query: 'page=2&limit=3'
+            }).toString();
+
+            assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
         });
     });
 
