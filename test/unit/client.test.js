@@ -84,7 +84,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getServerStatus(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -137,7 +138,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getServerStats(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -371,7 +373,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getShortUrl(imgUrl, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -416,7 +419,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.deleteAllShortUrlsForImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -442,7 +446,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.deleteShortUrlForImage(catMd5, shortId, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -495,7 +500,8 @@ describe('ImboClient', function() {
                 .reply(404);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -506,7 +512,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -698,7 +705,8 @@ describe('ImboClient', function() {
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -742,7 +750,8 @@ describe('ImboClient', function() {
 
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -782,7 +791,7 @@ describe('ImboClient', function() {
             var url = 'http://imbo/some-404-image.jpg';
             client.addImageFromUrl(url, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
-                assert.equal(404, err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -799,7 +808,8 @@ describe('ImboClient', function() {
                 .reply(200, fs.readFileSync(path.join(fixtures, 'cat.jpg')));
 
             client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -851,7 +861,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getUserInfo(function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Not Found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -869,6 +880,20 @@ describe('ImboClient', function() {
                 assert.ifError(err, 'getUserInfo should not give an error on success');
                 assert.ok(info.lastModified instanceof Date);
                 assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should populate the `user` property if not present', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(200, JSON.stringify({
+                    publicKey: 'foo'
+                }), { 'Content-Type': 'application/json' });
+
+            client.getUserInfo(function(err, info, res) {
+                assert.ifError(err, 'getUserInfo should not give an error on success');
+                assert.equal(info.user, 'foo');
                 done();
             });
         });
@@ -903,7 +928,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getImageProperties('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -930,7 +956,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getImageData('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -955,7 +982,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getNumImages(function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -983,7 +1011,8 @@ describe('ImboClient', function() {
                 .reply(404, 'User not found');
 
             client.getImages(function(err, images, search, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal(404, res.statusCode);
                 done();
             });
@@ -1026,7 +1055,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.getMetadata('f00baa', function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Image not found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -1041,7 +1071,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.deleteMetadata('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -1065,7 +1096,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.editMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -1094,7 +1126,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.replaceMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
