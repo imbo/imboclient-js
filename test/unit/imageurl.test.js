@@ -670,6 +670,27 @@ describe('Imbo.ImageUrl', function() {
             }
         });
 
+        it('should parse complex URLs with a different public key/user combination', function() {
+            var testUrl = 'http://imbo/users/someuser/images/' + catMd5 + '.jpg',
+                qs = '?publicKey=foobar&t[]=crop%3Ax%3D0%2Cy%3D0%2Cwidth%3D927%2Cheight%3D621&t%5B%5D=thumbnail%3Awidth%3D320%2Cheight%3D214%2Cfit%3Dinset&t[]=canvas%3Awidth%3D320%2Cheight%3D214%2Cmode%3Dcenter';
+
+            var imgUrl = Imbo.ImageUrl.parse(testUrl + qs, 'foo'),
+                transformations = imgUrl.getTransformations(),
+                expected = [
+                    'crop:x=0,y=0,width=927,height=621',
+                    'thumbnail:width=320,height=214,fit=inset',
+                    'canvas:width=320,height=214,mode=center'
+                ];
+
+            assert.equal(transformations.length, expected.length);
+            for (var i = 0; i < transformations.length; i++) {
+                assert.equal(transformations[i], expected[i]);
+            }
+
+            assert.equal(imgUrl.getPublicKey(), 'foobar');
+            assert.equal(imgUrl.getUser(), 'someuser');
+        });
+
         it('should remove existing access token from query string', function() {
             var testUrl = 'http://imbo/users/pub/images/' + catMd5 + '.jpg?accessToken=foo';
 
