@@ -59,30 +59,33 @@ Note: Global is only available if CommonJS/AMD environments are not detected.
 Instantiating the client
 ++++++++++++++++++++++++
 
-To create an instance of the client, simply pass one or more hostnames along with a public/private key combination to the constructor:
+To create an instance of the client, pass an object of options to the constructor:
 
 .. code-block:: js
 
     var Imbo = require('imboclient');
-    var client = new Imbo.Client(
-        'http//imbo.example.com',
-        '<publicKey>',
-        '<privateKey>'
-    );
+    var client = new Imbo.Client({
+        hosts: 'http//imbo.example.com',
+        user: 'someuser',
+        publicKey: '<publicKey>',
+        privateKey: '<privateKey>'
+    });
 
-You may also pass multiple hostnames to the constructor:
+You may also pass multiple hostnames:
 
 .. code-block:: js
 
     var Imbo = require('imboclient');
-    var client = new Imbo.Client([
+    var client = new Imbo.Client({
+        hosts: [
             'http//imbo1.example.com',
             'http//imbo2.example.com',
             'http//imbo3.example.com'
         ],
-        '<publicKey>',
-        '<privateKey>'
-    );
+        user: 'someuser',
+        publicKey: '<publicKey>',
+        privateKey: '<privateKey>'
+    });
 
 If you use multiple hostnames when instantiating the client, it will choose different image URLs based on the image identifier and the number of available hostnames. The client will generate the same URL for the same image identifier, as long as the number of hostnames specified does not change.
 
