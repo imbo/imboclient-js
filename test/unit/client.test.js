@@ -891,7 +891,7 @@ describe('ImboClient', function() {
                     publicKey: 'foo'
                 }), { 'Content-Type': 'application/json' });
 
-            client.getUserInfo(function(err, info, res) {
+            client.getUserInfo(function(err, info) {
                 assert.ifError(err, 'getUserInfo should not give an error on success');
                 assert.equal(info.user, 'foo');
                 done();

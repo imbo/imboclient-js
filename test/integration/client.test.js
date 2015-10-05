@@ -1,4 +1,4 @@
-/* eslint max-nested-callbacks: 0 */
+/* eslint max-nested-callbacks: 0, no-console: 0 */
 'use strict';
 
 var assert = require('assert'),
@@ -39,7 +39,7 @@ describeIntegration('ImboClient (integration)', function() {
         };
 
         client = new Imbo.Client(options);
-        client.getUserInfo(function(err, info) {
+        client.getUserInfo(function(err) {
             if (err) {
                 console.error('\nDouble check host, user and public/private keys:');
                 console.error(options);
