@@ -15,6 +15,8 @@ bower install imboclient
 ```
 
 ## Version note
+Imbo 2.0 and up prefers imboclient-js >= 3.0.0
+
 Imbo 1.0 and up requires imboclient-js >= 2.1.0
 
 Imbo 0.3.3 and below requires imboclient-js <= 2.0.2
@@ -22,11 +24,15 @@ Imbo 0.3.3 and below requires imboclient-js <= 2.0.2
 ## Basic usage
 
 ```javascript
-var Imbo   = require('imboclient'),
-    client = new Imbo.Client('http://<hostname>', '<publicKey>', '<privateKey>'),
-    path   = '/path/to/image.jpg';
+var Imbo = require('imboclient');
+var client = new Imbo.Client({
+    hosts: 'http://<hostname>',
+    user: '<someUser>',
+    publicKey: '<publicKey>',
+    privateKey: '<privateKey>'
+});
 
-client.addImage(path, function(err, imageIdentifier) {
+client.addImage('/path/to/image.jpg', function(err, imageIdentifier) {
     if (err) {
         return console.error('Oh no, an error occured: ' + err);
     }

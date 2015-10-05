@@ -26,12 +26,10 @@ var bodyCleaner = function() {
 var client, errClient, mock, mockImgUrl;
 
 describe('ImboClient', function() {
-    before(function() {
+    beforeEach(function() {
         client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv');
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
-    });
 
-    beforeEach(function() {
         mock = getNock()('http://imbo');
         mockImgUrl = getNock()('http://imbo1');
     });
@@ -41,6 +39,44 @@ describe('ImboClient', function() {
         mockImgUrl.done();
     });
 
+    describe('#constructor()', function() {
+        it('should throw on invalid hosts', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({});
+            }, /hosts/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: {} });
+            }, /hosts/);
+        });
+
+        it('should throw on invalid publicKey', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: '' });
+            }, /publicKey/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: [] });
+            }, /publicKey/);
+        });
+
+        it('should throw on invalid privateKey', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: '' });
+            }, /privateKey/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: [] });
+            }, /privateKey/);
+        });
+
+        it('should throw on invalid user', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: 'bar', user: [] });
+            }, /user/);
+        });
+    });
+
     describe('#getServerStatus()', function() {
         it('should return error on a 503-response', function(done) {
             mock.filteringPath(signatureCleaner)
@@ -48,7 +84,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getServerStatus(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -101,7 +138,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getServerStats(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -181,6 +219,12 @@ describe('ImboClient', function() {
             var url = client.getImageUrl(catMd5).toString();
             assert.equal(true, url.indexOf(catMd5) > 0, url + ' did not contain ' + catMd5);
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#parseImageUrl', function() {
@@ -209,6 +253,12 @@ describe('ImboClient', function() {
             client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
         });
 
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            client.parseImageUrl(url, 'bar').toString().should.equal(url);
+        });
+
         // More tests are defined in the ImageUrl test suite
     });
 
@@ -222,6 +272,12 @@ describe('ImboClient', function() {
             var url = client.getImagesUrl().toString();
             assert.equal('http://imbo/users/pub/images', signatureCleaner(url));
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImagesUrl().toString();
+            assert.equal('http://imbo/users/someuser/images?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getUserUrl', function() {
@@ -233,6 +289,12 @@ describe('ImboClient', function() {
         it('should return the expected URL-string', function() {
             var url = client.getUserUrl().toString();
             assert.equal('http://imbo/users/pub', signatureCleaner(url));
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/someuser?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -248,6 +310,12 @@ describe('ImboClient', function() {
             var url = client.getStatsUrl().toString();
             assert.equal('http://imbo/stats', signatureCleaner(url));
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getStatsUrl().toString();
+            assert.equal('http://imbo/stats?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getMetadataUrl', function() {
@@ -257,6 +325,12 @@ describe('ImboClient', function() {
                 'http://imbo/users/pub/images/' + catMd5 + '/meta',
                 signatureCleaner(url)
             );
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getMetadataUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '/meta?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -278,6 +352,16 @@ describe('ImboClient', function() {
 
             url.should.containEql('http://imbo/some/path?page=2&limit=3&accessToken');
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getResourceUrl({
+                path: '/some/path',
+                query: 'page=2&limit=3'
+            }).toString();
+
+            assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getShortUrl()', function() {
@@ -289,7 +373,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.getShortUrl(imgUrl, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -334,7 +419,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.deleteAllShortUrlsForImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -360,7 +446,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.deleteShortUrlForImage(catMd5, shortId, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -406,34 +493,6 @@ describe('ImboClient', function() {
         });
     });
 
-    describe('#parseUrls()', function() {
-        it('should handle being passed a server-string', function() {
-            var urls = client.parseUrls('http://imbo');
-            assert.equal(1, urls.length);
-            assert.equal('http://imbo', urls[0]);
-        });
-
-        it('should handle being passed an array', function() {
-            var hosts = ['http://imbo01', 'http://imbo02', 'http://imbo03'];
-            var urls = client.parseUrls(hosts), host = hosts.length;
-            assert.equal(3, urls.length);
-
-            while (host--) {
-                assert.equal(hosts[host], urls[host]);
-            }
-        });
-
-        it('should strip trailing slashes', function() {
-            assert.equal('http://imbo', client.parseUrls('http://imbo/')[0]);
-            assert.equal('http://imbo/some/path', client.parseUrls('http://imbo/some/path/')[0]);
-        });
-
-        it('should strip port 80', function() {
-            assert.equal('http://imbo', client.parseUrls('http://imbo/:80')[0]);
-            assert.equal('http://imbo/some/path', client.parseUrls('http://imbo:80/some/path/')[0]);
-        });
-    });
-
     describe('#headImage()', function() {
         it('should return error on a 404-response', function(done) {
             mock.filteringPath(signatureCleaner)
@@ -441,7 +500,8 @@ describe('ImboClient', function() {
                 .reply(404);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -452,7 +512,8 @@ describe('ImboClient', function() {
                 .reply(503);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -644,7 +705,8 @@ describe('ImboClient', function() {
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -688,7 +750,8 @@ describe('ImboClient', function() {
 
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -728,7 +791,7 @@ describe('ImboClient', function() {
             var url = 'http://imbo/some-404-image.jpg';
             client.addImageFromUrl(url, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
-                assert.equal(404, err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -745,7 +808,8 @@ describe('ImboClient', function() {
                 .reply(200, fs.readFileSync(path.join(fixtures, 'cat.jpg')));
 
             client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -797,7 +861,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getUserInfo(function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Not Found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -815,6 +880,20 @@ describe('ImboClient', function() {
                 assert.ifError(err, 'getUserInfo should not give an error on success');
                 assert.ok(info.lastModified instanceof Date);
                 assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should populate the `user` property if not present', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/users/pub')
+                .reply(200, JSON.stringify({
+                    publicKey: 'foo'
+                }), { 'Content-Type': 'application/json' });
+
+            client.getUserInfo(function(err, info) {
+                assert.ifError(err, 'getUserInfo should not give an error on success');
+                assert.equal(info.user, 'foo');
                 done();
             });
         });
@@ -849,7 +928,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getImageProperties('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -876,7 +956,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getImageData('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -901,7 +982,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Not Found');
 
             client.getNumImages(function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -929,7 +1011,8 @@ describe('ImboClient', function() {
                 .reply(404, 'User not found');
 
             client.getImages(function(err, images, search, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal(404, res.statusCode);
                 done();
             });
@@ -972,7 +1055,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.getMetadata('f00baa', function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Image not found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -987,7 +1071,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.deleteMetadata('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -1011,7 +1096,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.editMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -1040,7 +1126,8 @@ describe('ImboClient', function() {
                 .reply(404, 'Image not found');
 
             client.replaceMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
