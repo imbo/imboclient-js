@@ -210,6 +210,18 @@ describe('ImboClient', function() {
     });
 
     describe('#getImageUrl', function() {
+        it('should throw if given a non-string identifier', function() {
+            assert.throws(function() {
+                client.getImageUrl(null);
+            }, /imageIdentifier/);
+        });
+
+        it('should throw if given an empty string as identifier', function() {
+            assert.throws(function() {
+                client.getImageUrl('');
+            }, /imageIdentifier/);
+        });
+
         it('should return a ImageUrl-instance', function() {
             var url = client.getImageUrl(catMd5);
             assert.equal(true, url instanceof Imbo.ImageUrl, 'getImageUrl did not return instance of ImageUrl');
@@ -277,6 +289,19 @@ describe('ImboClient', function() {
             client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
             var url = client.getImagesUrl().toString();
             assert.equal('http://imbo/users/someuser/images?publicKey=foo', signatureCleaner(url));
+        });
+    });
+
+    describe('#user', function() {
+        it('should be able to switch the client user', function() {
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/pub', signatureCleaner(url));
+
+            url = client.user('foo').getUserUrl().toString();
+            assert.equal('http://imbo/users/foo?publicKey=pub', signatureCleaner(url));
+
+            url = client.user('pub').getUserUrl().toString();
+            assert.equal('http://imbo/users/pub', signatureCleaner(url));
         });
     });
 
@@ -358,6 +383,17 @@ describe('ImboClient', function() {
             var url = client.getResourceUrl({
                 path: '/some/path',
                 query: 'page=2&limit=3'
+            }).toString();
+
+            assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
+        });
+
+        it('should handle being told to use a specific user', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getResourceUrl({
+                path: '/some/path',
+                query: 'page=2&limit=3',
+                user: 'zing'
             }).toString();
 
             assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
@@ -462,6 +498,19 @@ describe('ImboClient', function() {
                 done();
             });
         });
+
+        it('should handle being passed a shortUrl', function(done) {
+            var shortUrl = new Imbo.ShortUrl({ id: shortId });
+
+            mockImgUrl.filteringPath(signatureCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
+                .reply(200, 'OK');
+
+            client.deleteShortUrlForImage(catMd5, shortUrl, function(err) {
+                assert.ifError(err, 'deleteShortUrlForImage should not give an error on success');
+                done();
+            });
+        });
     });
 
     describe('#generateSignature', function() {
@@ -479,6 +528,12 @@ describe('ImboClient', function() {
         it('should generate a valid, signed resource url', function() {
             var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5 + '/meta', new Date(1349268217000));
             assert.equal(url, '/images/' + catMd5 + '/meta?signature=afd4c4de76a95d5ed5c23a908278cab40817012a5a5c750d971177d3cba97bf5&timestamp=2012-10-03T12%3A43%3A37Z');
+        });
+
+        it('should add a public key if user and public key differs', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5 + '/meta', new Date(1349268217000));
+            assert.equal(url, '/images/' + catMd5 + '/meta?publicKey=foo&signature=9e16eee7c7b997e006c1843cefed174e0f0aef142dbf80abc8c4a94c83dd2b2a&timestamp=2012-10-03T12%3A43%3A37Z');
         });
     });
 
@@ -1154,6 +1209,330 @@ describe('ImboClient', function() {
 
                 done();
             });
+        });
+    });
+
+    describe('#getResourceGroups', function() {
+        it('should return an object of key => value data', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/groups')
+                .reply(200, JSON.stringify({ groups: [], search: { hits: 0 } }), {
+                    'Content-Type': 'application/json'
+                });
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(0, search.hits);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/groups')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should returns the right data in groups/search', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .get('/groups')
+                .reply(200, JSON.stringify({
+                    groups: [{
+                        name: 'read-user',
+                        resources: ['user.get', 'user.head']
+                    }],
+                    search: {
+                        count: 1,
+                        limit: 1,
+                        page: 2,
+                        hits: 3,
+                    }
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(3, search.hits);
+                assert.equal(2, search.page);
+                assert.equal(1, search.count);
+                assert.equal(1, search.limit);
+                assert.equal('read-user', images[0].name);
+                assert.equal('user.get', images[0].resources[0]);
+                assert.equal('user.head', images[0].resources[1]);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#editResourceGroups', function() {
+        it('should pass the passed resources on as request body', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .put('/groups/wat', ['image.get', 'user.options'])
+                .reply(200);
+
+            client.editResourceGroup('wat', ['image.get', 'user.options'], function(err, body, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .put('/groups/wat', ['image.get', 'user.options'])
+                .reply(400, 'Permission denied (public key)');
+
+            client.editResourceGroup('wat', ['image.get', 'user.options'], function(err, body, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#deleteResourceGroup', function() {
+        it('should delete the passed resource group', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .delete('/groups/wat')
+                .reply(200);
+
+            client.deleteResourceGroup('wat', function(err, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .delete('/groups/wat')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deleteResourceGroup('wat', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#addPublicKey', function() {
+        it('should return error if public key already exists', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(200);
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err) {
+                assert(err);
+                assert(err.message.match(/already exists/));
+                done();
+            });
+        });
+
+        it('should return error if public key check fails', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(404);
+
+            mock.filteringPath(signatureCleaner)
+                .put('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful addition', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(404);
+
+            mock.filteringPath(signatureCleaner)
+                .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
+                .reply(200, 'OK');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert.ifError(err, 'addPublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#editPublicKey', function() {
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.editPublicKey(null);
+            }, /public key/);
+        });
+
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.editPublicKey('public-key', null);
+            }, /private key/);
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .put('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.editPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful edit', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
+                .reply(200, 'OK');
+
+            client.editPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert.ifError(err, 'addPublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#deletePublicKey', function() {
+        it('should delete the passed public key', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .delete('/keys/wat')
+                .reply(200);
+
+            client.deletePublicKey('wat', function(err, res) {
+                assert.ifError(err, 'deletePublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .delete('/keys/wat')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deletePublicKey('wat', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#publicKeyExists', function() {
+        it('should return true if the public key exists', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/ninja')
+                .reply(200, 'OK');
+
+            client.publicKeyExists('ninja', function(err, exists) {
+                assert.ifError(err, 'Public key that exists should not give an error');
+                assert.equal(true, exists);
+                done();
+            });
+        });
+
+        it('should return false if the identifier does not exist', function(done) {
+            mock.filteringPath(signatureCleaner)
+                .head('/keys/ninja')
+                .reply(404, 'Public key not found');
+
+            client.publicKeyExists('ninja', function(err, exists) {
+                assert.ifError(err, 'publicKeyExists should not fail when public key does not exist on server');
+                assert.equal(false, exists);
+                done();
+            });
+        });
+
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.publicKeyExists('ninja', function(err) {
+                assert.ok(err, 'publicKeyExists should give error if host is unreachable');
+                done();
+            });
+        });
+    });
+
+    describe('#addAccessControlRule', function() {
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.addAccessControlRule(null);
+            }, /public key/i);
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            var body = [{ users: '*', resources: ['waffle.make'] }];
+            mock.filteringPath(signatureCleaner)
+                .post('/keys/waffle-mixture/access', body)
+                .reply(400, 'Permission denied (public key)');
+
+            client.addAccessControlRule(
+                'waffle-mixture',
+                body,
+                function(err) {
+                    assert(err);
+                    assert(err.message.match(/\b400\b/));
+                    done();
+                }
+            );
+        });
+
+        it('should not give error on successful edit', function(done) {
+            var body = [{ users: '*', resources: ['waffle.make'] }];
+            mock.filteringPath(signatureCleaner)
+                .post('/keys/waffle-mixture/access', body)
+                .reply(200);
+
+            client.addAccessControlRule(
+                'waffle-mixture',
+                body,
+                function(err) {
+                    assert.ifError(err, 'addAccessControlRule should not give an error on success');
+                    done();
+                }
+            );
+        });
+
+        it('should wrap non-array rules in array', function(done) {
+            var body = { users: '*', resources: ['waffle.make'] };
+            mock.filteringPath(signatureCleaner)
+                .post('/keys/waffle-mixture/access', [body])
+                .reply(200);
+
+            client.addAccessControlRule('waffle-mixture', body, done);
         });
     });
 });
