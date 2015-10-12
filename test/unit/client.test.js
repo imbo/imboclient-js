@@ -17,6 +17,13 @@ var signatureCleaner = function(urlPath) {
     );
 };
 
+var urlCleaner = function(urlPath) {
+    return (signatureCleaner(urlPath)
+        .replace(/publicKey=[^&]*&?/, '')
+        .replace(/[?&]$/g, '')
+    );
+};
+
 var bodyCleaner = function() {
     return '*';
 };
@@ -77,7 +84,7 @@ describe('ImboClient', function() {
 
     describe('#getServerStatus()', function() {
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(503);
 
@@ -89,7 +96,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200);
 
@@ -100,7 +107,7 @@ describe('ImboClient', function() {
         });
 
         it('should convert "date" key to a Date instance', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
                     date: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -115,7 +122,7 @@ describe('ImboClient', function() {
         });
 
         it('should add status code to info object', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
                     date: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -131,7 +138,7 @@ describe('ImboClient', function() {
 
     describe('#getServerStats()', function() {
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(503);
 
@@ -143,7 +150,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(200);
 
@@ -154,7 +161,7 @@ describe('ImboClient', function() {
         });
 
         it('should give back a meaningful info object', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(200, JSON.stringify({
                     foo: 'bar',
@@ -402,7 +409,7 @@ describe('ImboClient', function() {
         it('should return error on a 503-response', function(done) {
             var imgUrl = client.getImageUrl(catMd5);
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(503);
 
@@ -416,7 +423,7 @@ describe('ImboClient', function() {
         it('should return error if no id was present in body', function(done) {
             var imgUrl = client.getImageUrl(catMd5);
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
                     foo: 'bar'
@@ -432,7 +439,7 @@ describe('ImboClient', function() {
             var imgUrl = client.getImageUrl(catMd5).thumbnail().png(),
                 expected = 'http://imbo1/s/imboF00';
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
                     id: 'imboF00'
@@ -448,7 +455,7 @@ describe('ImboClient', function() {
 
     describe('#deleteAllShortUrlsForImage()', function() {
         it('should return error on backend failure', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
                 .reply(503);
 
@@ -460,7 +467,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
                 .reply(200, 'OK');
 
@@ -475,7 +482,7 @@ describe('ImboClient', function() {
         var shortId = 'imboF00';
 
         it('should return error on backend failure', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
                 .reply(503);
 
@@ -487,7 +494,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
                 .reply(200, 'OK');
 
@@ -500,7 +507,7 @@ describe('ImboClient', function() {
         it('should handle being passed a shortUrl', function(done) {
             var shortUrl = new Imbo.ShortUrl({ id: shortId });
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
                 .reply(200, 'OK');
 
@@ -548,7 +555,7 @@ describe('ImboClient', function() {
 
     describe('#headImage()', function() {
         it('should return error on a 404-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(404);
 
@@ -560,7 +567,7 @@ describe('ImboClient', function() {
         });
 
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(503);
 
@@ -572,7 +579,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200);
 
@@ -583,7 +590,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -605,7 +612,7 @@ describe('ImboClient', function() {
 
     describe('#deleteImage', function() {
         it('should return an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5, 'DELETE')
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -619,7 +626,7 @@ describe('ImboClient', function() {
 
     describe('#imageIdentifierExists', function() {
         it('should return true if the identifier exists', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK');
 
@@ -631,7 +638,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(404, 'Image not found');
 
@@ -660,7 +667,7 @@ describe('ImboClient', function() {
         });
 
         it('should return true if the image exists on disk and on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 1 },
@@ -677,7 +684,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the image exists on disk but not on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 0 },
@@ -696,7 +703,7 @@ describe('ImboClient', function() {
 
     describe('#imageWithChecksumExists', function() {
         it('should return true if the image exists on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 1 },
@@ -713,7 +720,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the image does exist on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 0 },
@@ -730,7 +737,7 @@ describe('ImboClient', function() {
         });
 
         it('should give back error if encountering server issues', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(503, 'Internal Server Error');
 
@@ -752,7 +759,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
@@ -773,7 +780,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -794,7 +801,7 @@ describe('ImboClient', function() {
 
     describe('#addImageFromBuffer', function() {
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', {
@@ -811,7 +818,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -836,7 +843,7 @@ describe('ImboClient', function() {
             mock.get('/some-404-image.jpg')
                 .reply(404);
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(404);
@@ -850,7 +857,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', {
@@ -869,7 +876,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -896,7 +903,7 @@ describe('ImboClient', function() {
 
     describe('#getUserInfo', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
@@ -909,7 +916,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(404, 'Not Found');
 
@@ -923,7 +930,7 @@ describe('ImboClient', function() {
         });
 
         it('should convert lastModified key to a Date instance', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({
                     lastModified: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -938,7 +945,7 @@ describe('ImboClient', function() {
         });
 
         it('should populate the `user` property if not present', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({
                     publicKey: 'foo'
@@ -954,7 +961,7 @@ describe('ImboClient', function() {
 
     describe('#getImageProperties', function() {
         it('should return an object on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK', {
                     'X-Imbo-OriginalWidth': 123,
@@ -976,7 +983,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
@@ -992,7 +999,7 @@ describe('ImboClient', function() {
         it('should return a buffer on success', function(done) {
             var expectedBuffer = new Buffer('str');
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .get('/users/pub/images/' + catMd5)
                 .reply(200, expectedBuffer);
 
@@ -1004,7 +1011,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .get('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
@@ -1018,7 +1025,7 @@ describe('ImboClient', function() {
 
     describe('#getNumImages', function() {
         it('should return a number on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({ numImages: 50 }), { 'Content-Type': 'application/json' });
 
@@ -1030,7 +1037,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(404, 'Not Found');
 
@@ -1044,7 +1051,7 @@ describe('ImboClient', function() {
 
     describe('#getImages', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images')
                 .reply(200, JSON.stringify({ images: [], search: { hits: 3 } }), {
                     'Content-Type': 'application/json'
@@ -1059,7 +1066,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images')
                 .reply(404, 'User not found');
 
@@ -1072,7 +1079,7 @@ describe('ImboClient', function() {
         });
 
         it('should allow an optional query', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=5&ids[]=blah')
                 .reply(200, JSON.stringify({ images: [], search: { hits: 0 } }), {
                     'Content-Type': 'application/json'
@@ -1090,7 +1097,7 @@ describe('ImboClient', function() {
 
     describe('#getMetadata', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images/' + catMd5 + '/meta')
                 .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
@@ -1103,7 +1110,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images/f00baa/meta')
                 .reply(404, 'Image not found');
 
@@ -1119,7 +1126,7 @@ describe('ImboClient', function() {
 
     describe('#deleteMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/f00baa/meta', 'DELETE')
                 .reply(404, 'Image not found');
 
@@ -1131,7 +1138,7 @@ describe('ImboClient', function() {
         });
 
         it('should not return any error on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/meta', 'DELETE')
                 .reply(200, 'OK');
 
@@ -1144,7 +1151,7 @@ describe('ImboClient', function() {
 
     describe('#editMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/users/pub/images/f00baa/meta', { foo: 'bar' })
                 .reply(404, 'Image not found');
 
@@ -1157,7 +1164,7 @@ describe('ImboClient', function() {
 
         it('should not return any error on success', function(done) {
             var response = { foo: 'bar', existing: 'key' };
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/meta', { foo: 'bar' })
                 .reply(200, response, {
                     'Content-Type': 'application/json'
@@ -1174,7 +1181,7 @@ describe('ImboClient', function() {
 
     describe('#replaceMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/users/pub/images/f00baa/meta', { foo: 'bar' })
                 .reply(404, 'Image not found');
 
@@ -1189,7 +1196,7 @@ describe('ImboClient', function() {
             var responseBody = { foo: 'bar', some: 'key' },
                 sentData = { some: 'key', foo: 'bar' };
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/users/pub/images/' + catMd5 + '/meta', sentData)
                 .reply(200, responseBody, {
                     'Content-Type': 'application/json'
@@ -1212,7 +1219,7 @@ describe('ImboClient', function() {
 
     describe('#getResourceGroups', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/groups')
                 .reply(200, JSON.stringify({ groups: [], search: { hits: 0 } }), {
                     'Content-Type': 'application/json'
@@ -1227,7 +1234,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/groups')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1240,7 +1247,7 @@ describe('ImboClient', function() {
         });
 
         it('should returns the right data in groups/search', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/groups')
                 .reply(200, JSON.stringify({
                     groups: [{
@@ -1251,7 +1258,7 @@ describe('ImboClient', function() {
                         count: 1,
                         limit: 1,
                         page: 2,
-                        hits: 3,
+                        hits: 3
                     }
                 }), {
                     'Content-Type': 'application/json'
@@ -1274,7 +1281,7 @@ describe('ImboClient', function() {
 
     describe('#editResourceGroups', function() {
         it('should pass the passed resources on as request body', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/groups/wat', ['image.get', 'user.options'])
                 .reply(200);
 
@@ -1286,7 +1293,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/groups/wat', ['image.get', 'user.options'])
                 .reply(400, 'Permission denied (public key)');
 
@@ -1301,7 +1308,7 @@ describe('ImboClient', function() {
 
     describe('#deleteResourceGroup', function() {
         it('should delete the passed resource group', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .delete('/groups/wat')
                 .reply(200);
 
@@ -1313,7 +1320,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .delete('/groups/wat')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1328,7 +1335,7 @@ describe('ImboClient', function() {
 
     describe('#addPublicKey', function() {
         it('should return error if public key already exists', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/waffle-mixture')
                 .reply(200);
 
@@ -1340,7 +1347,7 @@ describe('ImboClient', function() {
         });
 
         it('should return error if public key check fails', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/waffle-mixture')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1352,11 +1359,11 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/waffle-mixture')
                 .reply(404);
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/keys/waffle-mixture')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1369,11 +1376,11 @@ describe('ImboClient', function() {
         });
 
         it('should not give error on successful addition', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/waffle-mixture')
                 .reply(404);
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
                 .reply(200, 'OK');
 
@@ -1399,7 +1406,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/keys/waffle-mixture')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1412,7 +1419,7 @@ describe('ImboClient', function() {
         });
 
         it('should not give error on successful edit', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
                 .reply(200, 'OK');
 
@@ -1426,7 +1433,7 @@ describe('ImboClient', function() {
 
     describe('#deletePublicKey', function() {
         it('should delete the passed public key', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .delete('/keys/wat')
                 .reply(200);
 
@@ -1438,7 +1445,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .delete('/keys/wat')
                 .reply(400, 'Permission denied (public key)');
 
@@ -1453,7 +1460,7 @@ describe('ImboClient', function() {
 
     describe('#publicKeyExists', function() {
         it('should return true if the public key exists', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/ninja')
                 .reply(200, 'OK');
 
@@ -1465,7 +1472,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/keys/ninja')
                 .reply(404, 'Public key not found');
 
@@ -1493,7 +1500,7 @@ describe('ImboClient', function() {
 
         it('should return an error if the public key does not have sufficient privileges', function(done) {
             var body = [{ users: '*', resources: ['waffle.make'] }];
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/keys/waffle-mixture/access', body)
                 .reply(400, 'Permission denied (public key)');
 
@@ -1510,7 +1517,7 @@ describe('ImboClient', function() {
 
         it('should not give error on successful edit', function(done) {
             var body = [{ users: '*', resources: ['waffle.make'] }];
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/keys/waffle-mixture/access', body)
                 .reply(200);
 
@@ -1526,7 +1533,7 @@ describe('ImboClient', function() {
 
         it('should wrap non-array rules in array', function(done) {
             var body = { users: '*', resources: ['waffle.make'] };
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/keys/waffle-mixture/access', [body])
                 .reply(200);
 

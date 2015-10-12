@@ -5,10 +5,6 @@ var Imbo = require('../../'),
 
 var catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
-function escapeRegExp(str) {
-    return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-}
-
 function assertUrlContains(url, shouldContain) {
     var normalized = decodeURIComponent(url.toString());
 
