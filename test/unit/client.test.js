@@ -8,8 +8,6 @@ var assert = require('assert'),
 var fixtures = path.join(__dirname, '..', 'fixtures'),
     catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
-require('should');
-
 var signatureCleaner = function(urlPath) {
     return (urlPath
         .replace(/timestamp=[^&]*&?/, '')
@@ -262,13 +260,13 @@ describe('ImboClient', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
                 qs = '?t[]=flipHorizontally';
 
-            client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
+            assert(client.parseImageUrl(url + qs).toString().indexOf(url + '?t%5B%5D=flipHorizontally') > -1);
         });
 
         it('should handle different user/public key combination', function() {
             client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
             var url = client.getImageUrl(catMd5).toString();
-            client.parseImageUrl(url, 'bar').toString().should.equal(url);
+            assert.equal(client.parseImageUrl(url, 'bar').toString(), url);
         });
 
         // More tests are defined in the ImageUrl test suite
@@ -375,7 +373,7 @@ describe('ImboClient', function() {
                 query: 'page=2&limit=3'
             }).toString();
 
-            url.should.containEql('http://imbo/some/path?page=2&limit=3&accessToken');
+            assert(url.indexOf('http://imbo/some/path?page=2&limit=3&accessToken') > -1);
         });
 
         it('should handle different user/public key combination', function() {

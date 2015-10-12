@@ -29,7 +29,6 @@
     "gulp-uglify": "^1.4.1",
     "gulp-util": "^3.0.6",
     "nock": "^2.13.0",
-    "should": "^7.1.0",
     "through": "^2.3.8",
     "workerify": "^0.3.0"
   },
