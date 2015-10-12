@@ -951,7 +951,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(signatureCleaner)
                 .get('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
