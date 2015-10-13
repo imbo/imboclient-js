@@ -289,6 +289,8 @@ exports.getContentsFromUrl = function(url, callback) {
  */
 'use strict';
 
+var extend = _dereq_('../utils/extend');
+
 // Headers which browsers block you from setting
 var disallowedHeaders = [
     'User-Agent',
@@ -329,65 +331,66 @@ var normalizeResponse = function(xhr) {
  */
 function request(options) {
     // Prepare options
-    options.method = options.method.toUpperCase();
-    options.uri = options.uri.toString();
+    var opts = extend({}, options);
+    opts.method = opts.method.toUpperCase();
+    opts.uri = opts.uri.toString();
 
     // Instantiate request
     var xhr = new XMLHttpRequest();
 
     // Request finished handler
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status !== 0 && options.onComplete) {
+        if (xhr.readyState === 4 && xhr.status !== 0 && opts.onComplete) {
             var err = null;
             if (xhr.status >= 400) {
                 err = new Error('HTTP ' + xhr.status + ' ' + xhr.statusText);
                 err.statusCode = xhr.status;
             }
 
-            options.onComplete(
+            opts.onComplete(
                 err,
                 normalizeResponse(xhr),
-                options.json ? JSON.parse(xhr.responseText) : xhr.responseText
+                opts.json ? JSON.parse(xhr.responseText) : xhr.responseText
             );
         }
     };
 
     // Request failure handler
     xhr.onerror = function() {
-        options.onComplete(new Error('XHR error - CORS denied?'), normalizeResponse(xhr));
+        opts.onComplete(new Error('XHR error - CORS denied?'), normalizeResponse(xhr));
     };
 
     // Request progress handler
-    if (options.onProgress) {
-        xhr.upload.addEventListener('progress', options.onProgress, false);
+    if (opts.onProgress) {
+        xhr.upload.addEventListener('progress', opts.onProgress, false);
     }
 
     // Open the request
-    xhr.open(options.method, options.uri, true);
+    xhr.open(opts.method, opts.uri, true);
 
     // Apply request headers
-    for (var key in options.headers) {
+    for (var key in opts.headers) {
         // We're not allowed to set certain headers in browsers
         if (disallowedHeaders.indexOf(key) > -1) {
             continue;
         }
 
-        xhr.setRequestHeader(key, options.headers[key]);
+        xhr.setRequestHeader(key, opts.headers[key]);
     }
 
     // Is this a JSON-request?
-    if (options.json) {
+    if (opts.json) {
         xhr.setRequestHeader('Accept', 'application/json');
 
         // Do we have a payload to deliver as JSON?
-        if (typeof options.json !== 'boolean') {
+        if (typeof opts.json !== 'boolean') {
             xhr.setRequestHeader('Content-Type', 'application/json');
-            options.body = JSON.stringify(options.json);
+            opts.body = JSON.stringify(opts.json);
         }
     }
 
     // Send the request
-    xhr.send(options.body);
+    xhr.send(opts.body);
 }
 
 /**
@@ -439,7 +442,7 @@ request.head = function(url, callback) {
 
 module.exports = request;
 
-},{}],8:[function(_dereq_,module,exports){
+},{"../utils/extend":15}],8:[function(_dereq_,module,exports){
 /**
  * This is based on the following work:
  *
@@ -3014,11 +3017,14 @@ module.exports = get404Handler;
  *
  * @param {Object} target
  * @param {Object} extension
+ * @return {Object} Returns target
  */
 module.exports = function(target, extension) {
     for (var key in extension) {
         target[key] = extension[key];
     }
+
+    return target;
 };
 
 },{}],16:[function(_dereq_,module,exports){
