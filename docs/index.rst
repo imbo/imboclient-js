@@ -301,7 +301,7 @@ The callback passed to ``getImages`` will receive four arguments : ``err``, ``im
 * ``height``
 * ``mime``
 * ``imageIdentifier``
-* ``publicKey``
+* ``user``
 * ``metadata`` (only if the query explicitly enabled metadata in the response, which is off by default).
 
 Some of these elements might not be available if the query excludes some fields (more on that below).
@@ -513,6 +513,7 @@ The available transformation methods are:
 * ``resize({ width: null, height: null })``
 * ``rotate({ angle: null, bg: '000000' })``
 * ``sepia({ threshold: 80 })``
+* ``smartSize({ width: null, height: null, crop: 'mode', poi: 'x,y' })``
 * ``strip()``
 * ``thumbnail({ width: 50, height: 50, fit: 'outbound' })``
 * ``transpose()``
@@ -681,8 +682,8 @@ Get some information about the user configured with the client:
 
 ``info`` is an object and includes the following elements:
 
-``(string) publicKey``
-    The public key of the user (the same as the one used when instantiating the client).
+``(string) user``
+    The name of the user (the same as the one used when instantiating the client).
 
 ``(int) numImages``
     The number of images owned by the user.
