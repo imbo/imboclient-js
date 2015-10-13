@@ -299,6 +299,68 @@ describe('Imbo.Query', function() {
         });
     });
 
+    describe('#users', function() {
+        it('should be able to set and get an array of users', function() {
+            var values = ['foo', 'bar'];
+            assert.equal(query.users(values), query, 'users(val) should return query instance');
+            assert.equal(
+                query.users().length,
+                values.length,
+                'users() should contain the same number of values as the set value'
+            );
+
+            for (var i = 0; i < values.length; i++) {
+                assert.equal(
+                    query.users().indexOf(values[i]),
+                    i,
+                    'users() should contain the same values as the set value'
+                );
+            }
+        });
+
+        it('should create a copy of the array instead of referencing it', function() {
+            var values = ['foo', 'bar'];
+            assert.equal(query.users(values), query, 'users(val) should return query instance');
+            assert.notEqual(query.users(), values);
+        });
+    });
+
+    describe('#addUser', function() {
+        it('should be able to append a users', function() {
+            var values = ['foo'],
+                added = 'moo';
+
+            query.users(values);
+
+            assert.equal(query.addUser(added), query, 'addUser(val) should return query instance');
+            assert.equal(
+                query.users().indexOf(added),
+                values.length,
+                'addUser(id) should add the passed value to the end of the existing values'
+            );
+        });
+    });
+
+    describe('#addUsers', function() {
+        it('should be able to append multiple users', function() {
+            var values = ['some', 'user'],
+                added = ['moo', 'tools'];
+
+            query.users(values);
+
+            assert.equal(query.addUsers(added), query, 'addUsers(val) should return query instance');
+
+            var expected = values.concat(added);
+            for (var i = 0; i < expected.length; i++) {
+                assert.equal(
+                    query.users().indexOf(expected[i]),
+                    i,
+                    'addUsers() should add the passed values to the end of the existing values'
+                );
+            }
+        });
+    });
+
     describe('#sort', function() {
         it('should be able to set and get an array of sorts', function() {
             var values = ['created:desc', 'size:asc'];

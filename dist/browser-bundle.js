@@ -994,14 +994,25 @@ extend(ImboClient.prototype, {
     },
 
     /**
-     * Get URL for the images endpoint
+     * Get URL for the images endpoint. If the `users` filter is set, the global images endpoint
+     * is used instead of the user-specific one (`/images` vs `/user/<user>/images`)
      *
      * @param {Imbo.Query|String} [query]
      * @return {Imbo.Url}
      */
     getImagesUrl: function(query) {
-        var url = this.getUserUrl();
-        url.setPath(url.getPath() + '/images');
+        var url;
+
+        if (query && query.users().length) {
+            // When one or more users are specified, use the global images endpoint
+            url = this.getResourceUrl({
+                path: '/images',
+                user: null
+            });
+        } else {
+            url = this.getUserUrl();
+            url.setPath(url.getPath() + '/images');
+        }
 
         if (query) {
             url.setQueryString(query.toString());
@@ -1875,6 +1886,37 @@ extend(ImboQuery.prototype, {
     },
 
     /**
+     * Set the users of the images you want returned. If no value is specified,
+     * the current value is returned.
+     *
+     * @param  {Array} [users]
+     * @return {Imbo.Query}
+     */
+    users: function(users) {
+        return this.setOrGet('users', users);
+    },
+
+    /**
+     * Adds a user to the list of existing values.
+     *
+     * @param  {String} user
+     * @return {Imbo.Query}
+     */
+    addUser: function(user) {
+        return this.appendValue('users', user);
+    },
+
+    /**
+     * Adds one or more users to the list of existing values.
+     *
+     * @param  {String|Array} users
+     * @return {Imbo.Query}
+     */
+    addUsers: function(users) {
+        return this.addUser(users);
+    },
+
+    /**
      * Sets the page number to fetch. If no value is specified, the current value is returned.
      *
      * @param  {Number} val
@@ -1966,6 +2008,7 @@ extend(ImboQuery.prototype, {
         vals.ids = [];
         vals.checksums = [];
         vals.fields = [];
+        vals.users = [];
         vals.sort = [];
         vals.originalChecksums = [];
 
@@ -2001,11 +2044,13 @@ extend(ImboQuery.prototype, {
         }
 
         // Get multi-value params
-        ['ids', 'checksums', 'originalChecksums', 'fields', 'sort'].forEach(function(item) {
-            this[item].forEach(function(value) {
-                parts.push(item + '[]=' + value);
-            });
-        }.bind(this.values));
+        ['ids', 'checksums', 'originalChecksums', 'fields', 'users', 'sort'].forEach(
+            function addMultiValueParams(item) {
+                this[item].forEach(function(value) {
+                    parts.push(item + '[]=' + value);
+                });
+            }.bind(this.values)
+        );
 
         return parts.join('&');
     },

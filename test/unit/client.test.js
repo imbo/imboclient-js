@@ -290,6 +290,13 @@ describe('ImboClient', function() {
             assert.equal('http://imbo/users/pub/images', signatureCleaner(url));
         });
 
+        it('should return the global images URL if a user filter is specified', function() {
+            var query = (new Imbo.Query()).users(['foo', 'bar']);
+            var url = client.getImagesUrl(query).toString();
+            assert(signatureCleaner(url).indexOf('http://imbo/images') === 0);
+            assert(signatureCleaner(url).indexOf('users[]=foo&users[]=bar') !== -1);
+        });
+
         it('should handle different user/public key combination', function() {
             client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
             var url = client.getImagesUrl().toString();
