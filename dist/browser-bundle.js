@@ -16,7 +16,7 @@ exports.ShortUrl = _dereq_('./lib/url/shorturl');
 exports.Query = _dereq_('./lib/query');
 exports.Version = _dereq_('./package.json').version;
 
-},{"./lib/client":9,"./lib/query":10,"./lib/url/imageurl":11,"./lib/url/shorturl":12,"./lib/url/url":13,"./package.json":18}],2:[function(_dereq_,module,exports){
+},{"./lib/client":9,"./lib/query":10,"./lib/url/imageurl":11,"./lib/url/shorturl":12,"./lib/url/url":13,"./package.json":19}],2:[function(_dereq_,module,exports){
 (function (process){
 /**
  * This file is part of the imboclient-js package
@@ -152,7 +152,7 @@ module.exports = {
 };
 
 }).call(this,_dereq_("g5I+bs"))
-},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":17}],3:[function(_dereq_,module,exports){
+},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":18}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -616,7 +616,8 @@ var ImboUrl = _dereq_('./url/url'),
     request = _dereq_('./browser/request'),
     readers = _dereq_('./browser/readers'),
     features = _dereq_('./browser/feature-support'),
-    parseUrls = _dereq_('./utils/parse-urls');
+    parseUrls = _dereq_('./utils/parse-urls'),
+    get404Handler = _dereq_('./utils/404-handler');
 
 var isBrowser = typeof window !== 'undefined';
 
@@ -1198,17 +1199,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     imageIdentifierExists: function(imageIdentifier, callback) {
-        this.headImage(imageIdentifier, function(err, res) {
-            // If we encounter an error from the server, we might not have
-            // statusCode available - in this case, fall back to undefined
-            var statusCode = res && res.statusCode ? res.statusCode : null;
-
-            // Request error?
-            var reqErr = err && err.statusCode !== 404 ? err : null;
-
-            // Requester returns error on 404, we expect this to happen
-            callback(reqErr, statusCode === 200);
-        });
+        this.headImage(imageIdentifier, get404Handler(callback));
 
         return this;
     },
@@ -1243,7 +1234,7 @@ extend(ImboClient.prototype, {
     getResourceGroups: function(callback) {
         request.get(
             this.getResourceUrl({ path: '/groups', user: null }),
-            function onResourceGroupResponse(err, res, body) {
+            function onResourceGroupsResponse(err, res, body) {
                 callback(
                     err,
                     body && body.groups,
@@ -1252,6 +1243,49 @@ extend(ImboClient.prototype, {
                 );
             }
         );
+        return this;
+    },
+
+    /**
+     * Fetch a specific resource group
+     *
+     * @param {String} groupName
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getResourceGroup: function(groupName, callback) {
+        request.get(
+            this.getResourceUrl({ path: '/groups/' + groupName, user: null }),
+            function onResourceGroupResponse(err, res, body) {
+                callback(err, body && body.resources, res);
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Create a resource group, defining the resources that sohuld be available to it
+     *
+     * @param {String} groupName
+     * @param {Array} resources
+     * @param {Function} callback
+     * @return {ImboCflient}
+     */
+    addResourceGroup: function(groupName, resources, callback) {
+        this.resourceGroupExists(groupName, function onGroupExistsResponse(err, exists) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (exists) {
+                return callback(new Error(
+                    'Resource group `' + groupName + '` already exists'
+                ));
+            }
+
+            this.editResourceGroup(groupName, resources, callback);
+        }.bind(this));
+
         return this;
     },
 
@@ -1280,7 +1314,7 @@ extend(ImboClient.prototype, {
     /**
      * Delete the resource group with the given name
      *
-     * @param {String} groupName Name fo the group you want to delete
+     * @param {String} groupName Name of the group you want to delete
      * @param {Function} callback
      * @return {ImboClient}
      */
@@ -1288,6 +1322,21 @@ extend(ImboClient.prototype, {
         var url = this.getResourceUrl({ path: '/groups/' + groupName, user: null });
         request.del(this.getSignedResourceUrl('DELETE', url), callback);
 
+        return this;
+    },
+
+    /**
+     * Check whether a resource group exists or not
+     *
+     * @param {String} groupName Name of the group you want to check for the presence of
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    resourceGroupExists: function(groupName, callback) {
+        request.head(
+            this.getResourceUrl({ path: '/groups/' + groupName, user: null }),
+            get404Handler(callback)
+        );
         return this;
     },
 
@@ -1365,16 +1414,44 @@ extend(ImboClient.prototype, {
     publicKeyExists: function(publicKey, callback) {
         request.head(
             this.getResourceUrl({ path: '/keys/' + publicKey, user: null }),
-            function onPublicKeyExistsResponse(err, res) {
-                // If we encounter an error from the server, we might not have
-                // statusCode available - in this case, fall back to undefined
-                var statusCode = res && res.statusCode ? res.statusCode : null;
+            get404Handler(callback)
+        );
+        return this;
+    },
 
-                // Request error?
-                var reqErr = err && err.statusCode !== 404 ? err : null;
+    /**
+     * Get a list of access control rules for a given public key
+     *
+     * @param {String} publicKey
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getAccessControlRules: function(publicKey, callback) {
+        request.get(
+            this.getResourceUrl({ path: '/keys/' + publicKey + '/access', user: null }),
+            function onAccessControlRulesResponse(err, res, body) {
+                callback(err, body, res);
+            }
+        );
+        return this;
+    },
 
-                // Requester returns error on 404, we expect this to happen
-                callback(reqErr, statusCode === 200);
+    /**
+     * Get the details for the access control rule with the given ID
+     *
+     * @param {String} publicKey
+     * @param {String} aclRuleId
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getAccessControlRule: function(publicKey, aclRuleId, callback) {
+        request.get(
+            this.getResourceUrl({
+                path: '/keys/' + publicKey + '/access/' + aclRuleId,
+                user: null
+            }),
+            function onAccessControlRulesResponse(err, res, body) {
+                callback(err, body, res);
             }
         );
         return this;
@@ -1407,6 +1484,25 @@ extend(ImboClient.prototype, {
                 callback(err, body, res);
             }
         });
+
+        return this;
+    },
+
+    /**
+     * Delete the access control rule with the given ID for the given public key
+     *
+     * @param {String} publicKey
+     * @param {String} aclRuleId
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deleteAccessControlRule: function(publicKey, aclRuleId, callback) {
+        var url = this.getResourceUrl({
+            path: '/keys/' + publicKey + '/access/' + aclRuleId,
+            user: null
+        });
+
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
 
         return this;
     },
@@ -1546,7 +1642,7 @@ extend(ImboClient.prototype, {
 
 module.exports = ImboClient;
 
-},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":6,"./browser/request":7,"./query":10,"./url/imageurl":11,"./url/shorturl":12,"./url/url":13,"./utils/extend":14,"./utils/jsonparse":15,"./utils/parse-urls":16}],10:[function(_dereq_,module,exports){
+},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":6,"./browser/request":7,"./query":10,"./url/imageurl":11,"./url/shorturl":12,"./url/url":13,"./utils/404-handler":14,"./utils/extend":15,"./utils/jsonparse":16,"./utils/parse-urls":17}],10:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1926,7 +2022,7 @@ extend(ImboQuery.prototype, {
 
 module.exports = ImboQuery;
 
-},{"./utils/extend":14}],11:[function(_dereq_,module,exports){
+},{"./utils/extend":15}],11:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2622,7 +2718,7 @@ ImageUrl.parse = function(url, privateKey) {
 
 module.exports = ImageUrl;
 
-},{"../browser/parseurl":5,"../utils/extend":14,"./url":13}],12:[function(_dereq_,module,exports){
+},{"../browser/parseurl":5,"../utils/extend":15,"./url":13}],12:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2676,7 +2772,7 @@ extend(ShortUrl.prototype, {
 
 module.exports = ShortUrl;
 
-},{"../utils/extend":14}],13:[function(_dereq_,module,exports){
+},{"../utils/extend":15}],13:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2833,7 +2929,26 @@ extend(ImboUrl.prototype, {
 
 module.exports = ImboUrl;
 
-},{"../browser/crypto":2,"../utils/extend":14}],14:[function(_dereq_,module,exports){
+},{"../browser/crypto":2,"../utils/extend":15}],14:[function(_dereq_,module,exports){
+'use strict';
+
+function get404Handler(callback) {
+    return function(err, res) {
+        // If we encounter an error from the server, we might not have
+        // statusCode available - in this case, fall back to undefined
+        var statusCode = res && res.statusCode ? res.statusCode : null;
+
+        // Request error?
+        var reqErr = err && err.statusCode !== 404 ? err : null;
+
+        // Requester returns error on 404, we expect this to happen
+        callback(reqErr, statusCode === 200);
+    }
+}
+
+module.exports = get404Handler;
+
+},{}],15:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2856,7 +2971,7 @@ module.exports = function(target, extension) {
     }
 };
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2884,7 +2999,7 @@ module.exports = function(str) {
     return json;
 };
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -2910,7 +3025,7 @@ module.exports = function parseUrls(urls) {
     return serverUrls;
 };
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2975,7 +3090,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],18:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 module.exports={
   "name": "imboclient",
   "description": "An Imbo client for node.js and modern browsers",
