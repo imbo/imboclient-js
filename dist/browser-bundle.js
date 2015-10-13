@@ -1966,7 +1966,7 @@ extend(ImboQuery.prototype, {
             return this.values.metadata;
         }
 
-        this.values.metadata = !!val;
+        this.values.metadata = val ? 1 : 0;
         return this;
     },
 
@@ -2010,7 +2010,7 @@ extend(ImboQuery.prototype, {
 
         vals.page = 1;
         vals.limit = 20;
-        vals.metadata = false;
+        vals.metadata = 0;
         vals.from = null;
         vals.to = null;
         vals.ids = [];
