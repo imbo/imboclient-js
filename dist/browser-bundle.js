@@ -1651,6 +1651,11 @@ extend(ImboClient.prototype, {
     }
 });
 
+// Don't blindly depend on this - the API might change at some point, but for
+// small extensions to the client where you don't want to explicitly depend on
+// the entire request module, this might be an acceptable option
+ImboClient.request = request;
+
 module.exports = ImboClient;
 
 },{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":6,"./browser/request":7,"./query":10,"./url/imageurl":11,"./url/shorturl":12,"./url/url":13,"./utils/404-handler":14,"./utils/extend":15,"./utils/jsonparse":16,"./utils/parse-urls":17}],10:[function(_dereq_,module,exports){
@@ -2988,7 +2993,7 @@ function get404Handler(callback) {
 
         // Requester returns error on 404, we expect this to happen
         callback(reqErr, statusCode === 200);
-    }
+    };
 }
 
 module.exports = get404Handler;
