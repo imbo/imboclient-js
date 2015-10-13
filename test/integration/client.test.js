@@ -12,7 +12,8 @@ var fixtures = path.join(__dirname, '..', 'fixtures'),
     catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 var stcUrl = 'http://127.0.0.1:6775',
-    describeIntegration = (process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS ? describe : describe.skip),
+    runIntegrationTests = parseInt(process.env.IMBOCLIENT_RUN_INTEGRATION_TESTS, 10),
+    describeIntegration = (runIntegrationTests ? describe : describe.skip),
     imboHost = process.env.IMBOCLIENT_INTEGRATION_HOST || 'http://127.0.0.1:9012',
     imboUser = process.env.IMBOCLIENT_INTEGRATION_USER || 'test',
     imboPubKey = process.env.IMBOCLIENT_INTEGRATION_PUBKEY || 'test',

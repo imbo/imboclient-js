@@ -1279,6 +1279,93 @@ describe('ImboClient', function() {
         });
     });
 
+    describe('#getResourceGroup', function() {
+        it('should return an array of resources', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups/somegroup')
+                .reply(200, { resources: ['foo', 'bar'] });
+
+            client.getResourceGroup('somegroup', function(err, resources, res) {
+                assert.ifError(err, 'getResourceGroup should not give an error on success');
+                assert.equal(2, resources.length);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups/somegroup')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getResourceGroup('somegroup', function(err, resources, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#addResourceGroup', function() {
+        it('should return error if resource group already exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(200);
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err) {
+                assert(err);
+                assert(err.message.match(/already exists/));
+                done();
+            });
+        });
+
+        it('should return error if resource group check fails', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/groups/waffles')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err, body, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful addition', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/groups/waffles', ['foo', 'bar'])
+                .reply(200, 'OK');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err, body, res) {
+                assert.ifError(err, 'addResourceGroup should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
     describe('#editResourceGroups', function() {
         it('should pass the passed resources on as request body', function(done) {
             mock.filteringPath(urlCleaner)
@@ -1328,6 +1415,39 @@ describe('ImboClient', function() {
                 assert(err);
                 assert(err.message.match(/\b400\b/));
                 assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#resourceGroupExists', function() {
+        it('should return true if the public key exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/ninja')
+                .reply(200, 'OK');
+
+            client.resourceGroupExists('ninja', function(err, exists) {
+                assert.ifError(err, 'Resource group that exists should not give an error');
+                assert.equal(true, exists);
+                done();
+            });
+        });
+
+        it('should return false if the identifier does not exist', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/ninja')
+                .reply(404, 'Resource group not found');
+
+            client.resourceGroupExists('ninja', function(err, exists) {
+                assert.ifError(err, 'resourceGroupExists should not fail when public key does not exist on server');
+                assert.equal(false, exists);
+                done();
+            });
+        });
+
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.resourceGroupExists('ninja', function(err) {
+                assert.ok(err, 'resourceGroupExists should give error if host is unreachable');
                 done();
             });
         });
@@ -1491,6 +1611,65 @@ describe('ImboClient', function() {
         });
     });
 
+    describe('#getAccessControlRules', function() {
+        it('should return an array of access control rules', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access')
+                .reply(200, [
+                    { id: 1, resources: ['foo', 'bar'], users: '*' }
+                ]);
+
+            client.getAccessControlRules('ninja', function(err, rules, res) {
+                assert.ifError(err, 'getAccessControlRules should not give an error on success');
+                assert.equal(1, rules.length);
+                assert.equal('*', rules[0].users);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getAccessControlRules('ninja', function(err, rules, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#getAccessControlRule', function() {
+        it('should return an array of resources', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access/1')
+                .reply(200, { id: 1, resources: ['foo', 'bar'], users: '*' });
+
+            client.getAccessControlRule('ninja', 1, function(err, rule, res) {
+                assert.ifError(err, 'getAccessControlRule should not give an error on success');
+                assert.equal(2, rule.resources.length);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access/1')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getAccessControlRule('ninja', 1, function(err, rule, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
     describe('#addAccessControlRule', function() {
         it('should throw if public key is not truthy', function() {
             assert.throws(function() {
@@ -1538,6 +1717,33 @@ describe('ImboClient', function() {
                 .reply(200);
 
             client.addAccessControlRule('waffle-mixture', body, done);
+        });
+    });
+
+    describe('#deleteAccessControlRule', function() {
+        it('should delete the passed rule', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat/access/1')
+                .reply(200);
+
+            client.deleteAccessControlRule('wat', 1, function(err, res) {
+                assert.ifError(err, 'deleteAccessControlRule should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat/access/1')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deleteAccessControlRule('wat', 1, function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
         });
     });
 });
