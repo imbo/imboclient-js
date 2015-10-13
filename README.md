@@ -1,4 +1,4 @@
-[![npm version][1]][2] [![Build Status][2]][3] [![dependency status][4]][5]
+[![npm version](http://img.shields.io/npm/v/imboclient.svg?style=flat-square)](http://browsenpm.org/package/imboclient-js)[![Build Status](http://img.shields.io/travis/imbo/imboclient-js/master.svg?style=flat-square)](https://travis-ci.org/imbo/imboclient-js)[![Coverage Status](https://img.shields.io/coveralls/imbo/imboclient-js/master.svg?style=flat-square)](https://coveralls.io/github/imbo/imboclient-js)[![Dependency status](https://img.shields.io/david/imbo/imboclient-js.svg?style=flat-square)](https://david-dm.org/imbo/imboclient-js)
 
 # Javascript client for Imbo
 A Javascript (node/browser) client for [Imbo](https://github.com/imbo/imbo).
@@ -67,10 +67,3 @@ Check out the `examples` folder for a few intros on how to use the client.
 Copyright (c) 2011-2015, Espen Hovlandsdal <espen@hovlandsdal.com>
 
 Licensed under the MIT License
-
-[1]: https://img.shields.io/npm/v/imboclient.svg?style=flat-square
-[2]: http://browsenpm.org/package/imboclient
-[3]: https://img.shields.io/travis/imbo/imboclient-js/master.svg?style=flat-square
-[4]: https://travis-ci.org/imbo/imboclient-js
-[5]: https://img.shields.io/david/imbo/imboclient-js.svg
-[6]: https://david-dm.org/imbo/imboclient-js
