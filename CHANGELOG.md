@@ -10,5 +10,9 @@ All notable changes since 2.3.4 will be documented in this file.
 ### Added
 - Client constructor now accepts an option instead of individual arguments (backwards compatibility is maintained).
 - Client constructor can now take a `user` parameter. This goes along with Imbo 2.0's distinction between a user and a public key. If the public key and user differs, a `publicKey` query parameter is added.
+- Image URLs now support the `smartSize`-transformation.
+- Methods for resource groups: `getResourceGroups()`, `getResourceGroup()`, `addResourceGroup()`, `editResourceGroup()`, `deleteResourceGroup` and `resourceGroupExists()`.
+- Methods for public/private keys: `addPublicKey()`, `editPublicKey()`, `deletePublicKey()` and `publicKeyExists()`.
+- Methods for access control rules: `getAccessControlRules()`, `getAccessControlRule()`, `addAccessControlRule()`, `deleteAccessControlRule()`.
 
 [3.0.0]: https://github.com/rexxars/sse-channel/compare/2.3.4...3.0.0
