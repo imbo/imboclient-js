@@ -8,13 +8,18 @@ var assert = require('assert'),
 var fixtures = path.join(__dirname, '..', 'fixtures'),
     catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
-require('should');
-
 var signatureCleaner = function(urlPath) {
     return (urlPath
         .replace(/timestamp=[^&]*&?/, '')
         .replace(/signature=[^&]*&?/, '')
         .replace(/accessToken=[^&]*&?/, '')
+        .replace(/[?&]$/g, '')
+    );
+};
+
+var urlCleaner = function(urlPath) {
+    return (signatureCleaner(urlPath)
+        .replace(/publicKey=[^&]*&?/, '')
         .replace(/[?&]$/g, '')
     );
 };
@@ -26,12 +31,10 @@ var bodyCleaner = function() {
 var client, errClient, mock, mockImgUrl;
 
 describe('ImboClient', function() {
-    before(function() {
+    beforeEach(function() {
         client = new Imbo.Client(['http://imbo', 'http://imbo1', 'http://imbo2'], 'pub', 'priv');
         errClient = new Imbo.Client('http://localhost:6776', 'pub', 'priv');
-    });
 
-    beforeEach(function() {
         mock = getNock()('http://imbo');
         mockImgUrl = getNock()('http://imbo1');
     });
@@ -41,20 +44,59 @@ describe('ImboClient', function() {
         mockImgUrl.done();
     });
 
+    describe('#constructor()', function() {
+        it('should throw on invalid hosts', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({});
+            }, /hosts/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: {} });
+            }, /hosts/);
+        });
+
+        it('should throw on invalid publicKey', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: '' });
+            }, /publicKey/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: [] });
+            }, /publicKey/);
+        });
+
+        it('should throw on invalid privateKey', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: '' });
+            }, /privateKey/);
+
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: [] });
+            }, /privateKey/);
+        });
+
+        it('should throw on invalid user', function() {
+            assert.throws(function() {
+                client = new Imbo.Client({ hosts: ['foo'], publicKey: 'foo', privateKey: 'bar', user: [] });
+            }, /user/);
+        });
+    });
+
     describe('#getServerStatus()', function() {
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(503);
 
             client.getServerStatus(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200);
 
@@ -65,7 +107,7 @@ describe('ImboClient', function() {
         });
 
         it('should convert "date" key to a Date instance', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
                     date: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -80,7 +122,7 @@ describe('ImboClient', function() {
         });
 
         it('should add status code to info object', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/status')
                 .reply(200, JSON.stringify({
                     date: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -96,18 +138,19 @@ describe('ImboClient', function() {
 
     describe('#getServerStats()', function() {
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(503);
 
             client.getServerStats(function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(200);
 
@@ -118,7 +161,7 @@ describe('ImboClient', function() {
         });
 
         it('should give back a meaningful info object', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/stats')
                 .reply(200, JSON.stringify({
                     foo: 'bar',
@@ -172,6 +215,18 @@ describe('ImboClient', function() {
     });
 
     describe('#getImageUrl', function() {
+        it('should throw if given a non-string identifier', function() {
+            assert.throws(function() {
+                client.getImageUrl(null);
+            }, /imageIdentifier/);
+        });
+
+        it('should throw if given an empty string as identifier', function() {
+            assert.throws(function() {
+                client.getImageUrl('');
+            }, /imageIdentifier/);
+        });
+
         it('should return a ImageUrl-instance', function() {
             var url = client.getImageUrl(catMd5);
             assert.equal(true, url instanceof Imbo.ImageUrl, 'getImageUrl did not return instance of ImageUrl');
@@ -180,6 +235,12 @@ describe('ImboClient', function() {
         it('should return something containing the image identifier', function() {
             var url = client.getImageUrl(catMd5).toString();
             assert.equal(true, url.indexOf(catMd5) > 0, url + ' did not contain ' + catMd5);
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -206,7 +267,13 @@ describe('ImboClient', function() {
             var url = 'http://imbo/users/pub/images/' + catMd5 + '.jpg',
                 qs = '?t[]=flipHorizontally';
 
-            client.parseImageUrl(url + qs).toString().should.containEql(url + '?t%5B%5D=flipHorizontally');
+            assert(client.parseImageUrl(url + qs).toString().indexOf(url + '?t%5B%5D=flipHorizontally') > -1);
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImageUrl(catMd5).toString();
+            assert.equal(client.parseImageUrl(url, 'bar').toString(), url);
         });
 
         // More tests are defined in the ImageUrl test suite
@@ -222,6 +289,32 @@ describe('ImboClient', function() {
             var url = client.getImagesUrl().toString();
             assert.equal('http://imbo/users/pub/images', signatureCleaner(url));
         });
+
+        it('should return the global images URL if a user filter is specified', function() {
+            var query = (new Imbo.Query()).users(['foo', 'bar']);
+            var url = client.getImagesUrl(query).toString();
+            assert(signatureCleaner(url).indexOf('http://imbo/images') === 0);
+            assert(signatureCleaner(url).indexOf('users[]=foo&users[]=bar') !== -1);
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getImagesUrl().toString();
+            assert.equal('http://imbo/users/someuser/images?publicKey=foo', signatureCleaner(url));
+        });
+    });
+
+    describe('#user', function() {
+        it('should be able to switch the client user', function() {
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/pub', signatureCleaner(url));
+
+            url = client.user('foo').getUserUrl().toString();
+            assert.equal('http://imbo/users/foo?publicKey=pub', signatureCleaner(url));
+
+            url = client.user('pub').getUserUrl().toString();
+            assert.equal('http://imbo/users/pub', signatureCleaner(url));
+        });
     });
 
     describe('#getUserUrl', function() {
@@ -233,6 +326,12 @@ describe('ImboClient', function() {
         it('should return the expected URL-string', function() {
             var url = client.getUserUrl().toString();
             assert.equal('http://imbo/users/pub', signatureCleaner(url));
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getUserUrl().toString();
+            assert.equal('http://imbo/users/someuser?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -248,6 +347,12 @@ describe('ImboClient', function() {
             var url = client.getStatsUrl().toString();
             assert.equal('http://imbo/stats', signatureCleaner(url));
         });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getStatsUrl().toString();
+            assert.equal('http://imbo/stats?publicKey=foo', signatureCleaner(url));
+        });
     });
 
     describe('#getMetadataUrl', function() {
@@ -257,6 +362,12 @@ describe('ImboClient', function() {
                 'http://imbo/users/pub/images/' + catMd5 + '/meta',
                 signatureCleaner(url)
             );
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getMetadataUrl(catMd5).toString();
+            assert.equal('http://imbo/users/someuser/images/' + catMd5 + '/meta?publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -276,7 +387,28 @@ describe('ImboClient', function() {
                 query: 'page=2&limit=3'
             }).toString();
 
-            url.should.containEql('http://imbo/some/path?page=2&limit=3&accessToken');
+            assert(url.indexOf('http://imbo/some/path?page=2&limit=3&accessToken') > -1);
+        });
+
+        it('should handle different user/public key combination', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getResourceUrl({
+                path: '/some/path',
+                query: 'page=2&limit=3'
+            }).toString();
+
+            assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
+        });
+
+        it('should handle being told to use a specific user', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getResourceUrl({
+                path: '/some/path',
+                query: 'page=2&limit=3',
+                user: 'zing'
+            }).toString();
+
+            assert.equal('http://imbo/some/path?page=2&limit=3&publicKey=foo', signatureCleaner(url));
         });
     });
 
@@ -284,12 +416,13 @@ describe('ImboClient', function() {
         it('should return error on a 503-response', function(done) {
             var imgUrl = client.getImageUrl(catMd5);
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(503);
 
             client.getShortUrl(imgUrl, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
@@ -297,7 +430,7 @@ describe('ImboClient', function() {
         it('should return error if no id was present in body', function(done) {
             var imgUrl = client.getImageUrl(catMd5);
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
                     foo: 'bar'
@@ -313,7 +446,7 @@ describe('ImboClient', function() {
             var imgUrl = client.getImageUrl(catMd5).thumbnail().png(),
                 expected = 'http://imbo1/s/imboF00';
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/shorturls')
                 .reply(200, JSON.stringify({
                     id: 'imboF00'
@@ -329,18 +462,19 @@ describe('ImboClient', function() {
 
     describe('#deleteAllShortUrlsForImage()', function() {
         it('should return error on backend failure', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
                 .reply(503);
 
             client.deleteAllShortUrlsForImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls', 'DELETE')
                 .reply(200, 'OK');
 
@@ -355,22 +489,36 @@ describe('ImboClient', function() {
         var shortId = 'imboF00';
 
         it('should return error on backend failure', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
                 .reply(503);
 
             client.deleteShortUrlForImage(catMd5, shortId, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
                 .reply(200, 'OK');
 
             client.deleteShortUrlForImage(catMd5, shortId, function(err) {
+                assert.ifError(err, 'deleteShortUrlForImage should not give an error on success');
+                done();
+            });
+        });
+
+        it('should handle being passed a shortUrl', function(done) {
+            var shortUrl = new Imbo.ShortUrl({ id: shortId });
+
+            mockImgUrl.filteringPath(urlCleaner)
+                .intercept('/users/pub/images/' + catMd5 + '/shorturls/' + shortId, 'DELETE')
+                .reply(200, 'OK');
+
+            client.deleteShortUrlForImage(catMd5, shortUrl, function(err) {
                 assert.ifError(err, 'deleteShortUrlForImage should not give an error on success');
                 done();
             });
@@ -393,6 +541,12 @@ describe('ImboClient', function() {
             var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5 + '/meta', new Date(1349268217000));
             assert.equal(url, '/images/' + catMd5 + '/meta?signature=afd4c4de76a95d5ed5c23a908278cab40817012a5a5c750d971177d3cba97bf5&timestamp=2012-10-03T12%3A43%3A37Z');
         });
+
+        it('should add a public key if user and public key differs', function() {
+            client = new Imbo.Client({ hosts: 'http://imbo', publicKey: 'foo', privateKey: 'bar', user: 'someuser' });
+            var url = client.getSignedResourceUrl('PUT', '/images/' + catMd5 + '/meta', new Date(1349268217000));
+            assert.equal(url, '/images/' + catMd5 + '/meta?publicKey=foo&signature=9e16eee7c7b997e006c1843cefed174e0f0aef142dbf80abc8c4a94c83dd2b2a&timestamp=2012-10-03T12%3A43%3A37Z');
+        });
     });
 
     describe('#getHostForImageIdentifier', function() {
@@ -406,59 +560,33 @@ describe('ImboClient', function() {
         });
     });
 
-    describe('#parseUrls()', function() {
-        it('should handle being passed a server-string', function() {
-            var urls = client.parseUrls('http://imbo');
-            assert.equal(1, urls.length);
-            assert.equal('http://imbo', urls[0]);
-        });
-
-        it('should handle being passed an array', function() {
-            var hosts = ['http://imbo01', 'http://imbo02', 'http://imbo03'];
-            var urls = client.parseUrls(hosts), host = hosts.length;
-            assert.equal(3, urls.length);
-
-            while (host--) {
-                assert.equal(hosts[host], urls[host]);
-            }
-        });
-
-        it('should strip trailing slashes', function() {
-            assert.equal('http://imbo', client.parseUrls('http://imbo/')[0]);
-            assert.equal('http://imbo/some/path', client.parseUrls('http://imbo/some/path/')[0]);
-        });
-
-        it('should strip port 80', function() {
-            assert.equal('http://imbo', client.parseUrls('http://imbo/:80')[0]);
-            assert.equal('http://imbo/some/path', client.parseUrls('http://imbo:80/some/path/')[0]);
-        });
-    });
-
     describe('#headImage()', function() {
         it('should return error on a 404-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(404);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
 
         it('should return error on a 503-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(503);
 
             client.headImage(catMd5, function(err) {
-                assert.equal(503, err);
+                assert(err);
+                assert(err.message.match(/\b503\b/));
                 done();
             });
         });
 
         it('should not return an error on a 200-response', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200);
 
@@ -469,7 +597,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -491,7 +619,7 @@ describe('ImboClient', function() {
 
     describe('#deleteImage', function() {
         it('should return an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5, 'DELETE')
                 .reply(200, 'OK', { 'X-Imbo-Imageidentifier': catMd5 });
 
@@ -505,7 +633,7 @@ describe('ImboClient', function() {
 
     describe('#imageIdentifierExists', function() {
         it('should return true if the identifier exists', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK');
 
@@ -517,7 +645,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(404, 'Image not found');
 
@@ -546,7 +674,7 @@ describe('ImboClient', function() {
         });
 
         it('should return true if the image exists on disk and on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 1 },
@@ -563,7 +691,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the image exists on disk but not on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 0 },
@@ -582,7 +710,7 @@ describe('ImboClient', function() {
 
     describe('#imageWithChecksumExists', function() {
         it('should return true if the image exists on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 1 },
@@ -599,7 +727,7 @@ describe('ImboClient', function() {
         });
 
         it('should return false if the image does exist on server', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(200, {
                     search: { hits: 0 },
@@ -616,7 +744,7 @@ describe('ImboClient', function() {
         });
 
         it('should give back error if encountering server issues', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=1&originalChecksums[]=' + catMd5)
                 .reply(503, 'Internal Server Error');
 
@@ -638,13 +766,14 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', { 'X-Imbo-Imageidentifier': catMd5 });
 
             client.addImage(fixtures + '/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
@@ -658,7 +787,7 @@ describe('ImboClient', function() {
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -679,7 +808,7 @@ describe('ImboClient', function() {
 
     describe('#addImageFromBuffer', function() {
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', {
@@ -688,14 +817,15 @@ describe('ImboClient', function() {
 
             var buffer = fs.readFileSync(fixtures + '/cat.jpg');
             client.addImageFromBuffer(buffer, function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -720,7 +850,7 @@ describe('ImboClient', function() {
             mock.get('/some-404-image.jpg')
                 .reply(404);
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(404);
@@ -728,13 +858,13 @@ describe('ImboClient', function() {
             var url = 'http://imbo/some-404-image.jpg';
             client.addImageFromUrl(url, function(err) {
                 assert.ok(err, 'addImage should give error if file does not exist');
-                assert.equal(404, err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
 
         it('should return an error if the image could not be added', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(400, 'Image already exists', {
@@ -745,14 +875,15 @@ describe('ImboClient', function() {
                 .reply(200, fs.readFileSync(path.join(fixtures, 'cat.jpg')));
 
             client.addImageFromUrl('http://imbo/cat.jpg', function(err, imageIdentifier) {
-                assert.equal(400, err);
+                assert(err);
+                assert(err.message.match(/\b400\b/));
                 assert.equal(null, imageIdentifier);
                 done();
             });
         });
 
         it('should return an image identifier and an http-response on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .filteringRequestBody(bodyCleaner)
                 .post('/users/pub/images', '*')
                 .reply(201, { imageIdentifier: catMd5 }, {
@@ -779,7 +910,7 @@ describe('ImboClient', function() {
 
     describe('#getUserInfo', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
@@ -792,12 +923,13 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(404, 'Not Found');
 
             client.getUserInfo(function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Not Found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -805,7 +937,7 @@ describe('ImboClient', function() {
         });
 
         it('should convert lastModified key to a Date instance', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({
                     lastModified: 'Fri, 14 Mar 2014 07:43:49 GMT'
@@ -818,11 +950,25 @@ describe('ImboClient', function() {
                 done();
             });
         });
+
+        it('should populate the `user` property if not present', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/users/pub')
+                .reply(200, JSON.stringify({
+                    publicKey: 'foo'
+                }), { 'Content-Type': 'application/json' });
+
+            client.getUserInfo(function(err, info) {
+                assert.ifError(err, 'getUserInfo should not give an error on success');
+                assert.equal(info.user, 'foo');
+                done();
+            });
+        });
     });
 
     describe('#getImageProperties', function() {
         it('should return an object on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/' + catMd5)
                 .reply(200, 'OK', {
                     'X-Imbo-OriginalWidth': 123,
@@ -844,12 +990,13 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .head('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
             client.getImageProperties('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -859,7 +1006,7 @@ describe('ImboClient', function() {
         it('should return a buffer on success', function(done) {
             var expectedBuffer = new Buffer('str');
 
-            mockImgUrl.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .get('/users/pub/images/' + catMd5)
                 .reply(200, expectedBuffer);
 
@@ -871,12 +1018,13 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the image does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mockImgUrl.filteringPath(urlCleaner)
                 .get('/users/pub/images/f00baa')
                 .reply(404, 'Not Found');
 
             client.getImageData('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -884,7 +1032,7 @@ describe('ImboClient', function() {
 
     describe('#getNumImages', function() {
         it('should return a number on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(200, JSON.stringify({ numImages: 50 }), { 'Content-Type': 'application/json' });
 
@@ -896,12 +1044,13 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub')
                 .reply(404, 'Not Found');
 
             client.getNumImages(function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -909,7 +1058,7 @@ describe('ImboClient', function() {
 
     describe('#getImages', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images')
                 .reply(200, JSON.stringify({ images: [], search: { hits: 3 } }), {
                     'Content-Type': 'application/json'
@@ -924,19 +1073,20 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the user does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images')
                 .reply(404, 'User not found');
 
             client.getImages(function(err, images, search, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal(404, res.statusCode);
                 done();
             });
         });
 
         it('should allow an optional query', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images?page=1&limit=5&ids[]=blah')
                 .reply(200, JSON.stringify({ images: [], search: { hits: 0 } }), {
                     'Content-Type': 'application/json'
@@ -954,7 +1104,7 @@ describe('ImboClient', function() {
 
     describe('#getMetadata', function() {
         it('should return an object of key => value data', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images/' + catMd5 + '/meta')
                 .reply(200, JSON.stringify({ foo: 'bar' }), { 'Content-Type': 'application/json' });
 
@@ -967,12 +1117,13 @@ describe('ImboClient', function() {
         });
 
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .get('/users/pub/images/f00baa/meta')
                 .reply(404, 'Image not found');
 
             client.getMetadata('f00baa', function(err, body, res) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 assert.equal('Image not found', body);
                 assert.equal(404, res.statusCode);
                 done();
@@ -982,18 +1133,19 @@ describe('ImboClient', function() {
 
     describe('#deleteMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/f00baa/meta', 'DELETE')
                 .reply(404, 'Image not found');
 
             client.deleteMetadata('f00baa', function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
 
         it('should not return any error on success', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .intercept('/users/pub/images/' + catMd5 + '/meta', 'DELETE')
                 .reply(200, 'OK');
 
@@ -1006,19 +1158,20 @@ describe('ImboClient', function() {
 
     describe('#editMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/users/pub/images/f00baa/meta', { foo: 'bar' })
                 .reply(404, 'Image not found');
 
             client.editMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
 
         it('should not return any error on success', function(done) {
             var response = { foo: 'bar', existing: 'key' };
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .post('/users/pub/images/' + catMd5 + '/meta', { foo: 'bar' })
                 .reply(200, response, {
                     'Content-Type': 'application/json'
@@ -1035,12 +1188,13 @@ describe('ImboClient', function() {
 
     describe('#replaceMetadata', function() {
         it('should return an error if the identifier does not exist', function(done) {
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/users/pub/images/f00baa/meta', { foo: 'bar' })
                 .reply(404, 'Image not found');
 
             client.replaceMetadata('f00baa', { foo: 'bar' }, function(err) {
-                assert.equal(404, err);
+                assert(err);
+                assert(err.message.match(/\b404\b/));
                 done();
             });
         });
@@ -1049,7 +1203,7 @@ describe('ImboClient', function() {
             var responseBody = { foo: 'bar', some: 'key' },
                 sentData = { some: 'key', foo: 'bar' };
 
-            mock.filteringPath(signatureCleaner)
+            mock.filteringPath(urlCleaner)
                 .put('/users/pub/images/' + catMd5 + '/meta', sentData)
                 .reply(200, responseBody, {
                     'Content-Type': 'application/json'
@@ -1065,6 +1219,536 @@ describe('ImboClient', function() {
                     Object.keys(body).length
                 );
 
+                done();
+            });
+        });
+    });
+
+    describe('#getResourceGroups', function() {
+        it('should return an object of key => value data', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups')
+                .reply(200, JSON.stringify({ groups: [], search: { hits: 0 } }), {
+                    'Content-Type': 'application/json'
+                });
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(0, search.hits);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should returns the right data in groups/search', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups')
+                .reply(200, JSON.stringify({
+                    groups: [{
+                        name: 'read-user',
+                        resources: ['user.get', 'user.head']
+                    }],
+                    search: {
+                        count: 1,
+                        limit: 1,
+                        page: 2,
+                        hits: 3
+                    }
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
+            client.getResourceGroups(function(err, images, search, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(3, search.hits);
+                assert.equal(2, search.page);
+                assert.equal(1, search.count);
+                assert.equal(1, search.limit);
+                assert.equal('read-user', images[0].name);
+                assert.equal('user.get', images[0].resources[0]);
+                assert.equal('user.head', images[0].resources[1]);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#getResourceGroup', function() {
+        it('should return an array of resources', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups/somegroup')
+                .reply(200, { resources: ['foo', 'bar'] });
+
+            client.getResourceGroup('somegroup', function(err, resources, res) {
+                assert.ifError(err, 'getResourceGroup should not give an error on success');
+                assert.equal(2, resources.length);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/groups/somegroup')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getResourceGroup('somegroup', function(err, resources, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#addResourceGroup', function() {
+        it('should return error if resource group already exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(200);
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err) {
+                assert(err);
+                assert(err.message.match(/already exists/));
+                done();
+            });
+        });
+
+        it('should return error if resource group check fails', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/groups/waffles')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err, body, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful addition', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/waffles')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/groups/waffles', ['foo', 'bar'])
+                .reply(200, 'OK');
+
+            client.addResourceGroup('waffles', ['foo', 'bar'], function(err, body, res) {
+                assert.ifError(err, 'addResourceGroup should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#editResourceGroups', function() {
+        it('should pass the passed resources on as request body', function(done) {
+            mock.filteringPath(urlCleaner)
+                .put('/groups/wat', ['image.get', 'user.options'])
+                .reply(200);
+
+            client.editResourceGroup('wat', ['image.get', 'user.options'], function(err, body, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .put('/groups/wat', ['image.get', 'user.options'])
+                .reply(400, 'Permission denied (public key)');
+
+            client.editResourceGroup('wat', ['image.get', 'user.options'], function(err, body, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#deleteResourceGroup', function() {
+        it('should delete the passed resource group', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/groups/wat')
+                .reply(200);
+
+            client.deleteResourceGroup('wat', function(err, res) {
+                assert.ifError(err, 'getResourceGroups should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/groups/wat')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deleteResourceGroup('wat', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#resourceGroupExists', function() {
+        it('should return true if the public key exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/ninja')
+                .reply(200, 'OK');
+
+            client.resourceGroupExists('ninja', function(err, exists) {
+                assert.ifError(err, 'Resource group that exists should not give an error');
+                assert.equal(true, exists);
+                done();
+            });
+        });
+
+        it('should return false if the identifier does not exist', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/groups/ninja')
+                .reply(404, 'Resource group not found');
+
+            client.resourceGroupExists('ninja', function(err, exists) {
+                assert.ifError(err, 'resourceGroupExists should not fail when public key does not exist on server');
+                assert.equal(false, exists);
+                done();
+            });
+        });
+
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.resourceGroupExists('ninja', function(err) {
+                assert.ok(err, 'resourceGroupExists should give error if host is unreachable');
+                done();
+            });
+        });
+    });
+
+    describe('#addPublicKey', function() {
+        it('should return error if public key already exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(200);
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err) {
+                assert(err);
+                assert(err.message.match(/already exists/));
+                done();
+            });
+        });
+
+        it('should return error if public key check fails', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful addition', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/waffle-mixture')
+                .reply(404);
+
+            mock.filteringPath(urlCleaner)
+                .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
+                .reply(200, 'OK');
+
+            client.addPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert.ifError(err, 'addPublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#editPublicKey', function() {
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.editPublicKey(null);
+            }, /public key/);
+        });
+
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.editPublicKey('public-key', null);
+            }, /private key/);
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .put('/keys/waffle-mixture')
+                .reply(400, 'Permission denied (public key)');
+
+            client.editPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not give error on successful edit', function(done) {
+            mock.filteringPath(urlCleaner)
+                .put('/keys/waffle-mixture', { privateKey: 'priv-key' })
+                .reply(200, 'OK');
+
+            client.editPublicKey('waffle-mixture', 'priv-key', function(err, res) {
+                assert.ifError(err, 'addPublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#deletePublicKey', function() {
+        it('should delete the passed public key', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat')
+                .reply(200);
+
+            client.deletePublicKey('wat', function(err, res) {
+                assert.ifError(err, 'deletePublicKey should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deletePublicKey('wat', function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#publicKeyExists', function() {
+        it('should return true if the public key exists', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/ninja')
+                .reply(200, 'OK');
+
+            client.publicKeyExists('ninja', function(err, exists) {
+                assert.ifError(err, 'Public key that exists should not give an error');
+                assert.equal(true, exists);
+                done();
+            });
+        });
+
+        it('should return false if the identifier does not exist', function(done) {
+            mock.filteringPath(urlCleaner)
+                .head('/keys/ninja')
+                .reply(404, 'Public key not found');
+
+            client.publicKeyExists('ninja', function(err, exists) {
+                assert.ifError(err, 'publicKeyExists should not fail when public key does not exist on server');
+                assert.equal(false, exists);
+                done();
+            });
+        });
+
+        it('should return an error if the server could not be reached', function(done) {
+            errClient.publicKeyExists('ninja', function(err) {
+                assert.ok(err, 'publicKeyExists should give error if host is unreachable');
+                done();
+            });
+        });
+    });
+
+    describe('#getAccessControlRules', function() {
+        it('should return an array of access control rules', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access')
+                .reply(200, [
+                    { id: 1, resources: ['foo', 'bar'], users: '*' }
+                ]);
+
+            client.getAccessControlRules('ninja', function(err, rules, res) {
+                assert.ifError(err, 'getAccessControlRules should not give an error on success');
+                assert.equal(1, rules.length);
+                assert.equal('*', rules[0].users);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getAccessControlRules('ninja', function(err, rules, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#getAccessControlRule', function() {
+        it('should return an array of resources', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access/1')
+                .reply(200, { id: 1, resources: ['foo', 'bar'], users: '*' });
+
+            client.getAccessControlRule('ninja', 1, function(err, rule, res) {
+                assert.ifError(err, 'getAccessControlRule should not give an error on success');
+                assert.equal(2, rule.resources.length);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access/1')
+                .reply(400, 'Permission denied (public key)');
+
+            client.getAccessControlRule('ninja', 1, function(err, rule, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
+                done();
+            });
+        });
+    });
+
+    describe('#addAccessControlRule', function() {
+        it('should throw if public key is not truthy', function() {
+            assert.throws(function() {
+                client.addAccessControlRule(null);
+            }, /public key/i);
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            var body = [{ users: '*', resources: ['waffle.make'] }];
+            mock.filteringPath(urlCleaner)
+                .post('/keys/waffle-mixture/access', body)
+                .reply(400, 'Permission denied (public key)');
+
+            client.addAccessControlRule(
+                'waffle-mixture',
+                body,
+                function(err) {
+                    assert(err);
+                    assert(err.message.match(/\b400\b/));
+                    done();
+                }
+            );
+        });
+
+        it('should not give error on successful edit', function(done) {
+            var body = [{ users: '*', resources: ['waffle.make'] }];
+            mock.filteringPath(urlCleaner)
+                .post('/keys/waffle-mixture/access', body)
+                .reply(200);
+
+            client.addAccessControlRule(
+                'waffle-mixture',
+                body,
+                function(err) {
+                    assert.ifError(err, 'addAccessControlRule should not give an error on success');
+                    done();
+                }
+            );
+        });
+
+        it('should wrap non-array rules in array', function(done) {
+            var body = { users: '*', resources: ['waffle.make'] };
+            mock.filteringPath(urlCleaner)
+                .post('/keys/waffle-mixture/access', [body])
+                .reply(200);
+
+            client.addAccessControlRule('waffle-mixture', body, done);
+        });
+    });
+
+    describe('#deleteAccessControlRule', function() {
+        it('should delete the passed rule', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat/access/1')
+                .reply(200);
+
+            client.deleteAccessControlRule('wat', 1, function(err, res) {
+                assert.ifError(err, 'deleteAccessControlRule should not give an error on success');
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should return an error if the public key does not have sufficient privileges', function(done) {
+            mock.filteringPath(urlCleaner)
+                .delete('/keys/wat/access/1')
+                .reply(400, 'Permission denied (public key)');
+
+            client.deleteAccessControlRule('wat', 1, function(err, res) {
+                assert(err);
+                assert(err.message.match(/\b400\b/));
+                assert.equal(400, res.statusCode);
                 done();
             });
         });

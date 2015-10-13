@@ -59,30 +59,33 @@ Note: Global is only available if CommonJS/AMD environments are not detected.
 Instantiating the client
 ++++++++++++++++++++++++
 
-To create an instance of the client, simply pass one or more hostnames along with a public/private key combination to the constructor:
+To create an instance of the client, pass an object of options to the constructor:
 
 .. code-block:: js
 
     var Imbo = require('imboclient');
-    var client = new Imbo.Client(
-        'http//imbo.example.com',
-        '<publicKey>',
-        '<privateKey>'
-    );
+    var client = new Imbo.Client({
+        hosts: 'http//imbo.example.com',
+        user: 'someuser',
+        publicKey: '<publicKey>',
+        privateKey: '<privateKey>'
+    });
 
-You may also pass multiple hostnames to the constructor:
+You may also pass multiple hostnames:
 
 .. code-block:: js
 
     var Imbo = require('imboclient');
-    var client = new Imbo.Client([
+    var client = new Imbo.Client({
+        hosts: [
             'http//imbo1.example.com',
             'http//imbo2.example.com',
             'http//imbo3.example.com'
         ],
-        '<publicKey>',
-        '<privateKey>'
-    );
+        user: 'someuser',
+        publicKey: '<publicKey>',
+        privateKey: '<privateKey>'
+    });
 
 If you use multiple hostnames when instantiating the client, it will choose different image URLs based on the image identifier and the number of available hostnames. The client will generate the same URL for the same image identifier, as long as the number of hostnames specified does not change.
 
@@ -298,7 +301,7 @@ The callback passed to ``getImages`` will receive four arguments : ``err``, ``im
 * ``height``
 * ``mime``
 * ``imageIdentifier``
-* ``publicKey``
+* ``user``
 * ``metadata`` (only if the query explicitly enabled metadata in the response, which is off by default).
 
 Some of these elements might not be available if the query excludes some fields (more on that below).
@@ -510,6 +513,7 @@ The available transformation methods are:
 * ``resize({ width: null, height: null })``
 * ``rotate({ angle: null, bg: '000000' })``
 * ``sepia({ threshold: 80 })``
+* ``smartSize({ width: null, height: null, crop: 'mode', poi: 'x,y' })``
 * ``strip()``
 * ``thumbnail({ width: 50, height: 50, fit: 'outbound' })``
 * ``transpose()``
@@ -678,8 +682,8 @@ Get some information about the user configured with the client:
 
 ``info`` is an object and includes the following elements:
 
-``(string) publicKey``
-    The public key of the user (the same as the one used when instantiating the client).
+``(string) user``
+    The name of the user (the same as the one used when instantiating the client).
 
 ``(int) numImages``
     The number of images owned by the user.

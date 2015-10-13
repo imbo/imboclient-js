@@ -16,7 +16,7 @@ exports.ShortUrl = _dereq_('./lib/url/shorturl');
 exports.Query = _dereq_('./lib/query');
 exports.Version = _dereq_('./package.json').version;
 
-},{"./lib/client":9,"./lib/query":10,"./lib/url/imageurl":11,"./lib/url/shorturl":12,"./lib/url/url":13,"./package.json":17}],2:[function(_dereq_,module,exports){
+},{"./lib/client":9,"./lib/query":10,"./lib/url/imageurl":11,"./lib/url/shorturl":12,"./lib/url/url":13,"./package.json":19}],2:[function(_dereq_,module,exports){
 (function (process){
 /**
  * This file is part of the imboclient-js package
@@ -152,7 +152,7 @@ module.exports = {
 };
 
 }).call(this,_dereq_("g5I+bs"))
-},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":16}],3:[function(_dereq_,module,exports){
+},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":18}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -289,6 +289,8 @@ exports.getContentsFromUrl = function(url, callback) {
  */
 'use strict';
 
+var extend = _dereq_('../utils/extend');
+
 // Headers which browsers block you from setting
 var disallowedHeaders = [
     'User-Agent',
@@ -329,59 +331,66 @@ var normalizeResponse = function(xhr) {
  */
 function request(options) {
     // Prepare options
-    options.method = options.method.toUpperCase();
-    options.uri = options.uri.toString();
+    var opts = extend({}, options);
+    opts.method = opts.method.toUpperCase();
+    opts.uri = opts.uri.toString();
 
     // Instantiate request
     var xhr = new XMLHttpRequest();
 
     // Request finished handler
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status !== 0 && options.onComplete) {
-            options.onComplete(
-                (xhr.status >= 400) ? (xhr.status + ' ' + xhr.statusText) : null,
+        if (xhr.readyState === 4 && xhr.status !== 0 && opts.onComplete) {
+            var err = null;
+            if (xhr.status >= 400) {
+                err = new Error('HTTP ' + xhr.status + ' ' + xhr.statusText);
+                err.statusCode = xhr.status;
+            }
+
+            opts.onComplete(
+                err,
                 normalizeResponse(xhr),
-                options.json ? JSON.parse(xhr.responseText) : xhr.responseText
+                opts.json ? JSON.parse(xhr.responseText) : xhr.responseText
             );
         }
     };
 
     // Request failure handler
     xhr.onerror = function() {
-        options.onComplete('XHR error - CORS denied?', normalizeResponse(xhr));
+        opts.onComplete(new Error('XHR error - CORS denied?'), normalizeResponse(xhr));
     };
 
     // Request progress handler
-    if (options.onProgress) {
-        xhr.upload.addEventListener('progress', options.onProgress, false);
+    if (opts.onProgress) {
+        xhr.upload.addEventListener('progress', opts.onProgress, false);
     }
 
     // Open the request
-    xhr.open(options.method, options.uri, true);
+    xhr.open(opts.method, opts.uri, true);
 
     // Apply request headers
-    for (var key in options.headers) {
+    for (var key in opts.headers) {
         // We're not allowed to set certain headers in browsers
         if (disallowedHeaders.indexOf(key) > -1) {
             continue;
         }
 
-        xhr.setRequestHeader(key, options.headers[key]);
+        xhr.setRequestHeader(key, opts.headers[key]);
     }
 
     // Is this a JSON-request?
-    if (options.json) {
+    if (opts.json) {
         xhr.setRequestHeader('Accept', 'application/json');
 
         // Do we have a payload to deliver as JSON?
-        if (typeof options.json !== 'boolean') {
+        if (typeof opts.json !== 'boolean') {
             xhr.setRequestHeader('Content-Type', 'application/json');
-            options.body = JSON.stringify(options.json);
+            opts.body = JSON.stringify(opts.json);
         }
     }
 
     // Send the request
-    xhr.send(options.body);
+    xhr.send(opts.body);
 }
 
 /**
@@ -433,7 +442,7 @@ request.head = function(url, callback) {
 
 module.exports = request;
 
-},{}],8:[function(_dereq_,module,exports){
+},{"../utils/extend":15}],8:[function(_dereq_,module,exports){
 /**
  * This is based on the following work:
  *
@@ -561,8 +570,8 @@ var str2binb = function(str) {
 var binb2hex = function(binarray) {
     var hexTab = '0123456789abcdef', str = '';
     for (var i = 0; i < binarray.length * 4; i++) {
-        str += hexTab.charAt(
-            ((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
+        str += (
+            hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8 + 4)) & 0xF) +
             hexTab.charAt((binarray[i >> 2] >> ((3 - i % 4) * 8)) & 0xF)
         );
     }
@@ -583,10 +592,6 @@ var coreHmacSha256 = function(key, data) {
 
     var hash = coreSha256(ipad.concat(str2binb(data)), 512 + data.length * chrsz);
     return coreSha256(opad.concat(hash), 512 + 256);
-};
-
-exports.sha256 = function(string) {
-    return binb2hex(coreSha256(string, string.length * chrsz));
 };
 
 exports.sha256hmac = function(key, data) {
@@ -613,28 +618,52 @@ var ImboUrl = _dereq_('./url/url'),
     crypto = _dereq_('./browser/crypto'),
     request = _dereq_('./browser/request'),
     readers = _dereq_('./browser/readers'),
-    features = _dereq_('./browser/feature-support');
+    features = _dereq_('./browser/feature-support'),
+    parseUrls = _dereq_('./utils/parse-urls'),
+    get404Handler = _dereq_('./utils/404-handler');
+
+var isBrowser = typeof window !== 'undefined';
 
 /**
  * Constructs a new Imbo client
  *
- * @param {String|Array} serverUrls
+ * @param {Object} options
  * @param {String} publicKey
  * @param {String} privateKey
  * @throws Will throw an error if there are unsupported features
  */
-var ImboClient = function(serverUrls, publicKey, privateKey) {
-    this.options = {
-        hosts: this.parseUrls(serverUrls),
-        publicKey: publicKey,
-        privateKey: privateKey
-    };
-
+function ImboClient(options, publicKey, privateKey) {
     // Run a feature check, ensuring all required features are present
     features.checkFeatures();
-};
+
+    // Initialize options
+    var opts = this.options = {
+        hosts: parseUrls(options.hosts || options),
+        publicKey: options.publicKey || publicKey,
+        privateKey: options.privateKey || privateKey,
+        user: options.user || options.publicKey || publicKey
+    };
+
+    // Validate options
+    ['publicKey', 'privateKey', 'user'].forEach(function validateOption(opt) {
+        if (!opts[opt] || typeof opts[opt] !== 'string') {
+            throw new Error('`options.' + opt + '` must be a valid string');
+        }
+    });
+}
 
 extend(ImboClient.prototype, {
+    /**
+     * Set the user on which commands performed by this client should be performed on
+     *
+     * @param {String} user
+     * @return {ImboClient}
+     */
+    user: function(user) {
+        this.options.user = user;
+        return this;
+    },
+
     /**
      * Add a new image to the server from a local file
      *
@@ -643,7 +672,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     addImage: function(file, callback) {
-        if (typeof window !== 'undefined' && file instanceof window.File) {
+        if (isBrowser && file instanceof window.File) {
             // Browser File instance
             return this.addImageFromBuffer(file, callback);
         }
@@ -684,7 +713,7 @@ extend(ImboClient.prototype, {
      */
     addImageFromBuffer: function(source, callback) {
         var url = this.getSignedResourceUrl('POST', this.getImagesUrl()),
-            isFile = typeof window !== 'undefined' && source instanceof window.File,
+            isFile = isBrowser && source instanceof window.File,
             onComplete = callback.onComplete || callback,
             onProgress = callback.onProgress || null;
 
@@ -715,7 +744,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     addImageFromUrl: function(url, callback) {
-        if (typeof window !== 'undefined') {
+        if (isBrowser) {
             // Browser environments can't pipe, so download the file and add it
             return this.getImageDataFromUrl(url, function(err, data) {
                 if (err) {
@@ -789,6 +818,10 @@ extend(ImboClient.prototype, {
         request.get(this.getUserUrl(), function(err, res, body) {
             if (body && body.lastModified) {
                 body.lastModified = new Date(body.lastModified);
+            }
+
+            if (body && !body.user && body.publicKey) {
+                body.user = body.publicKey;
             }
 
             callback(err, body, res);
@@ -925,8 +958,8 @@ extend(ImboClient.prototype, {
         request.get(this.getImagesUrl(query), function(err, res, body) {
             callback(
                 err,
-                body ? body.images : [],
-                body ? body.search : {},
+                body && body.images,
+                body && body.search,
                 res
             );
         });
@@ -959,19 +992,30 @@ extend(ImboClient.prototype, {
      */
     getUserUrl: function() {
         return this.getResourceUrl({
-            path: '/users/' + this.options.publicKey
+            path: '/users/' + this.options.user
         });
     },
 
     /**
-     * Get URL for the images endpoint
+     * Get URL for the images endpoint. If the `users` filter is set, the global images endpoint
+     * is used instead of the user-specific one (`/images` vs `/user/<user>/images`)
      *
      * @param {Imbo.Query|String} [query]
      * @return {Imbo.Url}
      */
     getImagesUrl: function(query) {
-        var url = this.getUserUrl();
-        url.setPath(url.getPath() + '/images');
+        var url;
+
+        if (query && query.users().length) {
+            // When one or more users are specified, use the global images endpoint
+            url = this.getResourceUrl({
+                path: '/images',
+                user: null
+            });
+        } else {
+            url = this.getUserUrl();
+            url.setPath(url.getPath() + '/images');
+        }
 
         if (query) {
             url.setQueryString(query.toString());
@@ -988,6 +1032,13 @@ extend(ImboClient.prototype, {
      * @return {Imbo.ImageUrl}
      */
     getImageUrl: function(imageIdentifier, options) {
+        if (typeof imageIdentifier !== 'string' || imageIdentifier.length === 0) {
+            throw new Error(
+                '`imageIdentifier` must be a non-empty string, was "' + imageIdentifier + '"' +
+                ' (' + typeof imageIdentifier + ')'
+            );
+        }
+
         options = options || {};
 
         return new ImageUrl({
@@ -996,6 +1047,7 @@ extend(ImboClient.prototype, {
                 options.usePrimaryHost
             ),
             path: options.path,
+            user: this.options.user,
             publicKey: this.options.publicKey,
             privateKey: this.options.privateKey,
             imageIdentifier: imageIdentifier
@@ -1035,6 +1087,7 @@ extend(ImboClient.prototype, {
     getResourceUrl: function(options) {
         return new ImboUrl({
             baseUrl: this.options.hosts[0],
+            user: typeof options.user !== 'undefined' ? options.user : this.options.user,
             publicKey: this.options.publicKey,
             privateKey: this.options.privateKey,
             queryString: options.query,
@@ -1057,6 +1110,7 @@ extend(ImboClient.prototype, {
 
         var data = {
             imageIdentifier: imageId,
+            user: url.getUser(),
             publicKey: url.getPublicKey(),
             query: url.getQueryString()
         };
@@ -1126,7 +1180,7 @@ extend(ImboClient.prototype, {
      */
     getNumImages: function(callback) {
         this.getUserInfo(function(err, info) {
-            callback(err, info ? info.numImages : null);
+            callback(err, info && info.numImages);
         });
 
         return this;
@@ -1159,14 +1213,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     imageIdentifierExists: function(imageIdentifier, callback) {
-        this.headImage(imageIdentifier, function(err, res) {
-            // If we encounter an error from the server, we might not have
-            // statusCode available - in this case, fall back to undefined
-            var statusCode = res && res.statusCode ? res.statusCode : null;
-
-            // Requester returns error on 404, we expect this to happen
-            callback(isNaN(err) ? err : null, statusCode === 200);
-        });
+        this.headImage(imageIdentifier, get404Handler(callback));
 
         return this;
     },
@@ -1193,9 +1240,291 @@ extend(ImboClient.prototype, {
     },
 
     /**
+     * Fetch the resource groups available
+     *
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getResourceGroups: function(callback) {
+        request.get(
+            this.getResourceUrl({ path: '/groups', user: null }),
+            function onResourceGroupsResponse(err, res, body) {
+                callback(
+                    err,
+                    body && body.groups,
+                    body && body.search,
+                    res
+                );
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Fetch a specific resource group
+     *
+     * @param {String} groupName
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getResourceGroup: function(groupName, callback) {
+        request.get(
+            this.getResourceUrl({ path: '/groups/' + groupName, user: null }),
+            function onResourceGroupResponse(err, res, body) {
+                callback(err, body && body.resources, res);
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Create a resource group, defining the resources that sohuld be available to it
+     *
+     * @param {String} groupName
+     * @param {Array} resources
+     * @param {Function} callback
+     * @return {ImboCflient}
+     */
+    addResourceGroup: function(groupName, resources, callback) {
+        this.resourceGroupExists(groupName, function onGroupExistsResponse(err, exists) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (exists) {
+                return callback(new Error(
+                    'Resource group `' + groupName + '` already exists'
+                ));
+            }
+
+            this.editResourceGroup(groupName, resources, callback);
+        }.bind(this));
+
+        return this;
+    },
+
+    /**
+     * Create/edit a resource group, setting the resources that should be available to it
+     *
+     * @param {String} groupName
+     * @param {Array} resources
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    editResourceGroup: function(groupName, resources, callback) {
+        var url = this.getResourceUrl({ path: '/groups/' + groupName, user: null });
+        request({
+            method: 'PUT',
+            uri: this.getSignedResourceUrl('PUT', url),
+            json: resources,
+            onComplete: function(err, res, body) {
+                callback(err, body, res);
+            }
+        });
+
+        return this;
+    },
+
+    /**
+     * Delete the resource group with the given name
+     *
+     * @param {String} groupName Name of the group you want to delete
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deleteResourceGroup: function(groupName, callback) {
+        var url = this.getResourceUrl({ path: '/groups/' + groupName, user: null });
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
+
+        return this;
+    },
+
+    /**
+     * Check whether a resource group exists or not
+     *
+     * @param {String} groupName Name of the group you want to check for the presence of
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    resourceGroupExists: function(groupName, callback) {
+        request.head(
+            this.getResourceUrl({ path: '/groups/' + groupName, user: null }),
+            get404Handler(callback)
+        );
+        return this;
+    },
+
+    /**
+     * Add a public/private key pair
+     *
+     * @param {String} publicKey Public key you want to add
+     * @param {String} privateKey Private key for the public key
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    addPublicKey: function(publicKey, privateKey, callback) {
+        this.publicKeyExists(publicKey, function onPubKeyExistsResponse(err, exists) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (exists) {
+                return callback(new Error(
+                    'Public key `' + publicKey + '` already exists'
+                ));
+            }
+
+            this.editPublicKey(publicKey, privateKey, callback);
+        }.bind(this));
+
+        return this;
+    },
+
+    /**
+     * Edit a public/private key pair
+     *
+     * @param {String} publicKey Public key you want to edit
+     * @param {String} privateKey Private key for the public key
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    editPublicKey: function(publicKey, privateKey, callback) {
+        if (!publicKey || !privateKey) {
+            throw new Error('Both public key and private key must be specified');
+        }
+
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey, user: null });
+        request({
+            method: 'PUT',
+            uri: this.getSignedResourceUrl('PUT', url),
+            json: { privateKey: privateKey },
+            onComplete: callback
+        });
+
+        return this;
+    },
+
+    /**
+     * Delete a public key
+     *
+     * @param {String} publicKey Public key you want to delete
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deletePublicKey: function(publicKey, callback) {
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey, user: null });
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
+
+        return this;
+    },
+
+    /**
+     * Check whether a public key exists or not
+     *
+     * @param {String} publicKey Public key you want to check for the presence of
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    publicKeyExists: function(publicKey, callback) {
+        request.head(
+            this.getResourceUrl({ path: '/keys/' + publicKey, user: null }),
+            get404Handler(callback)
+        );
+        return this;
+    },
+
+    /**
+     * Get a list of access control rules for a given public key
+     *
+     * @param {String} publicKey
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getAccessControlRules: function(publicKey, callback) {
+        request.get(
+            this.getResourceUrl({ path: '/keys/' + publicKey + '/access', user: null }),
+            function onAccessControlRulesResponse(err, res, body) {
+                callback(err, body, res);
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Get the details for the access control rule with the given ID
+     *
+     * @param {String} publicKey
+     * @param {String} aclRuleId
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getAccessControlRule: function(publicKey, aclRuleId, callback) {
+        request.get(
+            this.getResourceUrl({
+                path: '/keys/' + publicKey + '/access/' + aclRuleId,
+                user: null
+            }),
+            function onAccessControlRulesResponse(err, res, body) {
+                callback(err, body, res);
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Add one or more access control rules to the given public key
+     *
+     * @param {String} publicKey The public key to add rules to
+     * @param {Array} rules Array of access control rules to add
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    addAccessControlRule: function(publicKey, rules, callback) {
+        if (!Array.isArray(rules)) {
+            rules = [rules];
+        }
+
+        if (!publicKey) {
+            throw new Error('Public key must be a valid string');
+        }
+
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey + '/access', user: null });
+
+        request({
+            method: 'POST',
+            uri: this.getSignedResourceUrl('POST', url),
+            json: rules,
+            onComplete: function(err, res, body) {
+                callback(err, body, res);
+            }
+        });
+
+        return this;
+    },
+
+    /**
+     * Delete the access control rule with the given ID for the given public key
+     *
+     * @param {String} publicKey
+     * @param {String} aclRuleId
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deleteAccessControlRule: function(publicKey, aclRuleId, callback) {
+        var url = this.getResourceUrl({
+            path: '/keys/' + publicKey + '/access/' + aclRuleId,
+            user: null
+        });
+
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
+
+        return this;
+    },
+
+    /**
      * Get the binary data of an image stored on the server
      *
-     * @param {String}   imageIdentifier
+     * @param {String} imageIdentifier
      * @param {Function} callback
      * @return {ImboClient}
      */
@@ -1232,7 +1561,14 @@ extend(ImboClient.prototype, {
             return this.options.hosts[0];
         }
 
-        var dec = parseInt(imageIdentifier.slice(0, 2), 16);
+        var dec = imageIdentifier.charCodeAt(imageIdentifier.length - 1);
+
+        // If this is an old image identifier (32 character hex string),
+        // maintain backwards compatibility
+        if (imageIdentifier.match(/^[a-f0-9]{32}$/)) {
+            dec = parseInt(imageIdentifier.substr(0, 2), 16);
+        }
+
         return this.options.hosts[dec % this.options.hosts.length];
     },
 
@@ -1265,27 +1601,6 @@ extend(ImboClient.prototype, {
     },
 
     /**
-     * Parse an array of URLs, stripping excessive parts
-     *
-     * @param  {String|Array} urls
-     * @return {Array}
-     */
-    parseUrls: function(urls) {
-        // Accept string for host, if user only specifies one
-        if (typeof urls === 'string') {
-            urls = [urls];
-        }
-
-        // Strip out any unnecessary parts
-        var serverUrls = [];
-        for (var i = 0; i < urls.length; i++) {
-            serverUrls.push(urls[i].replace(/:80(\/|$)/, '$1').replace(/\/$/, ''));
-        }
-
-        return serverUrls;
-    },
-
-    /**
      * Generate a signature for the given parameters
      *
      * @param  {String} method
@@ -1310,13 +1625,16 @@ extend(ImboClient.prototype, {
      */
     getSignedResourceUrl: function(method, url, date) {
         var timestamp = (date || new Date()).toISOString().replace(/\.\d+Z$/, 'Z'),
-            signature = this.generateSignature(method, url.toString(), timestamp),
-            qs = url.toString().indexOf('?') > -1 ? '&' : '?';
+            addPubKey = this.options.user !== this.options.publicKey,
+            qs = url.toString().indexOf('?') > -1 ? '&' : '?',
+            signUrl = addPubKey ? url + qs + 'publicKey=' + this.options.publicKey : url,
+            signature = this.generateSignature(method, signUrl.toString(), timestamp);
 
+        qs = addPubKey ? '&' : qs;
         qs += 'signature=' + encodeURIComponent(signature);
         qs += '&timestamp=' + encodeURIComponent(timestamp);
 
-        return url + qs;
+        return signUrl + qs;
     },
 
     /**
@@ -1336,9 +1654,14 @@ extend(ImboClient.prototype, {
     }
 });
 
+// Don't blindly depend on this - the API might change at some point, but for
+// small extensions to the client where you don't want to explicitly depend on
+// the entire request module, this might be an acceptable option
+ImboClient.request = request;
+
 module.exports = ImboClient;
 
-},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":6,"./browser/request":7,"./query":10,"./url/imageurl":11,"./url/shorturl":12,"./url/url":13,"./utils/extend":14,"./utils/jsonparse":15}],10:[function(_dereq_,module,exports){
+},{"./browser/crypto":2,"./browser/feature-support":3,"./browser/readers":6,"./browser/request":7,"./query":10,"./url/imageurl":11,"./url/shorturl":12,"./url/url":13,"./utils/404-handler":14,"./utils/extend":15,"./utils/jsonparse":16,"./utils/parse-urls":17}],10:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1571,6 +1894,37 @@ extend(ImboQuery.prototype, {
     },
 
     /**
+     * Set the users of the images you want returned. If no value is specified,
+     * the current value is returned.
+     *
+     * @param  {Array} [users]
+     * @return {Imbo.Query}
+     */
+    users: function(users) {
+        return this.setOrGet('users', users);
+    },
+
+    /**
+     * Adds a user to the list of existing values.
+     *
+     * @param  {String} user
+     * @return {Imbo.Query}
+     */
+    addUser: function(user) {
+        return this.appendValue('users', user);
+    },
+
+    /**
+     * Adds one or more users to the list of existing values.
+     *
+     * @param  {String|Array} users
+     * @return {Imbo.Query}
+     */
+    addUsers: function(users) {
+        return this.addUser(users);
+    },
+
+    /**
      * Sets the page number to fetch. If no value is specified, the current value is returned.
      *
      * @param  {Number} val
@@ -1612,7 +1966,7 @@ extend(ImboQuery.prototype, {
             return this.values.metadata;
         }
 
-        this.values.metadata = !!val;
+        this.values.metadata = val ? 1 : 0;
         return this;
     },
 
@@ -1656,12 +2010,13 @@ extend(ImboQuery.prototype, {
 
         vals.page = 1;
         vals.limit = 20;
-        vals.metadata = false;
+        vals.metadata = 0;
         vals.from = null;
         vals.to = null;
         vals.ids = [];
         vals.checksums = [];
         vals.fields = [];
+        vals.users = [];
         vals.sort = [];
         vals.originalChecksums = [];
 
@@ -1697,11 +2052,13 @@ extend(ImboQuery.prototype, {
         }
 
         // Get multi-value params
-        ['ids', 'checksums', 'originalChecksums', 'fields', 'sort'].forEach(function(item) {
-            this[item].forEach(function(value) {
-                parts.push(item + '[]=' + value);
-            });
-        }.bind(this.values));
+        ['ids', 'checksums', 'originalChecksums', 'fields', 'users', 'sort'].forEach(
+            function addMultiValueParams(item) {
+                this[item].forEach(function(value) {
+                    parts.push(item + '[]=' + value);
+                });
+            }.bind(this.values)
+        );
 
         return parts.join('&');
     },
@@ -1718,7 +2075,7 @@ extend(ImboQuery.prototype, {
 
 module.exports = ImboQuery;
 
-},{"./utils/extend":14}],11:[function(_dereq_,module,exports){
+},{"./utils/extend":15}],11:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1742,26 +2099,29 @@ var isNumeric = function(num) {
     return !isNaN(num);
 };
 
+var backtickify = function(str) {
+    return '`' + str + '`';
+};
+
 /**
  * ImageUrl constructor
  *
  * @param {Object} options
  */
 var ImageUrl = function(options) {
-    options = options || {};
-
     this.transformations = options.transformations || [];
     this.rootUrl = options.baseUrl;
     this.baseUrl = options.baseUrl;
+    this.user = options.user || options.publicKey;
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
-    this.imageIdentifier = options.imageIdentifier || '';
+    this.imageIdentifier = options.imageIdentifier;
     this.extension = options.extension;
     this.queryString = options.queryString;
     this.path = options.path || '';
 
     this.baseUrl += [
-        '/users', this.publicKey,
+        '/users', this.user,
         'images', this.imageIdentifier
     ].join('/');
 };
@@ -1955,15 +2315,14 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     maxSize: function(options) {
-        var params = [],
-            opts = options || {};
+        var params = [];
 
-        if (opts.width) {
-            params.push('width=' + toInt(opts.width));
+        if (options.width) {
+            params.push('width=' + toInt(options.width));
         }
 
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
+        if (options.height) {
+            params.push('height=' + toInt(options.height));
         }
 
         if (!params.length) {
@@ -2024,15 +2383,14 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     resize: function(options) {
-        var params = [],
-            opts = options || {};
+        var params = [];
 
-        if (opts.width) {
-            params.push('width=' + toInt(opts.width));
+        if (options && options.width) {
+            params.push('width=' + toInt(options.width));
         }
 
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
+        if (options && options.height) {
+            params.push('height=' + toInt(options.height));
         }
 
         if (!params.length) {
@@ -2051,14 +2409,12 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     rotate: function(options) {
-        var opts = options || {};
-
-        if (isNaN(opts.angle)) {
+        if (!options || isNaN(options.angle)) {
             throw new Error('angle needs to be specified');
         }
 
-        var bg = (opts.bg || '000000').replace(/^#/, '');
-        return this.append('rotate:angle=' + opts.angle + ',bg=' + bg);
+        var bg = (options.bg || '000000').replace(/^#/, '');
+        return this.append('rotate:angle=' + options.angle + ',bg=' + bg);
     },
 
     /**
@@ -2115,6 +2471,47 @@ extend(ImageUrl.prototype, {
         }
 
         return this.append(transform);
+    },
+
+    smartSize: function(options) {
+        var params = [],
+            opts = options || {};
+
+        if (!opts.width || !opts.height) {
+            throw new Error('Both width and height needs to be specified');
+        }
+
+        if (opts.poi) {
+            var poi;
+            if (Array.isArray(opts.poi)) {
+                poi = opts.poi.map(toInt).join(',');
+            } else if (
+                typeof opts.poi.x !== 'undefined' &&
+                typeof opts.poi.y !== 'undefined') {
+                poi = toInt(opts.poi.x) + ',' + toInt(opts.poi.y);
+            } else {
+                throw new Error(
+                    '`poi` parameter must be either an array of [x, y]-coordinates ' +
+                    ' or an object with `x` and `y` properties'
+                );
+            }
+
+            params.push('poi=' + poi);
+        }
+
+        if (opts.crop) {
+            var cropValues = ['close', 'medium', 'wide'];
+            if (cropValues.indexOf(opts.crop) === -1) {
+                throw new Error(
+                    '`crop` parameter must be either: ' +
+                    cropValues.map(backtickify).join(', ')
+                );
+            }
+
+            params.push('crop=' + opts.crop);
+        }
+
+        return this.append('smartSize:' + params.join(','));
     },
 
     /**
@@ -2247,8 +2644,9 @@ extend(ImageUrl.prototype, {
      */
     clone: function() {
         return new ImageUrl({
-            transformations: (this.transformations || []).slice(0),
+            transformations: this.transformations.slice(0),
             baseUrl: this.rootUrl,
+            user: this.user,
             publicKey: this.publicKey,
             privateKey: this.privateKey,
             imageIdentifier: this.imageIdentifier,
@@ -2340,7 +2738,13 @@ ImageUrl.parse = function(url, privateKey) {
     var parts = parseUrl(url),
         path = parts.pathname,
         basePath = path.replace(/(.*)\/users\/.*/, '$1'),
-        query = (parts.query || '').split('&').map(decodeURIComponent);
+        user = path.replace(/.*\/users\/(.+?)\/.*/, '$1'),
+        query = (parts.query || '').split('&').map(decodeURIComponent),
+        publicKey = query.filter(function(item) {
+            return item.indexOf('publicKey=') === 0;
+        }).map(function(str) {
+            return str.substring(10);
+        })[0];
 
     var transformations = query.filter(function(param) {
         return param.indexOf('t[]=') === 0;
@@ -2351,20 +2755,23 @@ ImageUrl.parse = function(url, privateKey) {
     return new ImageUrl({
         baseUrl: parts.protocol + '//' + parts.host + basePath,
         path: path.replace(/.*\/images\/[^\/]*/, ''),
-        publicKey: path.replace(/.*\/users\/(.+?)\/.*/, '$1'),
+        user: user,
+        publicKey: publicKey || user,
         privateKey: privateKey,
         transformations: transformations,
         extension: path.replace(/.*\/images\/.*?(?:\.|$)(.*)/, '$1') || null,
         imageIdentifier: path.replace(/.*\/images\/(.+?)(\..*|$)/, '$1'),
         queryString: query.filter(function(item) {
-            return item.indexOf('t[]=') === -1 && item.indexOf('accessToken=') === -1;
+            return item.indexOf('t[]=') === -1 &&
+                item.indexOf('accessToken=') === -1 &&
+                item.indexOf('publicKey=') === -1;
         }).join('&')
     });
 };
 
 module.exports = ImageUrl;
 
-},{"../browser/parseurl":5,"../utils/extend":14,"./url":13}],12:[function(_dereq_,module,exports){
+},{"../browser/parseurl":5,"../utils/extend":15,"./url":13}],12:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2383,8 +2790,6 @@ var extend = _dereq_('../utils/extend');
  * @param {Object} options
  */
 var ShortUrl = function(options) {
-    options = options || {};
-
     this.baseUrl = options.baseUrl;
     this.shortId = options.id;
 };
@@ -2420,7 +2825,7 @@ extend(ShortUrl.prototype, {
 
 module.exports = ShortUrl;
 
-},{"../utils/extend":14}],13:[function(_dereq_,module,exports){
+},{"../utils/extend":15}],13:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2440,10 +2845,9 @@ var crypto = _dereq_('../browser/crypto'),
  * @param {Object} options
  */
 var ImboUrl = function(options) {
-    options = options || {};
-
     this.transformations = [];
     this.baseUrl = options.baseUrl;
+    this.user = typeof options.user === 'undefined' ? options.publicKey : options.user;
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
     this.extension = options.extension;
@@ -2453,6 +2857,15 @@ var ImboUrl = function(options) {
 };
 
 extend(ImboUrl.prototype, {
+    /**
+     * Get the user for this URL instance
+     *
+     * @return {String}
+     */
+    getUser: function() {
+        return this.user;
+    },
+
     /**
      * Get the public key for this URL instance
      *
@@ -2532,11 +2945,22 @@ extend(ImboUrl.prototype, {
         var extension = this.extension ? ('.' + this.extension) : '',
             url = (this.baseUrl + extension + this.path),
             encodedUrl = url,
+            addPubKey = this.publicKey !== this.user,
             qs = this.getQueryString();
 
         if (qs.length) {
             encodedUrl += '?' + this.getQueryString(true);
             url += '?' + qs;
+        }
+
+        if (addPubKey) {
+            var pubKeyParam = (
+                (url.indexOf('?') > -1 ? '&' : '?') +
+                'publicKey=' + this.publicKey
+            );
+
+            url += pubKeyParam;
+            encodedUrl += pubKeyParam;
         }
 
         return [
@@ -2558,7 +2982,26 @@ extend(ImboUrl.prototype, {
 
 module.exports = ImboUrl;
 
-},{"../browser/crypto":2,"../utils/extend":14}],14:[function(_dereq_,module,exports){
+},{"../browser/crypto":2,"../utils/extend":15}],14:[function(_dereq_,module,exports){
+'use strict';
+
+function get404Handler(callback) {
+    return function(err, res) {
+        // If we encounter an error from the server, we might not have
+        // statusCode available - in this case, fall back to undefined
+        var statusCode = res && res.statusCode ? res.statusCode : null;
+
+        // Request error?
+        var reqErr = err && err.statusCode !== 404 ? err : null;
+
+        // Requester returns error on 404, we expect this to happen
+        callback(reqErr, statusCode === 200);
+    };
+}
+
+module.exports = get404Handler;
+
+},{}],15:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2574,14 +3017,17 @@ module.exports = ImboUrl;
  *
  * @param {Object} target
  * @param {Object} extension
+ * @return {Object} Returns target
  */
 module.exports = function(target, extension) {
     for (var key in extension) {
         target[key] = extension[key];
     }
+
+    return target;
 };
 
-},{}],15:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -2609,7 +3055,33 @@ module.exports = function(str) {
     return json;
 };
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],17:[function(_dereq_,module,exports){
+'use strict';
+
+/**
+ * Parse an array of URLs, stripping excessive parts
+ *
+ * @param  {String|Array} urls
+ * @return {Array}
+ */
+module.exports = function parseUrls(urls) {
+    // Accept string for host, if user only specifies one
+    if (typeof urls === 'string') {
+        urls = [urls];
+    } else if (!Array.isArray(urls) || !urls.length) {
+        throw new Error('`options.hosts` must be a string or an array of strings');
+    }
+
+    // Strip out any unnecessary parts
+    var serverUrls = [];
+    for (var i = 0; i < urls.length; i++) {
+        serverUrls.push(urls[i].replace(/:80(\/|$)/, '$1').replace(/\/$/, ''));
+    }
+
+    return serverUrls;
+};
+
+},{}],18:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2674,11 +3146,11 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],17:[function(_dereq_,module,exports){
+},{}],19:[function(_dereq_,module,exports){
 module.exports={
   "name": "imboclient",
   "description": "An Imbo client for node.js and modern browsers",
-  "version": "2.3.4",
+  "version": "3.0.0",
   "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "contributors": [],
   "repository": {
@@ -2689,12 +3161,12 @@ module.exports={
     "url": "http://github.com/imbo/imboclient-js/issues"
   },
   "dependencies": {
-    "request": "^2.55.0"
+    "request": "^2.60.0"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
     "del": "^2.0.2",
-    "eslint": "^1.5.1",
+    "eslint": "^1.6.0",
     "eslint-config-vaffel": "^2.0.0",
     "gulp": "^3.9.0",
     "gulp-browserify": "^0.5.1",
@@ -2703,10 +3175,9 @@ module.exports={
     "gulp-mocha": "^2.1.3",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
-    "gulp-uglify": "^1.4.1",
+    "gulp-uglify": "^1.4.2",
     "gulp-util": "^3.0.6",
-    "nock": "^2.13.0",
-    "should": "^7.1.0",
+    "nock": "^2.15.0",
     "through": "^2.3.8",
     "workerify": "^0.3.0"
   },
