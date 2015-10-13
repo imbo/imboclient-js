@@ -8,7 +8,7 @@ var assert = require('assert'),
     request = require('request');
 
 var fixtures = path.join(__dirname, '..', 'fixtures'),
-    imageId = /^[a-f0-9-]{32,36}$/,
+    imageId = /^[A-Za-z0-9_-]{1,255}$/,
     catMd5 = '61da9892205a0d5077a353eb3487e8c8';
 
 var stcUrl = 'http://127.0.0.1:6775',
