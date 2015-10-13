@@ -618,6 +618,8 @@ var ImboUrl = _dereq_('./url/url'),
     features = _dereq_('./browser/feature-support'),
     parseUrls = _dereq_('./utils/parse-urls');
 
+var isBrowser = typeof window !== 'undefined';
+
 /**
  * Constructs a new Imbo client
  *
@@ -648,6 +650,17 @@ function ImboClient(options, publicKey, privateKey) {
 
 extend(ImboClient.prototype, {
     /**
+     * Set the user on which commands performed by this client should be performed on
+     *
+     * @param {String} user
+     * @return {ImboClient}
+     */
+    user: function(user) {
+        this.options.user = user;
+        return this;
+    },
+
+    /**
      * Add a new image to the server from a local file
      *
      * @param {String|File} file     - Path to the local image, or an instance of File
@@ -655,7 +668,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     addImage: function(file, callback) {
-        if (typeof window !== 'undefined' && file instanceof window.File) {
+        if (isBrowser && file instanceof window.File) {
             // Browser File instance
             return this.addImageFromBuffer(file, callback);
         }
@@ -696,7 +709,7 @@ extend(ImboClient.prototype, {
      */
     addImageFromBuffer: function(source, callback) {
         var url = this.getSignedResourceUrl('POST', this.getImagesUrl()),
-            isFile = typeof window !== 'undefined' && source instanceof window.File,
+            isFile = isBrowser && source instanceof window.File,
             onComplete = callback.onComplete || callback,
             onProgress = callback.onProgress || null;
 
@@ -727,7 +740,7 @@ extend(ImboClient.prototype, {
      * @return {ImboClient}
      */
     addImageFromUrl: function(url, callback) {
-        if (typeof window !== 'undefined') {
+        if (isBrowser) {
             // Browser environments can't pipe, so download the file and add it
             return this.getImageDataFromUrl(url, function(err, data) {
                 if (err) {
@@ -941,8 +954,8 @@ extend(ImboClient.prototype, {
         request.get(this.getImagesUrl(query), function(err, res, body) {
             callback(
                 err,
-                body ? body.images : [],
-                body ? body.search : {},
+                body && body.images,
+                body && body.search,
                 res
             );
         });
@@ -1004,9 +1017,9 @@ extend(ImboClient.prototype, {
      * @return {Imbo.ImageUrl}
      */
     getImageUrl: function(imageIdentifier, options) {
-        if (typeof imageIdentifier !== 'string') {
+        if (typeof imageIdentifier !== 'string' || imageIdentifier.length === 0) {
             throw new Error(
-                '`imageIdentifier` must be a string, was "' + imageIdentifier + '"' +
+                '`imageIdentifier` must be a non-empty string, was "' + imageIdentifier + '"' +
                 ' (' + typeof imageIdentifier + ')'
             );
         }
@@ -1059,7 +1072,7 @@ extend(ImboClient.prototype, {
     getResourceUrl: function(options) {
         return new ImboUrl({
             baseUrl: this.options.hosts[0],
-            user: this.options.user,
+            user: typeof options.user !== 'undefined' ? options.user : this.options.user,
             publicKey: this.options.publicKey,
             privateKey: this.options.privateKey,
             queryString: options.query,
@@ -1152,7 +1165,7 @@ extend(ImboClient.prototype, {
      */
     getNumImages: function(callback) {
         this.getUserInfo(function(err, info) {
-            callback(err, info ? info.numImages : null);
+            callback(err, info && info.numImages);
         });
 
         return this;
@@ -1222,9 +1235,186 @@ extend(ImboClient.prototype, {
     },
 
     /**
+     * Fetch the resource groups available
+     *
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    getResourceGroups: function(callback) {
+        request.get(
+            this.getResourceUrl({ path: '/groups', user: null }),
+            function onResourceGroupResponse(err, res, body) {
+                callback(
+                    err,
+                    body && body.groups,
+                    body && body.search,
+                    res
+                );
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Create/edit a resource group, setting the resources that should be available to it
+     *
+     * @param {String} groupName
+     * @param {Array} resources
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    editResourceGroup: function(groupName, resources, callback) {
+        var url = this.getResourceUrl({ path: '/groups/' + groupName, user: null });
+        request({
+            method: 'PUT',
+            uri: this.getSignedResourceUrl('PUT', url),
+            json: resources,
+            onComplete: function(err, res, body) {
+                callback(err, body, res);
+            }
+        });
+
+        return this;
+    },
+
+    /**
+     * Delete the resource group with the given name
+     *
+     * @param {String} groupName Name fo the group you want to delete
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deleteResourceGroup: function(groupName, callback) {
+        var url = this.getResourceUrl({ path: '/groups/' + groupName, user: null });
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
+
+        return this;
+    },
+
+    /**
+     * Add a public/private key pair
+     *
+     * @param {String} publicKey Public key you want to add
+     * @param {String} privateKey Private key for the public key
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    addPublicKey: function(publicKey, privateKey, callback) {
+        this.publicKeyExists(publicKey, function onPubKeyExistsResponse(err, exists) {
+            if (err) {
+                return callback(err);
+            }
+
+            if (exists) {
+                return callback(new Error(
+                    'Public key `' + publicKey + '` already exists'
+                ));
+            }
+
+            this.editPublicKey(publicKey, privateKey, callback);
+        }.bind(this));
+
+        return this;
+    },
+
+    /**
+     * Edit a public/private key pair
+     *
+     * @param {String} publicKey Public key you want to edit
+     * @param {String} privateKey Private key for the public key
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    editPublicKey: function(publicKey, privateKey, callback) {
+        if (!publicKey || !privateKey) {
+            throw new Error('Both public key and private key must be specified');
+        }
+
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey, user: null });
+        request({
+            method: 'PUT',
+            uri: this.getSignedResourceUrl('PUT', url),
+            json: { privateKey: privateKey },
+            onComplete: callback
+        });
+
+        return this;
+    },
+
+    /**
+     * Delete a public key
+     *
+     * @param {String} publicKey Public key you want to delete
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    deletePublicKey: function(publicKey, callback) {
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey, user: null });
+        request.del(this.getSignedResourceUrl('DELETE', url), callback);
+
+        return this;
+    },
+
+    /**
+     * Check whether a public key exists or not
+     *
+     * @param {String} publicKey Public key you want to check for the presence of
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    publicKeyExists: function(publicKey, callback) {
+        request.head(
+            this.getResourceUrl({ path: '/keys/' + publicKey, user: null }),
+            function onPublicKeyExistsResponse(err, res) {
+                // If we encounter an error from the server, we might not have
+                // statusCode available - in this case, fall back to undefined
+                var statusCode = res && res.statusCode ? res.statusCode : null;
+
+                // Request error?
+                var reqErr = err && err.statusCode !== 404 ? err : null;
+
+                // Requester returns error on 404, we expect this to happen
+                callback(reqErr, statusCode === 200);
+            }
+        );
+        return this;
+    },
+
+    /**
+     * Add one or more access control rules to the given public key
+     *
+     * @param {String} publicKey The public key to add rules to
+     * @param {Array} rules Array of access control rules to add
+     * @param {Function} callback
+     * @return {ImboClient}
+     */
+    addAccessControlRule: function(publicKey, rules, callback) {
+        if (!Array.isArray(rules)) {
+            rules = [rules];
+        }
+
+        if (!publicKey) {
+            throw new Error('Public key must be a valid string');
+        }
+
+        var url = this.getResourceUrl({ path: '/keys/' + publicKey + '/access', user: null });
+
+        request({
+            method: 'POST',
+            uri: this.getSignedResourceUrl('POST', url),
+            json: rules,
+            onComplete: function(err, res, body) {
+                callback(err, body, res);
+            }
+        });
+
+        return this;
+    },
+
+    /**
      * Get the binary data of an image stored on the server
      *
-     * @param {String}   imageIdentifier
+     * @param {String} imageIdentifier
      * @param {Function} callback
      * @return {ImboClient}
      */
@@ -1261,7 +1451,14 @@ extend(ImboClient.prototype, {
             return this.options.hosts[0];
         }
 
-        var dec = parseInt(imageIdentifier.slice(0, 2), 16);
+        var dec = imageIdentifier.charCodeAt(imageIdentifier.length - 1);
+
+        // If this is an old image identifier (32 character hex string),
+        // maintain backwards compatibility
+        if (imageIdentifier.match(/^[a-f0-9]{32}$/)) {
+            dec = parseInt(imageIdentifier.substr(0, 2), 16);
+        }
+
         return this.options.hosts[dec % this.options.hosts.length];
     },
 
@@ -1753,21 +1950,23 @@ var isNumeric = function(num) {
     return !isNaN(num);
 };
 
+var backtickify = function(str) {
+    return '`' + str + '`';
+};
+
 /**
  * ImageUrl constructor
  *
  * @param {Object} options
  */
 var ImageUrl = function(options) {
-    options = options || {};
-
     this.transformations = options.transformations || [];
     this.rootUrl = options.baseUrl;
     this.baseUrl = options.baseUrl;
     this.user = options.user || options.publicKey;
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
-    this.imageIdentifier = options.imageIdentifier || '';
+    this.imageIdentifier = options.imageIdentifier;
     this.extension = options.extension;
     this.queryString = options.queryString;
     this.path = options.path || '';
@@ -1967,15 +2166,14 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     maxSize: function(options) {
-        var params = [],
-            opts = options || {};
+        var params = [];
 
-        if (opts.width) {
-            params.push('width=' + toInt(opts.width));
+        if (options.width) {
+            params.push('width=' + toInt(options.width));
         }
 
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
+        if (options.height) {
+            params.push('height=' + toInt(options.height));
         }
 
         if (!params.length) {
@@ -2036,15 +2234,14 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     resize: function(options) {
-        var params = [],
-            opts = options || {};
+        var params = [];
 
-        if (opts.width) {
-            params.push('width=' + toInt(opts.width));
+        if (options && options.width) {
+            params.push('width=' + toInt(options.width));
         }
 
-        if (opts.height) {
-            params.push('height=' + toInt(opts.height));
+        if (options && options.height) {
+            params.push('height=' + toInt(options.height));
         }
 
         if (!params.length) {
@@ -2063,14 +2260,12 @@ extend(ImageUrl.prototype, {
      * @return {Imbo.ImageUrl}
      */
     rotate: function(options) {
-        var opts = options || {};
-
-        if (isNaN(opts.angle)) {
+        if (!options || isNaN(options.angle)) {
             throw new Error('angle needs to be specified');
         }
 
-        var bg = (opts.bg || '000000').replace(/^#/, '');
-        return this.append('rotate:angle=' + opts.angle + ',bg=' + bg);
+        var bg = (options.bg || '000000').replace(/^#/, '');
+        return this.append('rotate:angle=' + options.angle + ',bg=' + bg);
     },
 
     /**
@@ -2127,6 +2322,47 @@ extend(ImageUrl.prototype, {
         }
 
         return this.append(transform);
+    },
+
+    smartSize: function(options) {
+        var params = [],
+            opts = options || {};
+
+        if (!opts.width || !opts.height) {
+            throw new Error('Both width and height needs to be specified');
+        }
+
+        if (opts.poi) {
+            var poi;
+            if (Array.isArray(opts.poi)) {
+                poi = opts.poi.map(toInt).join(',');
+            } else if (
+                typeof opts.poi.x !== 'undefined' &&
+                typeof opts.poi.y !== 'undefined') {
+                poi = toInt(opts.poi.x) + ',' + toInt(opts.poi.y);
+            } else {
+                throw new Error(
+                    '`poi` parameter must be either an array of [x, y]-coordinates ' +
+                    ' or an object with `x` and `y` properties'
+                );
+            }
+
+            params.push('poi=' + poi);
+        }
+
+        if (opts.crop) {
+            var cropValues = ['close', 'medium', 'wide'];
+            if (cropValues.indexOf(opts.crop) === -1) {
+                throw new Error(
+                    '`crop` parameter must be either: ' +
+                    cropValues.map(backtickify).join(', ')
+                );
+            }
+
+            params.push('crop=' + opts.crop);
+        }
+
+        return this.append('smartSize:' + params.join(','));
     },
 
     /**
@@ -2259,7 +2495,7 @@ extend(ImageUrl.prototype, {
      */
     clone: function() {
         return new ImageUrl({
-            transformations: (this.transformations || []).slice(0),
+            transformations: this.transformations.slice(0),
             baseUrl: this.rootUrl,
             user: this.user,
             publicKey: this.publicKey,
@@ -2405,8 +2641,6 @@ var extend = _dereq_('../utils/extend');
  * @param {Object} options
  */
 var ShortUrl = function(options) {
-    options = options || {};
-
     this.baseUrl = options.baseUrl;
     this.shortId = options.id;
 };
@@ -2462,11 +2696,9 @@ var crypto = _dereq_('../browser/crypto'),
  * @param {Object} options
  */
 var ImboUrl = function(options) {
-    options = options || {};
-
     this.transformations = [];
     this.baseUrl = options.baseUrl;
-    this.user = options.user;
+    this.user = typeof options.user === 'undefined' ? options.publicKey : options.user;
     this.publicKey = options.publicKey;
     this.privateKey = options.privateKey;
     this.extension = options.extension;
@@ -2564,7 +2796,7 @@ extend(ImboUrl.prototype, {
         var extension = this.extension ? ('.' + this.extension) : '',
             url = (this.baseUrl + extension + this.path),
             encodedUrl = url,
-            addPubKey = this.publicKey !== this.user && this.user,
+            addPubKey = this.publicKey !== this.user,
             qs = this.getQueryString();
 
         if (qs.length) {
@@ -2758,12 +2990,12 @@ module.exports={
     "url": "http://github.com/imbo/imboclient-js/issues"
   },
   "dependencies": {
-    "request": "^2.55.0"
+    "request": "^2.60.0"
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
     "del": "^2.0.2",
-    "eslint": "^1.5.1",
+    "eslint": "^1.6.0",
     "eslint-config-vaffel": "^2.0.0",
     "gulp": "^3.9.0",
     "gulp-browserify": "^0.5.1",
@@ -2772,10 +3004,9 @@ module.exports={
     "gulp-mocha": "^2.1.3",
     "gulp-rename": "^1.2.2",
     "gulp-replace": "^0.5.4",
-    "gulp-uglify": "^1.4.1",
+    "gulp-uglify": "^1.4.2",
     "gulp-util": "^3.0.6",
-    "nock": "^2.13.0",
-    "should": "^7.1.0",
+    "nock": "^2.15.0",
     "through": "^2.3.8",
     "workerify": "^0.3.0"
   },
