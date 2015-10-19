@@ -503,6 +503,7 @@ The available transformation methods are:
 * ``border({ color: '000000', width: 1, height: 1, mode: 'outbound' })``
 * ``canvas({ width: null, height: null, mode: null, x: null, y: null, bg: null })``
 * ``compress({ level: 75 })``
+* ``contrast({ sharpen: 2 })``
 * ``crop({ x: null, y: null, width: null, height: null })``
 * ``desaturate()``
 * ``flipHorizontally()``
@@ -513,6 +514,7 @@ The available transformation methods are:
 * ``resize({ width: null, height: null })``
 * ``rotate({ angle: null, bg: '000000' })``
 * ``sepia({ threshold: 80 })``
+* ``sharpen({ radius: 3, sigma: 2, gain: 1.5, threshold: 0.07 })``
 * ``smartSize({ width: null, height: null, crop: 'mode', poi: 'x,y' })``
 * ``strip()``
 * ``thumbnail({ width: 50, height: 50, fit: 'outbound' })``
