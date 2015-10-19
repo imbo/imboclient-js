@@ -22,3 +22,4 @@ env:
   - IMBOCLIENT_RUN_INTEGRATION_TESTS=1
 after_success:
   - npm run coveralls
+  - curl -X POST https://readthedocs.org/build/imboclient-js
