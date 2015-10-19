@@ -123,6 +123,16 @@ describe('Imbo.ImageUrl', function() {
         });
     });
 
+    describe('#contrast', function() {
+        it('should return correct transformation', function() {
+            assertUrlContains(url.contrast(), '?t[]=contrast');
+        });
+
+        it('should handle sharpen', function() {
+            assertUrlContains(url.contrast({ sharpen: 3 }), '?t[]=contrast:sharpen=3');
+        });
+    });
+
     describe('#convert', function() {
         it('should append the given filetype to the URL', function() {
             assertUrlContains(url.convert('png'), '.png');
