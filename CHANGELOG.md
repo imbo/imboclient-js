@@ -15,4 +15,4 @@ All notable changes since 2.3.4 will be documented in this file.
 - Methods for public/private keys: `addPublicKey()`, `editPublicKey()`, `deletePublicKey()` and `publicKeyExists()`.
 - Methods for access control rules: `getAccessControlRules()`, `getAccessControlRule()`, `addAccessControlRule()`, `deleteAccessControlRule()`.
 
-[3.0.0]: https://github.com/rexxars/sse-channel/compare/2.3.4...3.0.0
+[3.0.0]: https://github.com/imbo/imboclient-js/compare/2.3.4...3.0.0
