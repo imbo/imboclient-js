@@ -3,7 +3,7 @@
 var fs = require('fs'),
     path = require('path'),
     md5 = require('../../lib/browser/md5.min'),
-    sha = require('../../lib/browser/sha'),
+    sha = require('../../lib/browser/crypto').sha256,
     crypto = require('crypto'),
     assert = require('assert');
 
@@ -27,7 +27,7 @@ describe('crypto (browser)', function() {
         ].forEach(function(str) {
             var key = 'key=' + Date.now();
             assert.equal(
-                sha.sha256hmac(key, str),
+                sha(key, str),
                 crypto.createHmac('sha256', key).update(str, 'utf8').digest('hex'),
                 'String did not have correct hash'
             );
@@ -35,11 +35,23 @@ describe('crypto (browser)', function() {
             // Also test a long key (special case for this in the sha implementation)
             key += key + key + key + key + key + key;
             assert.equal(
-                sha.sha256hmac(key, str),
+                sha(key, str),
                 crypto.createHmac('sha256', key).update(str, 'utf8').digest('hex'),
                 'String did not have correct hash'
             );
         });
+    });
+
+    it('should generate correct sha256+hmac hashes for strings with special chars', function() {
+        var key = 'key=' + Date.now();
+        var str = 'https://imbo/users/dev/images.json';
+        str += '?t[]=foo&name=båt.jpg&t[]=maxSize:width=320,height=240';
+
+        assert.equal(
+            sha(key, str),
+            crypto.createHmac('sha256', key).update(str, 'utf8').digest('hex'),
+            'String did not have correct hash'
+        );
     });
 });
 

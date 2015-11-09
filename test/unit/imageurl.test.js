@@ -666,6 +666,13 @@ describe('Imbo.ImageUrl', function() {
             assertUrlContains(url.flipVertically().getUrl(), 'http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?t[]=flipVertically');
         });
 
+        it('should generate the correct access token when it contains special characters', function() {
+            assert.equal(
+                url.setQueryString('name=båt.jpg').flipVertically().getUrl(),
+                'http://imbo/users/pub/images/61da9892205a0d5077a353eb3487e8c8?name=båt.jpg&t%5B%5D=flipVertically&accessToken=d3e3a1889f1e2a546f23a5072f155c26ad1f1d4c214ced57b753c49e7a5803da'
+            );
+        });
+
         it('should generate correct URL-encoded URLs for advanced combinations', function() {
             assert.equal(
                 url.flipVertically().maxSize({ width: 123, height: 456 }).border({ color: '#bf1942' }).getUrl(),
