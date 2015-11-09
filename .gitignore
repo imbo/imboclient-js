@@ -5,3 +5,5 @@ examples/node/config.json
 composer.phar
 imbolauncher
 docs/_build
+npm-debug.log
+
