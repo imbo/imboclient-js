@@ -832,5 +832,28 @@ describe('Imbo.ImageUrl', function() {
             assert.equal(manual.toString(), parsed.toString());
             assert.equal(manual.flipVertically().toString(), parsed.flipVertically().toString());
         });
+
+        it('should be able to change the public key after instantiation', function() {
+            var manual = new Imbo.ImageUrl({
+                baseUrl: baseUrl,
+                user: 'usr',
+                publicKey: pub,
+                privateKey: priv,
+                imageIdentifier: catMd5
+            }).sepia();
+
+            var parsed = Imbo.ImageUrl.parse(manual.toString(), priv);
+            assert.equal([
+                'http://imbo/users/usr/images/61da9892205a0d5077a353eb3487e8c8',
+                '?t%5B%5D=sepia%3Athreshold%3D80&publicKey=pub',
+                '&accessToken=9edf09e54b0ae92966b88f50fa7b064c057ec731e22bbc93c75c332f6e2e268b'
+            ].join(''), parsed.toString());
+
+            assert.equal([
+                'http://imbo/users/usr/images/61da9892205a0d5077a353eb3487e8c8',
+                '?t%5B%5D=sepia%3Athreshold%3D80&publicKey=diff',
+                '&accessToken=3b25280690460f8072daac7ae15151392079a97c1218a68bc85c7b50fc49b51b'
+            ].join(''), parsed.setPublicKey('diff').toString());
+        });
     });
 });
