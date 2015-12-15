@@ -35,7 +35,7 @@
   "scripts": {
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "eslint .",
-    "pretest": "npm run lint",
+    "posttest": "npm run lint",
     "test": "gulp test"
   },
   "main": "index",
