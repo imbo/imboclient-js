@@ -1635,6 +1635,34 @@ describe('ImboClient', function() {
             });
         });
 
+        it('should be able to provide expanded groups if option is set', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access?expandGroups=1')
+                .reply(200, [
+                    { id: 1, resources: ['foo', 'bar'], group: 'some-group', users: '*' }
+                ]);
+
+            client.getAccessControlRules('ninja', true, function(err, rules, res) {
+                assert.ifError(err, 'getAccessControlRules should not give an error on success');
+                assert.equal(1, rules.length);
+                assert.equal(2, rules[0].resources.length);
+                assert.equal('*', rules[0].users);
+                assert.equal('some-group', rules[0].group);
+                assert.equal(200, res.statusCode);
+                done();
+            });
+        });
+
+        it('should not ask for expanded groups if option is set to false', function(done) {
+            mock.filteringPath(urlCleaner)
+                .get('/keys/ninja/access')
+                .reply(200, [
+                    { id: 1, group: 'some-group', users: '*' }
+                ]);
+
+            client.getAccessControlRules('ninja', false, done);
+        });
+
         it('should return an error if the public key does not have sufficient privileges', function(done) {
             mock.filteringPath(urlCleaner)
                 .get('/keys/ninja/access')
