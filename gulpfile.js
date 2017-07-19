@@ -1,6 +1,7 @@
 'use strict';
 
 var del = require('del');
+var pump = require('pump');
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
@@ -72,12 +73,13 @@ gulp.task('browserify', function(cb) {
 });
 
 gulp.task('uglify', function(cb) {
-    gulp.src('./dist/browser-bundle.js')
-        .pipe(rename('browser-bundle.min.js'))
-        .pipe(uglify({ outSourceMap: true }))
-        .pipe(insert.prepend(banner))
-        .pipe(gulp.dest('./dist'))
-        .on('end', cb);
+    pump([
+        gulp.src('dist/browser-bundle.js'),
+        rename('browser-bundle.min.js'),
+        uglify({sourceMap: true}),
+        insert.prepend(banner),
+        gulp.dest('dist')
+    ], cb);
 });
 
 gulp.task('default', ['clean', 'coverage', 'browserify'], function() {
@@ -88,5 +90,5 @@ gulp.task('test', ['mocha']);
 
 function getMochaStream() {
     return gulp.src('test/**/*.test.js', { read: false })
-       .pipe(mocha(mochaOpts));
+        .pipe(mocha(mochaOpts));
 }

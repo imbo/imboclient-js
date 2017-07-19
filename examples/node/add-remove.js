@@ -17,45 +17,52 @@ var Imbo = require('../../'),
     path = require('path'),
     fs = require('fs');
 
-var img = path.join(__dirname, '..', '..', 'test', 'fixtures', 'cat.jpg'),
-    config;
+(function() {
+    var img = path.join(__dirname, '..', '..', 'test', 'fixtures', 'cat.jpg'),
+        config;
 
-try {
-    fs.statSync(path.join(__dirname, '/config.json'));
-    config = require('./config.json');
-} catch (e) {
-    return console.log('Could not load config file (config.json) - have you copied and customized config.json.dist?');
-}
-
-// Lets get going!
-
-// Instantiating client
-var client = new Imbo.Client(config.hosts, config.pubKey, config.privKey);
-
-// Check if the image exists on the server already
-console.log('Checking if the image already exists on server...');
-client.imageExists(img, function(err, exists, imageIdentifier) {
-    if (err) {
-        return console.log('Oh ouch, something went wrong!', err);
+    try {
+        fs.statSync(path.join(__dirname, '/config.json'));
+        config = require('./config.json');
+    } catch (e) {
+        console.log('Could not load config file (config.json) - have you copied and customized config.json.dist?');
+        return;
     }
 
-    if (exists) {
-        console.log('The image already exists on server. Deleting it.');
+    // Lets get going!
 
-        client.deleteImage(imageIdentifier, function(deleteErr) {
-            if (deleteErr) {
-                return console.log('Could not delete image :(', deleteErr);
-            }
+    // Instantiating client
+    var client = new Imbo.Client(config.hosts, config.pubKey, config.privKey);
 
-            console.log('Image deleted! Run me again to re-add it.');
-        });
-    } else {
+    // Check if the image exists on the server already
+    console.log('Checking if the image already exists on server...');
+    client.imageExists(img, function(err, exists, imageIdentifier) {
+        if (err) {
+            console.log('Oh ouch, something went wrong!', err);
+            return;
+        }
+
+        if (exists) {
+            console.log('The image already exists on server. Deleting it.');
+
+            client.deleteImage(imageIdentifier, function(deleteErr) {
+                if (deleteErr) {
+                    console.log('Could not delete image :(', deleteErr);
+                    return;
+                }
+
+                console.log('Image deleted! Run me again to re-add it.');
+            });
+            return;
+        }
+
         // Lets add an image to the server
         console.log('Adding image to server...');
         client.addImage(img, function(addImgErr, imgId, response) {
             // Remember to check for any errors
             if (addImgErr) {
-                return console.log('Oh no! Something went horribly wrong!', addImgErr, response);
+                console.log('Oh no! Something went horribly wrong!', addImgErr, response);
+                return;
             }
 
             console.log('Hooray! We added the image to the server!');
@@ -86,5 +93,5 @@ client.imageExists(img, function(err, exists, imageIdentifier) {
                 console.log('All done...');
             });
         });
-    }
-});
+    });
+}());

@@ -1,3 +1,4 @@
+/* globals ArrayBuffer, Uint8Array */
 'use strict';
 
 var fs = require('fs'),

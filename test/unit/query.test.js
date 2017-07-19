@@ -452,15 +452,15 @@ describe('Imbo.Query', function() {
     describe('#reset', function() {
         it('should reset all fields', function() {
             query.page(5)
-                 .limit(10)
-                 .metadata(1)
-                 .from(new Date())
-                 .to(new Date())
-                 .ids(['such ids'])
-                 .checksums(['amaze'])
-                 .fields(['much fields'])
-                 .sort('wow', 'desc')
-                 .originalChecksums(['many check']);
+                .limit(10)
+                .metadata(1)
+                .from(new Date())
+                .to(new Date())
+                .ids(['such ids'])
+                .checksums(['amaze'])
+                .fields(['much fields'])
+                .sort('wow', 'desc')
+                .originalChecksums(['many check']);
 
             // Sanity check
             assert.strictEqual(10, query.limit());

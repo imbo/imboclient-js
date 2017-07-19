@@ -98,7 +98,7 @@ var addMd5Task = function(buffer, callback) {
 // Initialize the web worker for generating MD5 hashes if supported
 if (supportsWorkers) {
     // Set up the actual web worker
-    md5Worker = new Worker(window.URL.createObjectURL(new Blob(['(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module \'"+o+"\'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){\n/* global self */\n\'use strict\';\nvar md5 = require(\'./md5.min\');\nself.onmessage = function(e) {\n    self.postMessage(md5.ArrayBuffer.hash(e.data));\n};\n\n},{"./md5.min":2}],2:[function(require,module,exports){\n(function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});\n},{}]},{},[1])'],{type:"text/javascript"})));
+    md5Worker = new Worker((window.URL || window.webkitURL).createObjectURL(new Blob(['(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module \'"+o+"\'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){\n/* global self */\n\'use strict\';\nvar md5 = require(\'./md5.min\');\nself.onmessage = function(e) {\n    self.postMessage(md5.ArrayBuffer.hash(e.data));\n};\n\n},{"./md5.min":2}],2:[function(require,module,exports){\n(function(r){module.exports=r()})(function(r){"use strict";var n=function(r,n){return r+n&4294967295},t=function(r,t,u,e,o,f){t=n(n(t,r),n(e,f));return n(t<<o|t>>>32-o,u)},u=function(r,n,u,e,o,f,a){return t(n&u|~n&e,r,n,o,f,a)},e=function(r,n,u,e,o,f,a){return t(n&e|u&~e,r,n,o,f,a)},o=function(r,n,u,e,o,f,a){return t(n^u^e,r,n,o,f,a)},f=function(r,n,u,e,o,f,a){return t(u^(n|~e),r,n,o,f,a)},a=function(r,t){var a=r[0],i=r[1],c=r[2],h=r[3];a=u(a,i,c,h,t[0],7,-680876936);h=u(h,a,i,c,t[1],12,-389564586);c=u(c,h,a,i,t[2],17,606105819);i=u(i,c,h,a,t[3],22,-1044525330);a=u(a,i,c,h,t[4],7,-176418897);h=u(h,a,i,c,t[5],12,1200080426);c=u(c,h,a,i,t[6],17,-1473231341);i=u(i,c,h,a,t[7],22,-45705983);a=u(a,i,c,h,t[8],7,1770035416);h=u(h,a,i,c,t[9],12,-1958414417);c=u(c,h,a,i,t[10],17,-42063);i=u(i,c,h,a,t[11],22,-1990404162);a=u(a,i,c,h,t[12],7,1804603682);h=u(h,a,i,c,t[13],12,-40341101);c=u(c,h,a,i,t[14],17,-1502002290);i=u(i,c,h,a,t[15],22,1236535329);a=e(a,i,c,h,t[1],5,-165796510);h=e(h,a,i,c,t[6],9,-1069501632);c=e(c,h,a,i,t[11],14,643717713);i=e(i,c,h,a,t[0],20,-373897302);a=e(a,i,c,h,t[5],5,-701558691);h=e(h,a,i,c,t[10],9,38016083);c=e(c,h,a,i,t[15],14,-660478335);i=e(i,c,h,a,t[4],20,-405537848);a=e(a,i,c,h,t[9],5,568446438);h=e(h,a,i,c,t[14],9,-1019803690);c=e(c,h,a,i,t[3],14,-187363961);i=e(i,c,h,a,t[8],20,1163531501);a=e(a,i,c,h,t[13],5,-1444681467);h=e(h,a,i,c,t[2],9,-51403784);c=e(c,h,a,i,t[7],14,1735328473);i=e(i,c,h,a,t[12],20,-1926607734);a=o(a,i,c,h,t[5],4,-378558);h=o(h,a,i,c,t[8],11,-2022574463);c=o(c,h,a,i,t[11],16,1839030562);i=o(i,c,h,a,t[14],23,-35309556);a=o(a,i,c,h,t[1],4,-1530992060);h=o(h,a,i,c,t[4],11,1272893353);c=o(c,h,a,i,t[7],16,-155497632);i=o(i,c,h,a,t[10],23,-1094730640);a=o(a,i,c,h,t[13],4,681279174);h=o(h,a,i,c,t[0],11,-358537222);c=o(c,h,a,i,t[3],16,-722521979);i=o(i,c,h,a,t[6],23,76029189);a=o(a,i,c,h,t[9],4,-640364487);h=o(h,a,i,c,t[12],11,-421815835);c=o(c,h,a,i,t[15],16,530742520);i=o(i,c,h,a,t[2],23,-995338651);a=f(a,i,c,h,t[0],6,-198630844);h=f(h,a,i,c,t[7],10,1126891415);c=f(c,h,a,i,t[14],15,-1416354905);i=f(i,c,h,a,t[5],21,-57434055);a=f(a,i,c,h,t[12],6,1700485571);h=f(h,a,i,c,t[3],10,-1894986606);c=f(c,h,a,i,t[10],15,-1051523);i=f(i,c,h,a,t[1],21,-2054922799);a=f(a,i,c,h,t[8],6,1873313359);h=f(h,a,i,c,t[15],10,-30611744);c=f(c,h,a,i,t[6],15,-1560198380);i=f(i,c,h,a,t[13],21,1309151649);a=f(a,i,c,h,t[4],6,-145523070);h=f(h,a,i,c,t[11],10,-1120210379);c=f(c,h,a,i,t[2],15,718787259);i=f(i,c,h,a,t[9],21,-343485551);r[0]=n(a,r[0]);r[1]=n(i,r[1]);r[2]=n(c,r[2]);r[3]=n(h,r[3])},i=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r.charCodeAt(t)+(r.charCodeAt(t+1)<<8)+(r.charCodeAt(t+2)<<16)+(r.charCodeAt(t+3)<<24)}return n},c=function(r){var n=[],t;for(t=0;t<64;t+=4){n[t>>2]=r[t]+(r[t+1]<<8)+(r[t+2]<<16)+(r[t+3]<<24)}return n},h=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,c,h;for(u=64;u<=n;u+=64){a(t,i(r.substring(u-64,u)))}r=r.substring(u-64);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r.charCodeAt(u)<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);c=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=c;o[15]=h;a(t,o);return t},s=function(r){var n=r.length,t=[1732584193,-271733879,-1732584194,271733878],u,e,o,f,i,h;for(u=64;u<=n;u+=64){a(t,c(r.subarray(u-64,u)))}r=u-64<n?r.subarray(u-64):new Uint8Array(0);e=r.length;o=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];for(u=0;u<e;u+=1){o[u>>2]|=r[u]<<(u%4<<3)}o[u>>2]|=128<<(u%4<<3);if(u>55){a(t,o);for(u=0;u<16;u+=1){o[u]=0}}f=n*8;f=f.toString(16).match(/(.*?)(.{0,8})$/);i=parseInt(f[2],16);h=parseInt(f[1],16)||0;o[14]=i;o[15]=h;a(t,o);return t},v=["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"],d=function(r){var n="",t;for(t=0;t<4;t+=1){n+=v[r>>t*8+4&15]+v[r>>t*8&15]}return n},g=function(r){var n;for(n=0;n<r.length;n+=1){r[n]=d(r[n])}return r.join("")},A=function(r){return g(h(r))};var b=function(){this.reset()};if(A("hello")!=="5d41402abc4b2a76b9719d911017c592"){n=function(r,n){var t=(r&65535)+(n&65535),u=(r>>16)+(n>>16)+(t>>16);return u<<16|t&65535}}b.ArrayBuffer=function(){};b.ArrayBuffer.hash=function(r){return g(s(new Uint8Array(r)))};return b});\n},{}]},{},[1]);\n'],{type:"text/javascript"})));
     md5Worker.addEventListener('message', function(e) {
         var item = workerQueue.shift();
         item.callback(null, e.data);
@@ -133,7 +133,8 @@ module.exports = {
         if (options && options.type === 'url') {
             readers.getContentsFromUrl(buffer, function(err, data) {
                 if (err) {
-                    return callback(err);
+                    callback(err);
+                    return;
                 }
 
                 module.exports.md5(data, callback, { binary: true });
@@ -141,7 +142,8 @@ module.exports = {
         } else if (buffer instanceof window.File) {
             readers.getContentsFromFile(buffer, function(err, data) {
                 if (err) {
-                    return callback(err);
+                    callback(err);
+                    return;
                 }
 
                 module.exports.md5(data, callback, { binary: true });
@@ -155,8 +157,8 @@ module.exports = {
     }
 };
 
-}).call(this,_dereq_("g5I+bs"))
-},{"./md5.min":4,"./readers":6,"./sha":8,"g5I+bs":18}],3:[function(_dereq_,module,exports){
+}).call(this,_dereq_("FWaASH"))
+},{"./md5.min":4,"./readers":6,"./sha":8,"FWaASH":18}],3:[function(_dereq_,module,exports){
 /**
  * This file is part of the imboclient-js package
  *
@@ -1190,7 +1192,8 @@ extend(ImboClient.prototype, {
         // content length so it knows not to terminate the HTTP connection
         readers.getLengthOfFile(file, function(err, fileSize) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             readers.createReadStream(file).pipe(request({
@@ -1255,7 +1258,8 @@ extend(ImboClient.prototype, {
             // Browser environments can't pipe, so download the file and add it
             return this.getImageDataFromUrl(url, function(err, data) {
                 if (err) {
-                    return callback(err);
+                    callback(err);
+                    return;
                 }
 
                 this.addImageFromBuffer(data, callback);
@@ -1302,7 +1306,8 @@ extend(ImboClient.prototype, {
     getServerStatus: function(callback) {
         request.get(this.getStatusUrl(), function(err, res, body) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             body = body || {};
@@ -1362,7 +1367,8 @@ extend(ImboClient.prototype, {
     getImageProperties: function(imageIdentifier, callback) {
         this.headImage(imageIdentifier, function(err, res) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             var headers = res.headers,
@@ -1635,9 +1641,11 @@ extend(ImboClient.prototype, {
             json: data,
             onComplete: function(err, res, body) {
                 if (err) {
-                    return callback(err);
+                    callback(err);
+                    return;
                 } else if (!body || !body.id) {
-                    return callback('No ShortUrl was returned from server');
+                    callback('No ShortUrl was returned from server');
+                    return;
                 }
 
                 callback(err, new ShortUrl({ baseUrl: host, id: body.id }));
@@ -1703,7 +1711,8 @@ extend(ImboClient.prototype, {
     imageExists: function(imgPath, callback) {
         this.getImageChecksum(imgPath, function(err, checksum) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             this.imageWithChecksumExists(checksum, callback);
@@ -1736,7 +1745,8 @@ extend(ImboClient.prototype, {
         var query = (new ImboQuery()).originalChecksums([checksum]).limit(1);
         this.getImages(query, function(err, images, search) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             var exists = search.hits > 0;
@@ -1795,13 +1805,15 @@ extend(ImboClient.prototype, {
     addResourceGroup: function(groupName, resources, callback) {
         this.resourceGroupExists(groupName, function onGroupExistsResponse(err, exists) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             if (exists) {
-                return callback(new Error(
+                callback(new Error(
                     'Resource group `' + groupName + '` already exists'
                 ));
+                return;
             }
 
             this.editResourceGroup(groupName, resources, callback);
@@ -1872,13 +1884,15 @@ extend(ImboClient.prototype, {
     addPublicKey: function(publicKey, privateKey, callback) {
         this.publicKeyExists(publicKey, function onPubKeyExistsResponse(err, exists) {
             if (err) {
-                return callback(err);
+                callback(err);
+                return;
             }
 
             if (exists) {
-                return callback(new Error(
+                callback(new Error(
                     'Public key `' + publicKey + '` already exists'
                 ));
+                return;
             }
 
             this.editPublicKey(publicKey, privateKey, callback);
@@ -1944,12 +1958,20 @@ extend(ImboClient.prototype, {
      * Get a list of access control rules for a given public key
      *
      * @param {String} publicKey
+     * @param {Boolean} expandGroups
      * @param {Function} callback
      * @return {ImboClient}
      */
-    getAccessControlRules: function(publicKey, callback) {
+    getAccessControlRules: function(publicKey, expandGroups, callback) {
+        var qs = '';
+        if (!callback && typeof expandGroups === 'function') {
+            callback = expandGroups;
+        } else if (expandGroups) {
+            qs = '?expandGroups=1';
+        }
+
         request.get(
-            this.getResourceUrl({ path: '/keys/' + publicKey + '/access', user: null }),
+            this.getResourceUrl({ path: '/keys/' + publicKey + '/access' + qs, user: null }),
             function onAccessControlRulesResponse(err, res, body) {
                 callback(err, body, res);
             }
@@ -3408,6 +3430,18 @@ extend(ImboUrl.prototype, {
     },
 
     /**
+     * Set the public key for this URL instance
+     *
+     * @param {String} pubKey
+     * @return {Imbo.Url}
+     */
+    setPublicKey: function(pubKey) {
+        this.publicKey = pubKey;
+
+        return this;
+    },
+
+    /**
      * Get the path part of the URL
      *
      * @return {String}
@@ -3682,7 +3716,7 @@ process.chdir = function (dir) {
 module.exports={
   "name": "imboclient",
   "description": "An Imbo client for node.js and modern browsers",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "author": "Espen Hovlandsdal <espen@hovlandsdal.com>",
   "contributors": [],
   "repository": {
@@ -3697,26 +3731,27 @@ module.exports={
   },
   "devDependencies": {
     "coveralls": "^2.11.4",
-    "del": "^2.0.2",
-    "eslint": "^1.6.0",
-    "eslint-config-vaffel": "^2.0.0",
+    "del": "^3.0.0",
+    "eslint": "^4.2.0",
+    "eslint-config-vaffel": "^5.0.0",
     "gulp": "^3.9.0",
     "gulp-browserify": "^0.5.1",
     "gulp-insert": "^0.5.0",
-    "gulp-istanbul": "^0.10.1",
-    "gulp-mocha": "^2.1.3",
+    "gulp-istanbul": "^1.1.2",
+    "gulp-mocha": "^4.3.1",
     "gulp-rename": "^1.2.2",
-    "gulp-replace": "^0.5.4",
-    "gulp-uglify": "^1.4.2",
+    "gulp-replace": "^0.6.1",
+    "gulp-uglify": "^3.0.0",
     "gulp-util": "^3.0.6",
-    "nock": "^2.15.0",
+    "nock": "^9.0.14",
+    "pump": "^1.0.2",
     "through": "^2.3.8",
-    "workerify": "^0.3.0"
+    "workerify": "^1.0.0"
   },
   "scripts": {
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "lint": "eslint .",
-    "pretest": "npm run lint",
+    "posttest": "npm run lint",
     "test": "gulp test"
   },
   "main": "index",

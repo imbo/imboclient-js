@@ -58,7 +58,8 @@ describeIntegration('ImboClient (integration)', function() {
     afterEach(function(done) {
         var remaining = imageIdentifiers.length;
         if (remaining === 0) {
-            return setImmediate(done);
+            setImmediate(done);
+            return;
         }
 
         imageIdentifiers.forEach(function(identifier) {

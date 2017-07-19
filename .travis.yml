@@ -5,7 +5,7 @@ node_js:
   - "0.10"
 before_install:
   - npm install -g gulp
-  - echo 'yes' | sudo add-apt-repository ppa:ondrej/php5-oldstable
+  - echo 'yes' | sudo add-apt-repository ppa:ondrej/php
   - sudo apt-get update -qq
   - sudo apt-get install -qq php5-cli php5-curl php5-memcached php5-imagick php5-dev php-pear
   - yes '' | sudo pecl install mongo

@@ -8,7 +8,8 @@
     try {
         client = new Imbo.Client('host', 'pub', 'priv');
     } catch (e) {
-        return form.html('<h2>Sorry! ' + e.message + ' :-(</h2>');
+        form.html('<h2>Sorry! ' + e.message + ' :-(</h2>');
+        return;
     }
 
     var supportsLocalStorage = function() {
@@ -122,9 +123,11 @@
             }
 
             /* eslint no-alert: 0 */
-            return window.alert(err);
+            window.alert(err);
+            return;
         } else if (err) {
-            return window.alert(err);
+            window.alert(err);
+            return;
         }
 
         // Build an Imbo-url
